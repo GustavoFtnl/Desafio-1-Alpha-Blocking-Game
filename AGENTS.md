@@ -54,6 +54,7 @@ onde blocos lógicos podem ser encaixados para executar ações em um ambiente g
 - **Variáveis:** SEMPRE usar `const`, usar `let` quando necessário, NUNCA usar `var`.
 - **Resiliência:** `try/catch` em todas as operações de I/O (API, LocalStorage).
 - Separação clara entre controle de DOM (posicionamento dos blocos) e Efeitos na UI (stage rodando)
+- Use aspas duplas em strings simples
 
 ### CSS
 
