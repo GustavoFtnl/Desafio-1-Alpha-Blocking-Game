@@ -1,0 +1,103 @@
+/**
+ * Utilities - Classes utilitárias e responsividade
+ * Media queries para diferentes tamanhos de tela
+ */
+
+/* === RESPONSIVIDADE (Mobile-First: iPhone SE 375px) === */
+
+/* iPhone SE (375x667) - Layout empilhado */
+@media (max-width: 375px) {
+  .appLayout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 60px auto 50vh 35vh 15vh;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    height: 100vh;
+    overflow-y: auto;
+  }
+  
+  .topBar {
+    grid-column: 1;
+    border-radius: 0;
+    position: sticky;
+    top: 0;
+    z-index: var(--z-modal);
+  }
+  
+  .sidebar {
+    grid-row: 3;
+    max-height: 30vh;
+    border-radius: var(--radius-default);
+  }
+  
+  .workspaceArea {
+    grid-row: 4;
+    min-height: 200px;
+  }
+  
+  .stageContainer {
+    grid-row: 5;
+  }
+  
+  .stageGrid {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    max-width: 375px;
+  }
+  
+  .controlsArea {
+    grid-column: 1;
+    grid-row: 6;
+  }
+}
+
+/* Tablet (376px - 768px) */
+@media (min-width: 376px) and (max-width: 768px) {
+  .appLayout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 60px 1fr 400px;
+    gap: var(--space-md);
+  }
+  
+  .sidebar {
+    display: none; /* Sidebar vira drawer colapsável */
+  }
+  
+  .stageGrid {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
+/* Desktop (769px+) */
+@media (min-width: 769px) {
+  .appLayout {
+    grid-template-columns: var(--sidebar-width) 1fr 400px;
+    grid-template-rows: 60px 1fr 60px;
+  }
+}
+
+/* === UTILITÁRIOS === */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
