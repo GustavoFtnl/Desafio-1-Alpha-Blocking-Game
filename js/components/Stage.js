@@ -1,22 +1,131 @@
 /**
  * Stage.js - Gerencia a posição e rotação do ator no grid 10x10
- * Grid: 400x400px (40px por célula)
+ * Renderiza dinamicamente o grid, ator e controles
  * Direções: 0=cima, 1=direita, 2=baixo, 3=esquerda
+ * Comentários em português do Brasil conforme AGENTS.md
  */
 
 export class Stage {
-  constructor() {
-    // Elementos do DOM
-    this.stageGrid = document.querySelector('.stageGrid')
-    this.actor = document.querySelector('.actor')
-    this.stageCells = document.querySelectorAll('.stageCell')
+  /**
+   * Construtor do Stage
+   * @param {HTMLElement} container - Elemento section.stageContainer do DOM
+   */
+  constructor(container) {
+    this.container = container
     
     // Configurações do grid
     this.gridSize = 10
     this.cellSize = 40 // 400px / 10 células
     
     // Estado inicial do ator (sempre começa em 0,0 conforme decisão)
-    this.reset()
+    this.x = 0
+    this.y = 0
+    this.direction = 0 // 0=cima
+    
+    // Elementos do DOM (serão criados no render)
+    this.stageGrid = null
+    this.actor = null
+    this.stageCells = null
+    this.controlsArea = null
+    
+    this.render()
+  }
+
+  /**
+   * Renderiza toda a estrutura do Stage dinamicamente
+   */
+  render() {
+    // Limpa o container
+    this.container.innerHTML = ''
+    
+    // Título
+    const title = document.createElement('h2')
+    title.className = 'sidebar_title'
+    title.textContent = 'Palco (Stage)'
+    this.container.appendChild(title)
+    
+    // Grid 10x10
+    this.stageGrid = document.createElement('div')
+    this.stageGrid.className = 'stageGrid'
+    this.stageGrid.setAttribute('role', 'grid')
+    this.stageGrid.setAttribute('aria-label', 'Grade 10x10 do palco')
+    
+    // Cria 100 células do grid
+    this.stageCells = []
+    for (let i = 0; i < this.gridSize * this.gridSize; i++) {
+      const cell = document.createElement('div')
+      cell.className = 'stageCell'
+      cell.setAttribute('role', 'gridcell')
+      this.stageGrid.appendChild(cell)
+      this.stageCells.push(cell)
+    }
+    
+    this.container.appendChild(this.stageGrid)
+    
+    // Ator (Personagem) - Apenas o emoji 🤖
+    this.actor = document.createElement('div')
+    this.actor.className = 'actor'
+    this.actor.setAttribute('aria-label', 'Personagem do jogo: Robô')
+    this.actor.textContent = '🤖'
+    this.container.appendChild(this.actor)
+    
+    // Controles de Execução
+    this.controlsArea = document.createElement('div')
+    this.controlsArea.className = 'controlsArea'
+    this.controlsArea.setAttribute('role', 'toolbar')
+    this.controlsArea.setAttribute('aria-label', 'Controles de execução do código')
+    
+    this.controlsArea.innerHTML = `
+      <button class="btn btn--run" aria-label="Executar código montado">
+        Executar
+      </button>
+      <button class="btn btn--pause" aria-label="Pausar execução">
+        Pausar
+      </button>
+      <button class="btn btn--clear" aria-label="Limpar workspace">
+        Limpar
+      </button>
+    `
+    
+    this.container.appendChild(this.controlsArea)
+    
+    // Configura event listeners dos botões
+    this.setupControlListeners()
+    
+    // Posiciona o ator inicial
+    this.updateActorPosition()
+    this.updateActorRotation()
+    this.markCurrentCell()
+  }
+
+  /**
+   * Configura os event listeners dos botões de controle
+   */
+  setupControlListeners() {
+    const runButton = this.controlsArea.querySelector('.btn--run')
+    const pauseButton = this.controlsArea.querySelector('.btn--pause')
+    const clearButton = this.controlsArea.querySelector('.btn--clear')
+    
+    if (runButton) {
+      runButton.addEventListener('click', () => {
+        const event = new CustomEvent('stageRun', { bubbles: true })
+        this.container.dispatchEvent(event)
+      })
+    }
+    
+    if (pauseButton) {
+      pauseButton.addEventListener('click', () => {
+        const event = new CustomEvent('stagePause', { bubbles: true })
+        this.container.dispatchEvent(event)
+      })
+    }
+    
+    if (clearButton) {
+      clearButton.addEventListener('click', () => {
+        const event = new CustomEvent('stageClear', { bubbles: true })
+        this.container.dispatchEvent(event)
+      })
+    }
   }
 
   /**
