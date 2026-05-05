@@ -19,7 +19,7 @@ export class TopBar {
    */
   render() {
     this.container.innerHTML = `
-      <h1 class="topBar_title">Code Blocks</h1>
+       <h1 class="topBar_title">Temple Blocks</h1>
       <div class="topBar_levelInfo">
         <span class="topBar_levelText">Nível 1/10</span>
         
