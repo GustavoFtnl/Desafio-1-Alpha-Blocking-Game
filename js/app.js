@@ -30,10 +30,56 @@ class App {
     this.currentLevel = 1
     this.stars = {}
     
+    this.setupLayoutStructure()
     this.initComponents()
     this.loadGameState()
     this.setupEventListeners()
     this.updateUI()
+  }
+
+  /**
+   * Cria a estrutura de layout dinamicamente e anexa ao elemento raiz
+   */
+  setupLayoutStructure() {
+    // Garante que o elemento raiz existe
+    let root = document.getElementById('root')
+    if (!root) {
+      root = document.createElement('div')
+      root.id = 'root'
+      document.body.appendChild(root)
+    }
+    
+    // Cria a estrutura de layout completa
+    const appLayout = document.createElement('div')
+    appLayout.className = 'appLayout'
+    
+    // Cria e anexa o header (TopBar)
+    const topBar = document.createElement('header')
+    topBar.className = 'topBar'
+    topBar.setAttribute('role', 'banner')
+    appLayout.appendChild(topBar)
+    
+    // Cria e anexa a sidebar (Sidebar)
+    const sidebar = document.createElement('aside')
+    sidebar.className = 'sidebar'
+    sidebar.setAttribute('aria-label', 'Biblioteca de blocos de comando')
+    appLayout.appendChild(sidebar)
+    
+    // Cria e anexa o workspace (Workspace)
+    const workspaceArea = document.createElement('main')
+    workspaceArea.className = 'workspaceArea'
+    workspaceArea.setAttribute('aria-label', 'Área de montagem de blocos')
+    workspaceArea.setAttribute('aria-dropeffect', 'none')
+    appLayout.appendChild(workspaceArea)
+    
+    // Cria e anexa o stage (Stage)
+    const stageContainer = document.createElement('section')
+    stageContainer.className = 'stageContainer'
+    stageContainer.setAttribute('aria-label', 'Palco de execução do personagem')
+    appLayout.appendChild(stageContainer)
+    
+    // Anexa todo o layout ao elemento raiz
+    root.appendChild(appLayout)
   }
 
   initComponents() {
