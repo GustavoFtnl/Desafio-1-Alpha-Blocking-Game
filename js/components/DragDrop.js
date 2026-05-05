@@ -21,6 +21,7 @@ export class DragDrop {
     this.snapTolerance = 50
     this.draggedBlock = null
     this.isFromPalette = false
+    this.sourceBlockSlot = null
     this.init()
   }
 
@@ -113,6 +114,7 @@ export class DragDrop {
       if (this.palette.contains(block)) return
       this.draggedBlock = block
       this.isFromPalette = false
+      this.sourceBlockSlot = block.closest('.blockSlot')
       e.dataTransfer.effectAllowed = 'move'
       block.classList.add('dragging')
       block.setAttribute('aria-grabbed', 'true')
@@ -125,6 +127,23 @@ export class DragDrop {
       block.classList.remove('dragging')
       block.setAttribute('aria-grabbed', 'false')
       
+      // Limpa blockContainer vazio se o bloco veio de um blockSlot
+      if (this.sourceBlockSlot && this.sourceBlockSlot.parentElement) {
+        if (this.sourceBlockSlot.children.length === 0) {
+          const blockContainer = this.sourceBlockSlot.closest('.blockContainer')
+          if (blockContainer) {
+            const mainBlock = blockContainer.querySelector(':scope > .block')
+            if (mainBlock) {
+              mainBlock.classList.remove('hasChildren')
+              // Coloca o bloco principal de volta no stack
+              blockContainer.parentElement.insertBefore(mainBlock, blockContainer)
+              blockContainer.remove()
+            }
+          }
+        }
+      }
+      this.sourceBlockSlot = null
+      
       // Verifica se o drop foi fora do workspace (para esquerda ou direita)
       if (this.draggedBlock) {
         const workspaceRect = this.workspace.getBoundingClientRect()
@@ -136,11 +155,24 @@ export class DragDrop {
         if (isOutsideWorkspace) {
           // Remove o bloco do workspace
           const stack = this.draggedBlock.closest('.blockStack')
-          this.draggedBlock.remove()
-          
-          // Se a pilha ficou vazia, remove ela também
-          if (stack && stack.children.length === 0) {
-            stack.remove()
+          // Se estava em um blockSlot, limpa a estrutura
+          const blockSlot = this.draggedBlock.closest('.blockSlot')
+          if (blockSlot) {
+            const blockContainer = blockSlot.closest('.blockContainer')
+            if (blockContainer) {
+              const mainBlock = blockContainer.querySelector(':scope > .block')
+              if (mainBlock) {
+                mainBlock.classList.remove('hasChildren')
+                blockContainer.parentElement.insertBefore(mainBlock, blockContainer)
+                blockContainer.remove()
+              }
+            }
+          } else {
+            this.draggedBlock.remove()
+            // Se a pilha ficou vazia, remove ela também
+            if (stack && stack.children.length === 0) {
+              stack.remove()
+            }
           }
           
           // Atualiza visibilidade do placeholder
