@@ -1,0 +1,193 @@
+<!-- 
+  index.html - Exibição do Design System Gamificado
+  Baseado em stitch-spec.json e styles/design-system.css
+  Regras AGENTS.md aplicadas:
+  - Comentários em português do Brasil
+  - IDs/classes em camelCase
+  - Tags semânticas
+  - Aria-labels para acessibilidade
+  - Sem estilos ou scripts inline
+  - Mobile-first (suporta iPhone SE 375px)
+-->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <!-- Configuração mobile-first para iPhone SE (375x667) -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Code Blocks - Design System</title>
+  <!-- Link para o Design System CSS -->
+  <link rel="stylesheet" href="styles/design-system.css" media="all">
+</head>
+<body>
+  <!-- Container principal com layout de 3 colunas (Desktop) -->
+  <div class="appLayout">
+    
+    <!-- Barra superior gamificada (Header) -->
+    <header class="topBar" role="banner">
+      <h1 class="topBar_title">Code Blocks</h1>
+      <div class="topBar_levelInfo">
+        <span class="topBar_levelText">Nível 1/10</span>
+        
+        <!-- Sistema de estrelas (Gamificação) - usando * ao invés de emoji -->
+        <div class="starRating" aria-label="Progresso de estrelas: 1 de 3">
+          <span class="star star--filled">*</span>
+          <span class="star star--empty">*</span>
+          <span class="star star--empty">*</span>
+        </div>
+        
+        <!-- Barra de progresso do nível (4px altura) -->
+        <div class="progressBar" aria-label="Progresso do nível: 30%">
+          <div class="progressBar_fill"></div> <!-- Largura definida via JS -->
+        </div>
+        
+        <!-- Contador de blocos usados vs máximo -->
+        <div class="blockCounter">
+          <span>Blocos: 5/8</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar (Biblioteca de blocos) -->
+    <aside class="sidebar" aria-label="Biblioteca de blocos de comando">
+      <h2 class="sidebar_title">Blocos</h2>
+      
+      <!-- Paleta de blocos (Drag-and-Drop) -->
+      <div class="blockPalette">
+        <!-- Bloco: Mover (Verde #10b981) - seta ASCII -->
+        <div class="block block--move" draggable="true" aria-label="Bloco de comando: Mover" aria-grabbed="false">
+          <span class="block_icon">></span>
+          <span class="block_text">Mover</span>
+        </div>
+        
+        <!-- Bloco: Girar (Amarelo #f59e0b) - seta circular ASCII -->
+        <div class="block block--rotate" draggable="true" aria-label="Bloco de comando: Girar" aria-grabbed="false">
+          <span class="block_icon">~</span>
+          <span class="block_text">Girar</span>
+        </div>
+        
+        <!-- Bloco: Repetir (Roxo #8b5cf6) -->
+        <div class="block block--repeat" draggable="true" aria-label="Bloco de comando: Repetir" aria-grabbed="false">
+          <span class="block_icon">x</span>
+          <span class="block_text">Repetir</span>
+        </div>
+        
+        <!-- Bloco: Se/If (Rosa #ec4899) -->
+        <div class="block block--conditional" draggable="true" aria-label="Bloco de comando: Se" aria-grabbed="false">
+          <span class="block_icon">?</span>
+          <span class="block_text">Se</span>
+        </div>
+        
+        <!-- Bloco: Ação (Azul #3b82f6) -->
+        <div class="block block--action" draggable="true" aria-label="Bloco de comando: Ação" aria-grabbed="false">
+          <span class="block_icon">!</span>
+          <span class="block_text">Ação</span>
+        </div>
+        
+        <!-- Bloco: Controle (Vermelho #ef4444) -->
+        <div class="block block--control" draggable="true" aria-label="Bloco de comando: Controle" aria-grabbed="false">
+          <span class="block_icon">*</span>
+          <span class="block_text">Controle</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Workspace (Área de Drop - Zona de Montagem) -->
+    <main class="workspaceArea" aria-label="Área de montagem de blocos" aria-dropeffect="none">
+      <div class="workspacePlaceholder">
+        Arraste blocos da sidebar para esta área
+      </div>
+      
+      <!-- Exemplo de pilha de blocos encaixados -->
+      <div class="blockStack">
+        <div class="block block--move" aria-label="Bloco Mover na pilha">
+          <span class="block_icon">></span>
+          <span class="block_text">Mover</span>
+        </div>
+        <div class="block block--repeat" aria-label="Bloco Repetir na pilha">
+          <span class="block_icon">x</span>
+          <span class="block_text">Repetir (2x)</span>
+        </div>
+        <!-- Bloco em execução (Efeito Pulse) -->
+        <div class="block block--action executing" aria-label="Bloco Ação em execução">
+          <span class="block_icon">!</span>
+          <span class="block_text">Ação</span>
+        </div>
+        <div class="block block--repeat" aria-label="Bloco Repetir na pilha">
+          <span class="block_icon">x</span>
+          <span class="block_text">Repetir (2x)</span>
+        </div>
+        <!-- Bloco em execução (Efeito Pulse) -->
+        <div class="block block--action executing" aria-label="Bloco Ação em execução">
+          <span class="block_icon">!</span>
+          <span class="block_text">Ação</span>
+        </div>
+      </div>
+    </main>
+
+    <!-- Stage (Palco de Execução - Grid 10x10) -->
+    <section class="stageContainer" aria-label="Palco de execução do personagem">
+      <h2 class="sidebar_title">Palco (Stage)</h2>
+      
+      <!-- Grid 10x10 (Grade do Mapa) -->
+      <div class="stageGrid" role="grid" aria-label="Grade 10x10 do palco">
+        <!-- Células do grid (100 total, exemplo com 20 para brevidade) -->
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell visited" role="gridcell"></div>
+        <div class="stageCell visited" role="gridcell"></div>
+        <div class="stageCell visited" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell visited" role="gridcell"></div>
+        <div class="stageCell visited" role="gridcell"></div>
+        <div class="stageCell visited" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell" role="gridcell"></div>
+        <div class="stageCell current" role="gridcell"></div>
+        
+        <!-- Restante das 80 células omitido para brevidade (total 100) -->
+      </div>
+      
+      <!-- Ator (Personagem) - Mantendo APENAS o emoji 🤖 -->
+      <div class="actor" aria-label="Personagem do jogo: Robô">🤖</div>
+      
+      <!-- Controles de Execução -->
+      <div class="controlsArea" role="toolbar" aria-label="Controles de execução do código">
+        <button class="btn btn--run" aria-label="Executar código montado">
+          Executar
+        </button>
+        <button class="btn btn--pause" aria-label="Pausar execução">
+          Pausar
+        </button>
+        <button class="btn btn--clear" aria-label="Limpar workspace">
+          Limpar
+        </button>
+      </div>
+    </section>
+
+    <!-- Modal de Exemplo (Nível Concluído) 
+    <div class="modal" role="dialog" aria-label="Nível concluído" aria-hidden="false">
+      <div class="modal_content">
+        <h2 class="modal_title">Nível Concluído! *</h2>
+        <div class="modal_stars">
+          <span class="star star--filled">*</span>
+          <span class="star star--filled">*</span>
+          <span class="star star--empty">*</span>
+        </div>
+        <p>Você usou 5 blocos (limite: 8). Continue assim!</p>
+        <button class="btn btn--run" aria-label="Avançar para próximo nível">Próximo Nível</button>
+      </div>
+    </div>
+    -->
+  </div>
+</body>
+</html>

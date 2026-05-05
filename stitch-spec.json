@@ -1,0 +1,307 @@
+{
+  "project": {
+    "name": "projects/7928361893975892553",
+    "title": "Block Programming Game MVP",
+    "visibility": "PRIVATE",
+    "createTime": "2026-05-05T16:21:37.021909Z",
+    "updateTime": "2026-05-05T16:28:14.091027Z",
+    "projectType": "PROJECT_DESIGN",
+    "origin": "STITCH",
+    "deviceType": "DESKTOP"
+  },
+  "designSystem": {
+    "name": "assets/5b90f43b17314a318e7f41b61b9c14ec",
+    "displayName": "Code Blocks Game UI",
+    "theme": {
+      "colorMode": "LIGHT",
+      "headlineFont": "INTER",
+      "bodyFont": "INTER",
+      "labelFont": "INTER",
+      "roundness": "ROUND_EIGHT",
+      "customColor": "#001D3D",
+      "colorVariant": "FIDELITY",
+      "overridePrimaryColor": "#001D3D",
+      "overrideSecondaryColor": "#2EC4B6",
+      "overrideTertiaryColor": "#FF9F1C",
+      "spacingScale": 2
+    },
+    "colors": {
+      "primary": "#000209",
+      "primaryContainer": "#001d3d",
+      "secondary": "#006a62",
+      "secondaryContainer": "#70f8e8",
+      "tertiary": "#070200",
+      "tertiaryContainer": "#2e1800",
+      "background": "#faf9fc",
+      "surface": "#faf9fc",
+      "surfaceContainer": "#efedf0",
+      "onSurface": "#1b1c1e",
+      "onPrimary": "#ffffff",
+      "outline": "#74777f",
+      "blockMove": "#10b981",
+      "blockRotate": "#f59e0b",
+      "blockRepeat": "#8b5cf6",
+      "blockConditional": "#ec4899",
+      "blockAction": "#3b82f6",
+      "blockControl": "#ef4444"
+    },
+    "typography": {
+      "display": {
+        "fontSize": "32px",
+        "fontWeight": "700",
+        "lineHeight": "1.2",
+        "letterSpacing": "-0.02em"
+      },
+      "h1": {
+        "fontSize": "24px",
+        "fontWeight": "600",
+        "lineHeight": "1.3"
+      },
+      "bodyMd": {
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "lineHeight": "1.5"
+      },
+      "labelBold": {
+        "fontSize": "13px",
+        "fontWeight": "700",
+        "lineHeight": "1.2"
+      },
+      "blockText": {
+        "fontSize": "14px",
+        "fontWeight": "600",
+        "lineHeight": "1.2"
+      }
+    },
+    "spacing": {
+      "unit": "4px",
+      "xs": "4px",
+      "sm": "8px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "32px",
+      "gutter": "16px",
+      "sidebarWidth": "280px"
+    },
+    "rounded": {
+      "block": "1rem 1rem 0.25rem 0.25rem",
+      "default": "0.5rem",
+      "lg": "1rem"
+    },
+    "designMd": "name: Code Blocks Game UI\ncolors:\n  primary: '#000209'\n  primary-container: '#001d3d'\n  secondary: '#006a62'\n  background: '#faf9fc'\n  block-move: '#10b981'\n  block-rotate: '#f59e0b'\n  block-repeat: '#8b5cf6'\n  block-conditional: '#ec4899'\n  block-action: '#3b82f6'\n  block-control: '#ef4444'\ntypography:\n  font-family: Inter\n  headline: 24px/1.3 600\n  body: 14px/1.5 400\nrounded:\n  block: 1rem 1rem 0.25rem 0.25rem\nspacing:\n  base: 4px\n  sidebar-width: 280px\n\n## Brand & Style\nEste design system foi criado para um ambiente de programação visual gamificado.\n- Cores por funcionalidade de blocos\n- Mobile-first com suporte iPhone SE (375x667)\n- Micro-animações: hover scale(1.02)\n- Gamificação: estrelas, níveis, feedback visual\n\n## Regras de Implementação\n- IDs e classes: camelCase\n- Comentários: Português do Brasil\n- Variáveis CSS centralizadas\n- Acessibilidade: aria-labels\n- LocalStorage para persistência"
+  },
+  "screens": [
+    {
+      "id": "68a74ff21dc64fa2aa1e609f73627a37",
+      "name": "projects/7928361893975892553/screens/68a74ff21dc64fa2aa1e609f73627a37",
+      "title": "Code Blocks - Editor Inicial",
+      "width": "2560",
+      "height": "2048",
+      "deviceType": "DESKTOP",
+      "prompt": "Crie a tela inicial do jogo 'Code Blocks'. Estrutura: 1. Topo com fundo #001D3D, título 'Code Blocks' em branco, nível 1/10 e três estrelas. 2. Sidebar Esquerda (280px, #F1F5F9) com blocos coloridos em formato puzzle. 3. Workspace Central com grade blueprint. 4. Painel Direito (400px) com grade 10x10 e robô 🤖. Botões: Executar (Verde), Pausar (Amarelo), Limpar (Vermelho outline).",
+      "screenshotUrl": "https://lh3.googleusercontent.com/aida/ADBb0ugRbnKGWksjXKAO2ya4JXQIpg6IAJDCwNeII9TGqakHAENqpcRMfGbAgWKfdVYdr4VvH2SoVYrvnaLaQEG6HekK63-L__r7TQv4m-6vH7IXVuBLxdixGPM3iaYkBOlxPkt-M-flthjRVi98cUP7_EYIz-wBQGMTXlPS7WFR1AAgX1BX2rOgE3YUgqbtfouGoQyTN4L3DlyqMsyII3HTf-sI-TN6Qr1VUb6fEQRUtoRhOzjdyqMaw_JLDjQ",
+      "htmlUrl": "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzU5M2VhMTQ3YjYyYTRhNzhiMDBmMzBjODQxYmRlMGNjEgsSBxDJtY2ExRkYAZIBIwoKcHJvamVjdF9pZBIVQhM3OTI4MzYxODkzOTc1ODkyNTUz&filename=&opi=96797242",
+      "description": "Tela inicial com três colunas: sidebar de blocos, workspace vazio com placeholder, e stage com grade 10x10."
+    },
+    {
+      "id": "206ca43d0d864772a8403694c69e39c1",
+      "name": "projects/7928361893975892553/screens/206ca43d0d864772a8403694c69e39c1",
+      "title": "Editor - Tela Inicial",
+      "width": "2560",
+      "height": "2048",
+      "deviceType": "DESKTOP",
+      "screenshotUrl": "https://lh3.googleusercontent.com/aida/ADBb0ujY13biHSSZcQVvZFdGZvFnKOQ_V_T3glaC63J-1Ef9bxwc8ZPLa6qRET2zaG4KF-H0l_94PAp4ySB7__Gmq6QGlws9LChHqvsovgnGBxNowS-F2D7bS5lWdeBlDtQOlmZrduUyMTLMoKQjhOU0XYJaswxQ4FW8UACwK580yb27D-NUdVINpD661HIHz8lJ1hVtV8BZ4vg3R1hP18Xw3pfKgf1oQnRjfmFSgMkR5SZOccG-YvIg0CBtcjg",
+      "htmlUrl": "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzU2ZGYxZTk4N2EwNzRiOWRhOTlkMTViOTZjNmM2YWFkEgsSBxDJtY2ExRkYAZIBIwoKcHJvamVjdF9pZBIVQhM3OTI4MzYxODkzOTc1ODkyNTUz&filename=&opi=96797242",
+      "description": "Variação da tela inicial com foco no editor principal."
+    },
+    {
+      "id": "adee14140e8d411393ceba51283cf404",
+      "name": "projects/7928361893975892553/screens/adee14140e8d411393ceba51283cf404",
+      "title": "Editor - Sequência Ativa",
+      "width": "2560",
+      "height": "2048",
+      "deviceType": "DESKTOP",
+      "screenshotUrl": "https://lh3.googleusercontent.com/aida/ADBb0ujUls5wdzNwp19ScPHkASPt2mP4ZF-u-_37ln9u-JmqKmjdycbM5xXaSSU_AfEIBBqOkxhHhsOUXnf77I4CrTD-mXF-F8v5SI3a46khZiGxK2triTJ4mKzUTOg9yMr26J0tQuLeAYuI9vA8p9nUjkbTQwEdjim3XwQ3E0SBK70v2V2bp8CDX1exRgDAF179g8XURh24JtOgItioDZknZux_IV3vkVvSYcpPhZ_upTOCimUtVw3TeR-uxA",
+      "htmlUrl": "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzViZmEyNGQ4MmUzNjRiYTJiZGEyZmFkNWI2MmIzYTJhEgsSBxDJtY2ExRkYAZIBIwoKcHJvamVjdF9pZBIVQhM3OTI4MzYxODkzOTc1ODkyNTUz&filename=&opi=96797242",
+      "description": "Workspace com blocos encaixados formando uma sequência lógica ativa."
+    }
+  ],
+  "screenInstances": [
+    {
+      "id": "206ca43d0d864772a8403694c69e39c1",
+      "sourceScreen": "projects/7928361893975892553/screens/206ca43d0d864772a8403694c69e39c1",
+      "x": 1024,
+      "width": 1280,
+      "height": 1024
+    },
+    {
+      "id": "68a74ff21dc64fa2aa1e609f73627a37",
+      "sourceScreen": "projects/7928361893975892553/screens/68a74ff21dc64fa2aa1e609f73627a37",
+      "y": 1280,
+      "width": 1280,
+      "height": 1024,
+      "hidden": true
+    },
+    {
+      "id": "adee14140e8d411393ceba51283cf404",
+      "sourceScreen": "projects/7928361893975892553/screens/adee14140e8d411393ceba51283cf404",
+      "x": 3712,
+      "width": 1280,
+      "height": 1024,
+      "hidden": true
+    },
+    {
+      "id": "assets-5b90f43b17314a318e7f41b61b9c14ec-1777998345241",
+      "sourceAsset": "assets/5b90f43b17314a318e7f41b61b9c14ec",
+      "type": "DESIGN_SYSTEM_INSTANCE",
+      "width": 960,
+      "height": 540
+    }
+  ],
+  "gameSpecs": {
+    "layout": {
+      "sidebar": {
+        "width": "280px",
+        "background": "#F1F5F9",
+        "position": "left",
+        "scrollable": true
+      },
+      "workspace": {
+        "position": "center",
+        "background": "white",
+        "gridStyle": "blueprint",
+        "gridColor": "#e2e8f0"
+      },
+      "stage": {
+        "width": "400px",
+        "position": "right",
+        "gridSize": "10x10",
+        "cellBorder": "#cbd5e1",
+        "background": "white"
+      }
+    },
+    "blocks": [
+      {
+        "type": "move",
+        "label": "Mover",
+        "color": "#10b981",
+        "icon": "arrow-right"
+      },
+      {
+        "type": "rotate",
+        "label": "Girar",
+        "color": "#f59e0b",
+        "icon": "rotate-cw"
+      },
+      {
+        "type": "repeat",
+        "label": "Repetir",
+        "color": "#8b5cf6",
+        "icon": "repeat"
+      },
+      {
+        "type": "if",
+        "label": "Se",
+        "color": "#ec4899",
+        "icon": "git-branch"
+      },
+      {
+        "type": "action",
+        "label": "Ação",
+        "color": "#3b82f6",
+        "icon": "zap"
+      },
+      {
+        "type": "control",
+        "label": "Controle",
+        "color": "#ef4444",
+        "icon": "settings"
+      }
+    ],
+    "blockShape": {
+      "topRadius": "1rem",
+      "bottomRadius": "0.25rem",
+      "notch": "puzzle-piece bottom",
+      "textColor": "#ffffff"
+    },
+    "controls": [
+      {
+        "action": "run",
+        "label": "Executar",
+        "color": "#10b981",
+        "icon": "play"
+      },
+      {
+        "action": "pause",
+        "label": "Pausar",
+        "color": "#f59e0b",
+        "icon": "pause"
+      },
+      {
+        "action": "clear",
+        "label": "Limpar",
+        "color": "#ef4444",
+        "style": "outline"
+      }
+    ],
+    "gamification": {
+      "stars": {
+        "total": 3,
+        "empty": "☆",
+        "filled": "★",
+        "criteria": "based on blocks used vs maxBlocks"
+      },
+      "level": {
+        "current": 1,
+        "total": 10,
+        "progressBar": "4px height, color #2EC4B6"
+      },
+      "storage": "localStorage for level and stars",
+      "resetAction": "Reiniciar Carreira button after level 10"
+    },
+    "responsive": {
+      "mobile": {
+        "breakpoint": "375px (iPhone SE)",
+        "layout": "stacked vertical",
+        "sidebar": "collapsible drawer",
+        "workspace": "50% height",
+        "stage": "35% height",
+        "controls": "15% height"
+      },
+      "tablet": {
+        "layout": "sidebar collapsible, workspace and stage stacked"
+      }
+    },
+    "accessibility": {
+      "ariaLabels": "all interactive elements",
+      "contrast": "high contrast (white text on colored blocks)",
+      "focusVisible": "all interactive elements",
+      "classesNaming": "camelCase (ex: blockPalette, workspaceArea)"
+    },
+    "animations": {
+      "microInteractions": "150ms ease-in-out",
+      "blockSnap": "200ms cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "hover": "scale(1.02) with shadow",
+      "starReveal": "500ms ease-out sequential",
+      "levelComplete": "800ms ease-out with confetti"
+    }
+  },
+  "agentInstructions": {
+    "language": "Português do Brasil (comments)",
+    "codeVariables": "English (camelCase)",
+    "fileNaming": "English (kebab-case)",
+    "modules": "ES6+ import/export",
+    "equality": "Always use ===",
+    "variables": "const preferred, let when needed, never var",
+    "errorHandling": "try/catch for I/O operations",
+    "cssVariables": "Centralized in design-system.css",
+    "mobileFirst": "Start with iPhone SE (375x667)"
+  },
+  "exportInfo": {
+    "exportedAt": "2026-05-05T16:35:00Z",
+    "exportedBy": "opencode/big-pickle",
+    "tool": "stitch_get_project + stitch_get_screen",
+    "format": "JSON",
+    "purpose": "Prototype specification for Block Programming Game MVP"
+  }
+}
