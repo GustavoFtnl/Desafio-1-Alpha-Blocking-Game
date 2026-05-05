@@ -34,7 +34,9 @@ export class Runner {
     this.isPaused = false
     
     try {
-      while (this.currentIndex < this.instructions.length && this.isRunning) {
+      for (const instruction of this.instructions) {
+        if (!this.isRunning) break
+        
         // Verifica se está pausado
         if (this.isPaused) {
           await this.waitForResume()
@@ -42,23 +44,17 @@ export class Runner {
         
         if (!this.isRunning) break // Foi parado
         
-        const instruction = this.instructions[this.currentIndex]
-        
-        // Adiciona classe de execução no bloco
+        // Adiciona classe de execução no bloco principal
         this.setBlockExecuting(instruction, true)
         
-        // Executa a instrução
+        // Executa a instrução (pode ser aninhada)
         await this.executeInstruction(instruction)
         
         // Remove classe de execução
         this.setBlockExecuting(instruction, false)
         
-        this.currentIndex++
-        
-        // Delay entre comandos
-        if (this.currentIndex < this.instructions.length) {
-          await this.delay(this.commandDelay)
-        }
+        // Delay entre comandos principais
+        await this.delay(this.commandDelay)
       }
     } catch (error) {
       console.error('Erro durante execução:', error)
@@ -67,9 +63,7 @@ export class Runner {
       this.isPaused = false
       
       // Dispara evento de conclusão
-      if (this.currentIndex >= this.instructions.length) {
-        this.dispatchCompleteEvent()
-      }
+      this.dispatchCompleteEvent()
     }
   }
 

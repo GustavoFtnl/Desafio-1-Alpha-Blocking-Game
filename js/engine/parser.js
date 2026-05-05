@@ -15,25 +15,44 @@ export class Parser {
    */
   parse() {
     const instructions = []
-    const stacks = this.workspace.querySelectorAll('.blockStack, .blockContainer')
+    const processedBlocks = new Set()
     
-    stacks.forEach(stack => {
-      const mainBlocks = stack.querySelectorAll(':scope > .block:not(.block--direction)')
+    // Primeiro, processa blocos em blockContainers (com filhos)
+    const blockContainers = this.workspace.querySelectorAll('.blockContainer')
+    blockContainers.forEach(container => {
+      const mainBlock = container.querySelector(':scope > .block:not(.block--direction)')
+      if (!mainBlock || processedBlocks.has(mainBlock)) return
       
-      mainBlocks.forEach(block => {
+      processedBlocks.add(mainBlock)
+      const instruction = this.parseBlock(mainBlock)
+      if (!instruction) return
+      
+      // Verifica blocos de direção para Move
+      const blockSlot = container.querySelector(':scope > .blockSlot')
+      if (blockSlot) {
+        const directionBlocks = blockSlot.querySelectorAll(':scope > .block--direction')
+        if (directionBlocks.length > 0) {
+          instruction.directions = Array.from(directionBlocks).map(dirBlock => this.getDirectionType(dirBlock))
+        }
+        
+        // Verifica blocos filhos para Repeat/Se (corpo do loop/condição)
+        if (mainBlock.classList.contains('block--repeat') || mainBlock.classList.contains('block--conditional')) {
+          const childBlocks = blockSlot.querySelectorAll(':scope > .block:not(.block--direction)')
+          instruction.body = Array.from(childBlocks).map(child => this.parseBlock(child)).filter(Boolean)
+        }
+      }
+      
+      instructions.push(instruction)
+    })
+    
+    // Depois, processa blocos em blockStacks (sem filhos)
+    const blockStacks = this.workspace.querySelectorAll('.blockStack')
+    blockStacks.forEach(stack => {
+      const blocks = stack.querySelectorAll(':scope > .block:not(.block--direction)')
+      blocks.forEach(block => {
+        if (processedBlocks.has(block)) return
         const instruction = this.parseBlock(block)
         if (instruction) {
-          // Verifica se tem blocos de direção aninhados no slot
-          const blockContainer = block.closest('.blockContainer')
-          if (blockContainer) {
-            const blockSlot = blockContainer.querySelector(':scope > .blockSlot')
-            if (blockSlot) {
-              const directionBlocks = blockSlot.querySelectorAll(':scope > .block--direction')
-              if (directionBlocks.length > 0) {
-                instruction.directions = Array.from(directionBlocks).map(dirBlock => this.getDirectionType(dirBlock))
-              }
-            }
-          }
           instructions.push(instruction)
         }
       })
@@ -48,9 +67,29 @@ export class Parser {
    * @returns {Object|null} Instrução parseada
    */
   parseBlock(block) {
-    if (block.classList.contains('block--repeat') || 
-        block.classList.contains('block--conditional')) {
-      return null // Estes são processados separadamente
+    if (block.classList.contains('block--repeat')) {
+      const blockText = block.querySelector('.block_text')
+      const textContent = blockText ? blockText.textContent : ''
+      let repeatCount = 2
+      const match = textContent.match(/\((\d+)x\)/)
+      if (match) {
+        repeatCount = parseInt(match[1])
+      }
+      return {
+        type: 'repeat',
+        count: repeatCount,
+        body: [],
+        blockElement: block
+      }
+    }
+    
+    if (block.classList.contains('block--conditional')) {
+      return {
+        type: 'if',
+        condition: 'default',
+        body: [],
+        blockElement: block
+      }
     }
     
     const instruction = {

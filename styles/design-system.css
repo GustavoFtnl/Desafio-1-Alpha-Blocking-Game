@@ -382,27 +382,54 @@ body {
   background-color: var(--color-block-action);
 }
 
-/* Área de encaixe lateral direita - layout flex */
-.blockSlot {
-  width: 150px;
-  min-height: 100%;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  border-radius: 0 0.5rem 0.5rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 4px;
-  transition: background-color var(--transition-micro);
-  z-index: 5;
+/* Bloco com filhos - formato C */
+.block--move.hasChildren,
+.block--repeat.hasChildren,
+.block--conditional.hasChildren {
+  border-right: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 0.5rem 0 0 0.5rem;
+  position: relative;
 }
 
-/* Quando tem filhos, expande para a direita */
+/* Abertura visual no formato C - lado direito */
+.block--move.hasChildren::after,
+.block--repeat.hasChildren::after,
+.block--conditional.hasChildren::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  top: 20%;
+  width: 4px;
+  height: 60%;
+  background-color: var(--color-surface);
+  z-index: 2;
+}
+
+/* Container do bloco com filhos */
 .blockContainer {
   position: relative;
   display: inline-flex;
   flex-direction: row;
-  align-items: flex-start;
-  width: 100%;
+  align-items: stretch;
+  vertical-align: top;
+  min-height: 40px;
+}
+
+/* Área de encaixe lateral direita - formato C */
+.blockSlot {
+  min-width: 150px;
+  flex: 1;
+  min-height: 100%;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-left: none;
+  border-radius: 0 0.5rem 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 4px 4px 0;
+  transition: background-color var(--transition-micro), min-height var(--transition-micro);
+  z-index: 5;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .blockContainer > .block,

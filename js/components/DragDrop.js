@@ -59,7 +59,6 @@ export class DragDrop {
       e.dataTransfer.dropEffect = this.isFromPalette ? 'copy' : 'move'
       this.workspace.classList.add('dragover')
       
-      // Verifica se está sobre um blockSlot
       const blockSlot = e.target.closest('.blockSlot')
       if (blockSlot) {
         blockSlot.classList.add('dragover')
@@ -127,7 +126,6 @@ export class DragDrop {
       block.classList.remove('dragging')
       block.setAttribute('aria-grabbed', 'false')
       
-      // Limpa blockContainer vazio se o bloco veio de um blockSlot
       if (this.sourceBlockSlot && this.sourceBlockSlot.parentElement) {
         if (this.sourceBlockSlot.children.length === 0) {
           const blockContainer = this.sourceBlockSlot.closest('.blockContainer')
@@ -135,7 +133,6 @@ export class DragDrop {
             const mainBlock = blockContainer.querySelector(':scope > .block')
             if (mainBlock) {
               mainBlock.classList.remove('hasChildren')
-              // Coloca o bloco principal de volta no stack
               blockContainer.parentElement.insertBefore(mainBlock, blockContainer)
               blockContainer.remove()
             }
@@ -144,7 +141,6 @@ export class DragDrop {
       }
       this.sourceBlockSlot = null
       
-      // Verifica se o drop foi fora do workspace (para esquerda ou direita)
       if (this.draggedBlock) {
         const workspaceRect = this.workspace.getBoundingClientRect()
         const isOutsideWorkspace = e.clientX < workspaceRect.left || 
@@ -153,10 +149,9 @@ export class DragDrop {
                                    e.clientY > workspaceRect.bottom
         
         if (isOutsideWorkspace) {
-          // Remove o bloco do workspace
           const stack = this.draggedBlock.closest('.blockStack')
-          // Se estava em um blockSlot, limpa a estrutura
           const blockSlot = this.draggedBlock.closest('.blockSlot')
+          
           if (blockSlot) {
             const blockContainer = blockSlot.closest('.blockContainer')
             if (blockContainer) {
@@ -169,13 +164,11 @@ export class DragDrop {
             }
           } else {
             this.draggedBlock.remove()
-            // Se a pilha ficou vazia, remove ela também
             if (stack && stack.children.length === 0) {
               stack.remove()
             }
           }
           
-          // Atualiza visibilidade do placeholder
           const placeholder = this.workspace.querySelector('.workspacePlaceholder')
           if (placeholder) {
             const hasBlocks = this.workspace.querySelectorAll('.block').length > 0
@@ -215,48 +208,32 @@ export class DragDrop {
     const isDirectionBlock = block.classList.contains('block--direction')
     
     if (isDirectionBlock) {
-      // Blocos de direção: tenta encaixar à direita de um bloco que aceite filhos (mover, repetir, se, ação)
-      const targetBlock = this.findNearestBlockWithSlot(clientX, clientY)
+      const targetBlock = this.findNearestBlock(clientX, clientY, '.block--move')
       
       if (targetBlock) {
-        this.attachDirectionToBlock(block, targetBlock)
+        this.attachDirectionToMoveBlock(block, targetBlock)
         this.dispatchBlockCountChanged()
         return
       }
       
-      console.warn('Blocos de direção devem ser anexados à direita de um bloco Mover, Repetir, Se ou Ação')
+      console.warn('Blocos de direção devem ser anexados à direita de um bloco Mover')
       return
     }
     
-    // Blocos normais: comportamento padrão (empilhar verticalmente na workspace)
-    const existingStacks = this.workspace.querySelectorAll('.blockStack')
-    let nearestStack = null
-    let nearestDistance = Infinity
-
-    existingStacks.forEach(stack => {
-      const rect = stack.getBoundingClientRect()
-      const stackCenterX = rect.left + rect.width / 2
-      const stackCenterY = rect.top + rect.height / 2
-      
-      const distance = Math.sqrt(
-        Math.pow(clientX - stackCenterX, 2) + 
-        Math.pow(clientY - stackCenterY, 2)
-      )
-      
-      if (distance < nearestDistance && distance < this.snapTolerance) {
-        nearestDistance = distance
-        nearestStack = stack
+    const blockSlot = this.findNearestBlockSlot(clientX, clientY)
+    if (blockSlot) {
+      const parentBlock = blockSlot.closest('.blockContainer')?.querySelector(':scope > .block')
+      if (parentBlock && (parentBlock.classList.contains('block--repeat') || parentBlock.classList.contains('block--conditional'))) {
+        this.attachBlockToSlot(block, blockSlot, parentBlock)
+        this.dispatchBlockCountChanged()
+        return
       }
-    })
-
-    if (nearestStack) {
-      nearestStack.appendChild(block)
-    } else {
-      const newStack = document.createElement('div')
-      newStack.className = 'blockStack'
-      newStack.appendChild(block)
-      this.workspace.appendChild(newStack)
     }
+    
+    const newStack = document.createElement('div')
+    newStack.className = 'blockStack'
+    newStack.appendChild(block)
+    this.workspace.appendChild(newStack)
 
     block.classList.add('snapping')
     setTimeout(() => {
@@ -264,9 +241,8 @@ export class DragDrop {
     }, 200)
   }
   
-  findNearestBlockWithSlot(clientX, clientY) {
-    // Procura blocos que podem receber filhos (move, repeat, conditional, action)
-    const targetBlocks = this.workspace.querySelectorAll('.block--move, .block--repeat, .block--conditional, .block--action')
+  findNearestBlock(clientX, clientY, selector) {
+    const targetBlocks = this.workspace.querySelectorAll(selector)
     let nearest = null
     let nearestDistance = Infinity
     
@@ -289,14 +265,38 @@ export class DragDrop {
     return nearest
   }
   
-  attachDirectionToBlock(directionBlock, targetBlock) {
-    let blockContainer = targetBlock.closest('.blockContainer')
+  findNearestBlockSlot(clientX, clientY) {
+    const blockSlots = this.workspace.querySelectorAll('.blockSlot')
+    let nearest = null
+    let nearestDistance = Infinity
+    
+    blockSlots.forEach(slot => {
+      const rect = slot.getBoundingClientRect()
+      const slotCenterX = rect.left + rect.width / 2
+      const slotCenterY = rect.top + rect.height / 2
+      
+      const distance = Math.sqrt(
+        Math.pow(clientX - slotCenterX, 2) + 
+        Math.pow(clientY - slotCenterY, 2)
+      )
+      
+      if (distance < nearestDistance && distance < this.snapTolerance) {
+        nearestDistance = distance
+        nearest = slot
+      }
+    })
+    
+    return nearest
+  }
+  
+  attachDirectionToMoveBlock(directionBlock, moveBlock) {
+    let blockContainer = moveBlock.closest('.blockContainer')
     
     if (!blockContainer) {
       blockContainer = document.createElement('div')
       blockContainer.className = 'blockContainer'
-      targetBlock.parentElement.insertBefore(blockContainer, targetBlock)
-      blockContainer.appendChild(targetBlock)
+      moveBlock.parentElement.insertBefore(blockContainer, moveBlock)
+      blockContainer.appendChild(moveBlock)
     }
     
     let blockSlot = blockContainer.querySelector('.blockSlot')
@@ -306,13 +306,42 @@ export class DragDrop {
       blockContainer.appendChild(blockSlot)
     }
     
+    const existingDirection = blockSlot.querySelector('.block--direction')
+    if (existingDirection) {
+      existingDirection.remove()
+    }
+    
     blockSlot.appendChild(directionBlock)
-    targetBlock.classList.add('hasChildren')
+    moveBlock.classList.add('hasChildren')
     
     directionBlock.classList.add('snapping')
     setTimeout(() => {
       directionBlock.classList.remove('snapping')
     }, 200)
+  }
+  
+  attachBlockToSlot(block, blockSlot, parentBlock) {
+    blockSlot.appendChild(block)
+    parentBlock.classList.add('hasChildren')
+    
+    this.updateBlockContainerHeight(blockSlot.closest('.blockContainer'))
+    
+    block.classList.add('snapping')
+    setTimeout(() => {
+      block.classList.remove('snapping')
+    }, 200)
+  }
+  
+  updateBlockContainerHeight(blockContainer) {
+    if (!blockContainer) return
+    
+    const blockSlot = blockContainer.querySelector('.blockSlot')
+    if (!blockSlot) return
+    
+    const childrenCount = blockSlot.children.length
+    if (childrenCount > 0) {
+      blockContainer.style.minHeight = 'auto'
+    }
   }
 
   getBlockType(block) {
