@@ -256,19 +256,22 @@ class App {
     this.clearWorkspace()
   }
 
-  updateUI() {
-    this.topBar.updateLevel(this.currentLevel, 10)
-    
-    const currentStars = this.stars[this.currentLevel] || 0
-    this.topBar.updateStars(currentStars)
-    
-    const progress = (this.currentLevel - 1) / 10 * 100
-    this.topBar.updateProgress(progress)
-    
-    const maxBlocks = this.levelConfig[this.currentLevel]?.maxBlocks || 8
-    const totalBlocks = this.parser.countBlocks()
-    this.topBar.updateBlockCounter(totalBlocks, maxBlocks)
-  }
+   updateUI() {
+     this.topBar.updateLevel(this.currentLevel, 10)
+     
+     const currentStars = this.stars[this.currentLevel] || 0
+     this.topBar.updateStars(currentStars)
+     
+     const progress = (this.currentLevel - 1) / 10 * 100
+     this.topBar.updateProgress(progress)
+     
+     const maxBlocks = this.levelConfig[this.currentLevel]?.maxBlocks || 8
+     const totalBlocks = this.parser.countBlocks()
+     this.topBar.updateBlockCounter(totalBlocks, maxBlocks)
+     
+     // Atualiza o título do stage com o nível atual
+     this.stage.updateTitle(this.currentLevel, 10);
+   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -38,11 +38,11 @@ export class Stage {
     // Limpa o container
     this.container.innerHTML = ''
     
-    // Título
-    const title = document.createElement('h2')
-    title.className = 'sidebar_title'
-    title.textContent = 'Palco (Stage)'
-    this.container.appendChild(title)
+     // Título (será atualizado pelo App.js com o nível atual)
+     this.titleElement = document.createElement('h2')
+     this.titleElement.className = 'sidebar_title'
+     this.titleElement.textContent = 'Palco (Stage)'
+     this.container.appendChild(this.titleElement)
     
     // Grid 10x10
     this.stageGrid = document.createElement('div')
@@ -98,35 +98,46 @@ export class Stage {
     this.markCurrentCell()
   }
 
-  /**
-   * Configura os event listeners dos botões de controle
-   */
-  setupControlListeners() {
-    const runButton = this.controlsArea.querySelector('.btn--run')
-    const pauseButton = this.controlsArea.querySelector('.btn--pause')
-    const clearButton = this.controlsArea.querySelector('.btn--clear')
-    
-    if (runButton) {
-      runButton.addEventListener('click', () => {
-        const event = new CustomEvent('stageRun', { bubbles: true })
-        this.container.dispatchEvent(event)
-      })
-    }
-    
-    if (pauseButton) {
-      pauseButton.addEventListener('click', () => {
-        const event = new CustomEvent('stagePause', { bubbles: true })
-        this.container.dispatchEvent(event)
-      })
-    }
-    
-    if (clearButton) {
-      clearButton.addEventListener('click', () => {
-        const event = new CustomEvent('stageClear', { bubbles: true })
-        this.container.dispatchEvent(event)
-      })
-    }
-  }
+   /**
+    * Configura os event listeners dos botões de controle
+    */
+   setupControlListeners() {
+     const runButton = this.controlsArea.querySelector('.btn--run')
+     const pauseButton = this.controlsArea.querySelector('.btn--pause')
+     const clearButton = this.controlsArea.querySelector('.btn--clear')
+     
+     if (runButton) {
+       runButton.addEventListener('click', () => {
+         const event = new CustomEvent('stageRun', { bubbles: true })
+         this.container.dispatchEvent(event)
+       })
+     }
+     
+     if (pauseButton) {
+       pauseButton.addEventListener('click', () => {
+         const event = new CustomEvent('stagePause', { bubbles: true })
+         this.container.dispatchEvent(event)
+       })
+     }
+     
+     if (clearButton) {
+       clearButton.addEventListener('click', () => {
+         const event = new CustomEvent('stageClear', { bubbles: true })
+         this.container.dispatchEvent(event)
+       })
+     }
+   }
+
+   /**
+    * Atualiza o título do stage com o nível atual
+    * @param {number} level - Nível atual do jogo
+    * @param {number} totalLevels - Total de níveis no jogo
+    */
+   updateTitle(level, totalLevels) {
+     if (this.titleElement) {
+       this.titleElement.textContent = `Nível ${level}/${totalLevels}`;
+     }
+   }
 
   /**
    * Reseta o ator para a posição inicial (0,0) e direção padrão
@@ -151,8 +162,10 @@ export class Stage {
    * Atualiza a posição visual do ator via CSS left/top
    */
   updateActorPosition() {
-    const left = this.x * this.cellSize
-    const top = this.y * this.cellSize
+    // Centraliza o ator no quadrado do grid
+    const offset = (this.cellSize - 30) / 2 // 30px é o tamanho do ator no CSS
+    const left = this.x * this.cellSize + offset
+    const top = this.y * this.cellSize + offset
     
     this.actor.style.left = `${left}px`
     this.actor.style.top = `${top}px`

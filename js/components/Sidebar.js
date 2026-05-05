@@ -12,15 +12,15 @@ export class Sidebar {
   constructor(container) {
     this.container = container
     
-    // Configuração dos tipos de blocos disponíveis
-    this.blockTypes = [
-      { type: 'block--move', icon: '>', text: 'Mover' },
-      { type: 'block--rotate', icon: '~', text: 'Girar' },
-      { type: 'block--repeat', icon: 'x', text: 'Repetir' },
-      { type: 'block--conditional', icon: '?', text: 'Se' },
-      { type: 'block--action', icon: '!', text: 'Ação' },
-      { type: 'block--control', icon: '*', text: 'Controle' }
-    ]
+     // Configuração dos tipos de blocos disponíveis
+     this.blockTypes = [
+       { type: 'block--move', text: 'Mover' },
+       { type: 'block--rotate', text: 'Girar' },
+       { type: 'block--repeat', text: 'Repetir' },
+       { type: 'block--conditional', text: 'Se' },
+       { type: 'block--action', text: 'Ação' },
+       { type: 'block--control', text: 'Controle' }
+     ]
     
     this.render()
   }
@@ -30,17 +30,16 @@ export class Sidebar {
    */
   render() {
     this.container.innerHTML = `
-      <h2 class="sidebar_title">Blocos</h2>
-      <div class="blockPalette">
-        ${this.blockTypes.map(block => `
-          <div class="block ${block.type}" draggable="true" 
-               aria-label="Bloco de comando: ${block.text}" 
-               aria-grabbed="false">
-            <span class="block_icon">${block.icon}</span>
-            <span class="block_text">${block.text}</span>
-          </div>
-        `).join('')}
-      </div>
+       <h2 class="sidebar_title">Ações</h2>
+       <div class="blockPalette">
+         ${this.blockTypes.map(block => `
+           <div class="block ${block.type}" draggable="true" 
+                aria-label="Bloco de comando: ${block.text}" 
+                aria-grabbed="false">
+             <span class="block_text" style="text-align: center; width: 100%;">${block.text}</span>
+           </div>
+         `).join('')}
+       </div>
     `
     
     // Armazena referência ao palette para o DragDrop usar
