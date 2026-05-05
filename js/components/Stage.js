@@ -62,12 +62,12 @@ export class Stage {
     
     this.container.appendChild(this.stageGrid)
     
-    // Ator (Personagem) - Apenas o emoji 🤖
-    this.actor = document.createElement('div')
-    this.actor.className = 'actor'
-    this.actor.setAttribute('aria-label', 'Personagem do jogo: Robô')
-    this.actor.textContent = '🤖'
-    this.container.appendChild(this.actor)
+     // Ator (Personagem) - Apenas o emoji 🤖
+     this.actor = document.createElement('div')
+     this.actor.className = 'actor'
+     this.actor.setAttribute('aria-label', 'Personagem do jogo: Robô')
+     this.actor.textContent = '🤖'
+     this.stageGrid.appendChild(this.actor)
     
     // Controles de Execução
     this.controlsArea = document.createElement('div')
