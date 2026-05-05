@@ -1,0 +1,18 @@
+/**
+ * Reset - Reset básico de CSS
+ * Remove margins e paddings padrão e aplica configurações de base
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

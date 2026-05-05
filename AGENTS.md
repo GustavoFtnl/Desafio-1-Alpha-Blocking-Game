@@ -54,10 +54,11 @@ onde blocos lógicos podem ser encaixados para executar ações em um ambiente g
 - **Variáveis:** SEMPRE usar `const`, usar `let` quando necessário, NUNCA usar `var`.
 - **Resiliência:** `try/catch` em todas as operações de I/O (API, LocalStorage).
 - Separação clara entre controle de DOM (posicionamento dos blocos) e Efeitos na UI (stage rodando)
+- Use aspas duplas em strings simples
 
 ### CSS
 
-- **Variáveis CSS:** Centralize cores, fontes, espaçamentos e bordas em um arquivo `design-system.css`.
+- **Variáveis CSS:** Centralize cores, fontes, espaçamentos e bordas em um arquivo `variables.css`.
 - **Mobile-first:** Inicie o estilo para telas menores e use Media Queries para expansão. Toda aplicação deve ser construída suportando a resolução mínima do **iPhone SE (375x667)**.
 - Priorize o uso de display flexbox e display grid, evite usar configurações de margin.
 
