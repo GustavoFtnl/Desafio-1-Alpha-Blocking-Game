@@ -75,7 +75,7 @@
 @media (min-width: 769px) {
   .appLayout {
     grid-template-columns: var(--sidebar-width) 1fr 400px;
-    grid-template-rows: 60px 1fr 60px;
+    grid-template-rows: 60px 1fr;
   }
 }
 

@@ -278,12 +278,12 @@
 }
 
 .btn--pause {
-  background-color: var(--color-block-rotate);
+  background-color: var(--color-tertiary);
   color: var(--color-block-text);
 }
 
 .btn--pause:hover {
-  background-color: #d97706;
+  background-color: var(--color-tertiary-hover);
 }
 
 .btn--clear {
