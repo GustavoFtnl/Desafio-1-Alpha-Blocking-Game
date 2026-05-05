@@ -14,12 +14,14 @@ export class Sidebar {
     
     // Configuração dos tipos de blocos disponíveis
     this.blockTypes = [
-      { type: 'block--move', icon: '>', text: 'Mover' },
-      { type: 'block--rotate', icon: '~', text: 'Girar' },
-      { type: 'block--repeat', icon: 'x', text: 'Repetir' },
+      { type: 'block--move', icon: '↕', text: 'Mover' },
+      { type: 'block--direction', icon: '→', text: 'Direita' },
+      { type: 'block--direction', icon: '←', text: 'Esquerda' },
+      { type: 'block--direction', icon: '↑', text: 'Cima' },
+      { type: 'block--direction', icon: '↓', text: 'Baixo' },
+      { type: 'block--repeat', icon: '⟳', text: 'Repetir' },
       { type: 'block--conditional', icon: '?', text: 'Se' },
-      { type: 'block--action', icon: '!', text: 'Ação' },
-      { type: 'block--control', icon: '*', text: 'Controle' }
+      { type: 'block--action', icon: '!', text: 'Ação' }
     ]
     
     this.render()

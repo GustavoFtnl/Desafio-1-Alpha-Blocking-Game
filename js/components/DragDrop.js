@@ -5,12 +5,14 @@
 
 export class DragDrop {
   static blockConfigs = [
-    { type: 'block--move', icon: '>', text: 'Mover' },
-    { type: 'block--rotate', icon: '~', text: 'Girar' },
-    { type: 'block--repeat', icon: 'x', text: 'Repetir' },
+    { type: 'block--move', icon: '↕', text: 'Mover' },
+    { type: 'block--direction', icon: '→', text: 'Direita' },
+    { type: 'block--direction', icon: '←', text: 'Esquerda' },
+    { type: 'block--direction', icon: '↑', text: 'Cima' },
+    { type: 'block--direction', icon: '↓', text: 'Baixo' },
+    { type: 'block--repeat', icon: '⟳', text: 'Repetir' },
     { type: 'block--conditional', icon: '?', text: 'Se' },
-    { type: 'block--action', icon: '!', text: 'Ação' },
-    { type: 'block--control', icon: '*', text: 'Controle' }
+    { type: 'block--action', icon: '!', text: 'Ação' }
   ]
 
   constructor(paletteElement, workspaceElement) {
@@ -55,11 +57,22 @@ export class DragDrop {
       e.preventDefault()
       e.dataTransfer.dropEffect = this.isFromPalette ? 'copy' : 'move'
       this.workspace.classList.add('dragover')
+      
+      // Verifica se está sobre um blockSlot
+      const blockSlot = e.target.closest('.blockSlot')
+      if (blockSlot) {
+        blockSlot.classList.add('dragover')
+      }
     })
 
     this.workspace.addEventListener('dragleave', (e) => {
       if (!this.workspace.contains(e.relatedTarget)) {
         this.workspace.classList.remove('dragover')
+      }
+      
+      const blockSlot = e.target.closest('.blockSlot')
+      if (blockSlot && !blockSlot.contains(e.relatedTarget)) {
+        blockSlot.classList.remove('dragover')
       }
     })
 
@@ -167,6 +180,23 @@ export class DragDrop {
   }
 
   snapBlockToWorkspace(block, clientX, clientY) {
+    const isDirectionBlock = block.classList.contains('block--direction')
+    
+    if (isDirectionBlock) {
+      // Blocos de direção: tenta encaixar à direita de um bloco que aceite filhos (mover, repetir, se, ação)
+      const targetBlock = this.findNearestBlockWithSlot(clientX, clientY)
+      
+      if (targetBlock) {
+        this.attachDirectionToBlock(block, targetBlock)
+        this.dispatchBlockCountChanged()
+        return
+      }
+      
+      console.warn('Blocos de direção devem ser anexados à direita de um bloco Mover, Repetir, Se ou Ação')
+      return
+    }
+    
+    // Blocos normais: comportamento padrão (empilhar verticalmente na workspace)
     const existingStacks = this.workspace.querySelectorAll('.blockStack')
     let nearestStack = null
     let nearestDistance = Infinity
@@ -199,6 +229,57 @@ export class DragDrop {
     block.classList.add('snapping')
     setTimeout(() => {
       block.classList.remove('snapping')
+    }, 200)
+  }
+  
+  findNearestBlockWithSlot(clientX, clientY) {
+    // Procura blocos que podem receber filhos (move, repeat, conditional, action)
+    const targetBlocks = this.workspace.querySelectorAll('.block--move, .block--repeat, .block--conditional, .block--action')
+    let nearest = null
+    let nearestDistance = Infinity
+    
+    targetBlocks.forEach(targetBlock => {
+      const rect = targetBlock.getBoundingClientRect()
+      const blockCenterX = rect.left + rect.width / 2
+      const blockCenterY = rect.top + rect.height / 2
+      
+      const distance = Math.sqrt(
+        Math.pow(clientX - blockCenterX, 2) + 
+        Math.pow(clientY - blockCenterY, 2)
+      )
+      
+      if (distance < nearestDistance && distance < this.snapTolerance) {
+        nearestDistance = distance
+        nearest = targetBlock
+      }
+    })
+    
+    return nearest
+  }
+  
+  attachDirectionToBlock(directionBlock, targetBlock) {
+    let blockContainer = targetBlock.closest('.blockContainer')
+    
+    if (!blockContainer) {
+      blockContainer = document.createElement('div')
+      blockContainer.className = 'blockContainer'
+      targetBlock.parentElement.insertBefore(blockContainer, targetBlock)
+      blockContainer.appendChild(targetBlock)
+    }
+    
+    let blockSlot = blockContainer.querySelector('.blockSlot')
+    if (!blockSlot) {
+      blockSlot = document.createElement('div')
+      blockSlot.className = 'blockSlot'
+      blockContainer.appendChild(blockSlot)
+    }
+    
+    blockSlot.appendChild(directionBlock)
+    targetBlock.classList.add('hasChildren')
+    
+    directionBlock.classList.add('snapping')
+    setTimeout(() => {
+      directionBlock.classList.remove('snapping')
     }, 200)
   }
 

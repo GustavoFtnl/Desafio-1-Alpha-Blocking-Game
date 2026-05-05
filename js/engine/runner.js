@@ -81,6 +81,12 @@ export class Runner {
     switch (instruction.type) {
       case 'move':
         this.stage.move()
+        // Executa direções aninhadas se houver
+        if (instruction.directions && instruction.directions.length > 0) {
+          for (const dir of instruction.directions) {
+            await this.executeDirection(dir)
+          }
+        }
         break
         
       case 'turnRight':
@@ -91,13 +97,27 @@ export class Runner {
         this.stage.turnLeft()
         break
         
-      case 'action':
-        // Ação simplificada para MVP
-        await this.delay(this.commandDelay)
+      case 'moveUp':
+        // Temporariamente vira para cima e move
+        const savedDir = this.stage.direction
+        this.stage.direction = 0 // cima
+        this.stage.updateActorRotation()
+        this.stage.move()
+        this.stage.direction = savedDir
+        this.stage.updateActorRotation()
         break
         
-      case 'control':
-        // Controle simplificado para MVP
+      case 'moveDown':
+        // Temporariamente vira para baixo e move
+        const savedDir2 = this.stage.direction
+        this.stage.direction = 2 // baixo
+        this.stage.updateActorRotation()
+        this.stage.move()
+        this.stage.direction = savedDir2
+        this.stage.updateActorRotation()
+        break
+        
+      case 'action':
         await this.delay(this.commandDelay)
         break
         
@@ -112,6 +132,34 @@ export class Runner {
       default:
         console.warn(`Tipo de instrução desconhecido: ${instruction.type}`)
     }
+  }
+  
+  async executeDirection(dirType) {
+    switch (dirType) {
+      case 'turnRight':
+        this.stage.turnRight()
+        break
+      case 'turnLeft':
+        this.stage.turnLeft()
+        break
+      case 'moveUp':
+        const savedDir = this.stage.direction
+        this.stage.direction = 0
+        this.stage.updateActorRotation()
+        this.stage.move()
+        this.stage.direction = savedDir
+        this.stage.updateActorRotation()
+        break
+      case 'moveDown':
+        const savedDir2 = this.stage.direction
+        this.stage.direction = 2
+        this.stage.updateActorRotation()
+        this.stage.move()
+        this.stage.direction = savedDir2
+        this.stage.updateActorRotation()
+        break
+    }
+    await this.delay(this.commandDelay)
   }
 
   /**

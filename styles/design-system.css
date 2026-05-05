@@ -30,13 +30,12 @@
   --color-outline: #74777f;
   --color-outline-variant: #c4c6cf;
   
-  /* --- Cores dos Blocos por Categoria Funcional --- */
+    /* --- Cores dos Blocos por Categoria Funcional --- */
   --color-block-move: #10b981;
-  --color-block-rotate: #f59e0b;
+  --color-block-direction: #10b981;
   --color-block-repeat: #8b5cf6;
   --color-block-conditional: #ec4899;
   --color-block-action: #3b82f6;
-  --color-block-control: #ef4444;
   --color-block-text: #ffffff;
   --color-block-hover-scale: 1.02;
   
@@ -345,10 +344,23 @@ body {
 /* --- Variações de Blocos por Categoria (Cores) --- */
 .block--move {
   background-color: var(--color-block-move);
+  position: relative;
 }
 
-.block--rotate {
-  background-color: var(--color-block-rotate);
+/* Blocos de direção: mesma cor do mover */
+.block--direction {
+  background-color: var(--color-block-direction);
+  font-size: 12px;
+  min-height: 32px;
+  padding: var(--space-xs) var(--space-sm);
+}
+
+.block--direction::after {
+  display: none;
+}
+
+.block--move.hasChildren {
+  border-radius: var(--radius-block-top) 0 0 var(--radius-block-bottom);
 }
 
 .block--repeat {
@@ -363,8 +375,53 @@ body {
   background-color: var(--color-block-action);
 }
 
-.block--control {
-  background-color: var(--color-block-control);
+/* Área de encaixe lateral direita - layout flex */
+.blockSlot {
+  width: 150px;
+  min-height: 100%;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 0 0.5rem 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px;
+  transition: background-color var(--transition-micro);
+  z-index: 5;
+}
+
+/* Quando tem filhos, expande para a direita */
+.blockContainer {
+  position: relative;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: flex-start;
+  margin-bottom: var(--block-gap);
+}
+
+.blockContainer > .block,
+.blockContainer > .blockSlot {
+  flex-shrink: 0;
+}
+
+/* Bloco que recebe filhos perde o notch da base */
+.block.hasChildren::after {
+  display: none;
+}
+
+.blockSlot.dragover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Filhos aninhados (direita) - menor e sem notch */
+.block--direction {
+  font-size: 12px;
+  min-height: 32px;
+  padding: var(--space-xs) var(--space-sm);
+}
+
+.block--direction::after {
+  display: none;
 }
 
 /* === WORKSPACE (Dropzone - Área de Soltar) === */

@@ -15,33 +15,25 @@ export class Parser {
    */
   parse() {
     const instructions = []
-    const stacks = this.workspace.querySelectorAll('.blockStack')
+    const stacks = this.workspace.querySelectorAll('.blockStack, .blockContainer')
     
     stacks.forEach(stack => {
-      const blocks = stack.querySelectorAll('.block:not(.block--repeat):not(.block--conditional)')
-      const repeatBlocks = stack.querySelectorAll('.block--repeat')
-      const conditionalBlocks = stack.querySelectorAll('.block--conditional')
+      const mainBlocks = stack.querySelectorAll(':scope > .block:not(.block--direction)')
       
-      // Processa blocos simples primeiro
-      blocks.forEach(block => {
+      mainBlocks.forEach(block => {
         const instruction = this.parseBlock(block)
         if (instruction) {
-          instructions.push(instruction)
-        }
-      })
-      
-      // Processa blocos de repetição (estrutura aninhada)
-      repeatBlocks.forEach(block => {
-        const instruction = this.parseRepeatBlock(block, stack)
-        if (instruction) {
-          instructions.push(instruction)
-        }
-      })
-      
-      // Processa blocos condicionais (estrutura aninhada)
-      conditionalBlocks.forEach(block => {
-        const instruction = this.parseConditionalBlock(block, stack)
-        if (instruction) {
+          // Verifica se tem blocos de direção aninhados no slot
+          const blockContainer = block.closest('.blockContainer')
+          if (blockContainer) {
+            const blockSlot = blockContainer.querySelector(':scope > .blockSlot')
+            if (blockSlot) {
+              const directionBlocks = blockSlot.querySelectorAll(':scope > .block--direction')
+              if (directionBlocks.length > 0) {
+                instruction.directions = Array.from(directionBlocks).map(dirBlock => this.getDirectionType(dirBlock))
+              }
+            }
+          }
           instructions.push(instruction)
         }
       })
@@ -63,7 +55,8 @@ export class Parser {
     
     const instruction = {
       type: this.getBlockType(block),
-      blockElement: block
+      blockElement: block,
+      directions: []
     }
     
     return instruction
@@ -155,15 +148,26 @@ export class Parser {
   getBlockType(block) {
     if (block.classList.contains('block--move')) {
       return 'move'
-    } else if (block.classList.contains('block--rotate')) {
-      return 'turnRight'
+    } else if (block.classList.contains('block--direction')) {
+      return this.getDirectionType(block)
+    } else if (block.classList.contains('block--repeat')) {
+      return 'repeat'
+    } else if (block.classList.contains('block--conditional')) {
+      return 'if'
     } else if (block.classList.contains('block--action')) {
       return 'action'
-    } else if (block.classList.contains('block--control')) {
-      return 'control'
     }
     
     return 'unknown'
+  }
+  
+  getDirectionType(block) {
+    const text = block.querySelector('.block_text')?.textContent || ''
+    if (text.includes('Direita')) return 'turnRight'
+    if (text.includes('Esquerda')) return 'turnLeft'
+    if (text.includes('Cima')) return 'moveUp'
+    if (text.includes('Baixo')) return 'moveDown'
+    return 'move'
   }
 
   /**
