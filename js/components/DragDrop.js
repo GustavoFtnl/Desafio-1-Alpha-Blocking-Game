@@ -4,6 +4,15 @@
  */
 
 export class DragDrop {
+  static blockConfigs = [
+    { type: 'block--move', icon: '>', text: 'Mover' },
+    { type: 'block--rotate', icon: '~', text: 'Girar' },
+    { type: 'block--repeat', icon: 'x', text: 'Repetir' },
+    { type: 'block--conditional', icon: '?', text: 'Se' },
+    { type: 'block--action', icon: '!', text: 'Ação' },
+    { type: 'block--control', icon: '*', text: 'Controle' }
+  ]
+
   constructor(paletteElement, workspaceElement) {
     this.palette = paletteElement
     this.workspace = workspaceElement
@@ -44,7 +53,7 @@ export class DragDrop {
   setupWorkspaceListeners() {
     this.workspace.addEventListener('dragover', (e) => {
       e.preventDefault()
-      e.dataTransfer.dropEffect = 'move'
+      e.dataTransfer.dropEffect = this.isFromPalette ? 'copy' : 'move'
       this.workspace.classList.add('dragover')
     })
 
@@ -57,25 +66,30 @@ export class DragDrop {
     this.workspace.addEventListener('drop', (e) => {
       e.preventDefault()
       this.workspace.classList.remove('dragover')
-      
-      if (!this.draggedBlock && !this.isFromPalette) {
-        const blockType = e.dataTransfer.getData('text/plain')
-        if (!blockType) return
+
+      const blockType = e.dataTransfer.getData('text/plain')
+      let blockToInsert = null
+
+      if (this.isFromPalette) {
+        if (this.draggedBlock) {
+          blockToInsert = this.cloneBlock(this.draggedBlock)
+        } else if (blockType) {
+          blockToInsert = this.createBlock(blockType)
+        }
+      } else {
+        blockToInsert = this.draggedBlock
       }
-      
+
+      if (!blockToInsert) {
+        console.error('Nenhum bloco válido para inserir')
+        return
+      }
+
       const placeholder = this.workspace.querySelector('.workspacePlaceholder')
       if (placeholder) {
         placeholder.style.display = 'none'
       }
-      
-      let blockToInsert
-      
-      if (this.isFromPalette) {
-        blockToInsert = this.cloneBlock(this.draggedBlock)
-      } else {
-        blockToInsert = this.draggedBlock
-      }
-      
+
       this.snapBlockToWorkspace(blockToInsert, e.clientX, e.clientY)
       this.dispatchBlockCountChanged()
     })
@@ -94,8 +108,39 @@ export class DragDrop {
     this.workspace.addEventListener('dragend', (e) => {
       const block = e.target.closest('.block')
       if (!block) return
+      
       block.classList.remove('dragging')
       block.setAttribute('aria-grabbed', 'false')
+      
+      // Verifica se o drop foi fora do workspace (para esquerda ou direita)
+      if (this.draggedBlock) {
+        const workspaceRect = this.workspace.getBoundingClientRect()
+        const isOutsideWorkspace = e.clientX < workspaceRect.left || 
+                                   e.clientX > workspaceRect.right || 
+                                   e.clientY < workspaceRect.top || 
+                                   e.clientY > workspaceRect.bottom
+        
+        if (isOutsideWorkspace) {
+          // Remove o bloco do workspace
+          const stack = this.draggedBlock.closest('.blockStack')
+          this.draggedBlock.remove()
+          
+          // Se a pilha ficou vazia, remove ela também
+          if (stack && stack.children.length === 0) {
+            stack.remove()
+          }
+          
+          // Atualiza visibilidade do placeholder
+          const placeholder = this.workspace.querySelector('.workspacePlaceholder')
+          if (placeholder) {
+            const hasBlocks = this.workspace.querySelectorAll('.block').length > 0
+            placeholder.style.display = hasBlocks ? 'none' : ''
+          }
+          
+          this.dispatchBlockCountChanged()
+        }
+      }
+      
       this.draggedBlock = null
     })
   }
@@ -106,6 +151,19 @@ export class DragDrop {
     clone.setAttribute('aria-grabbed', 'false')
     clone.setAttribute('draggable', 'true')
     return clone
+  }
+
+  createBlock(type) {
+    const config = DragDrop.blockConfigs.find(c => c.type === type)
+    if (!config) return null
+
+    const block = document.createElement('div')
+    block.className = 'block ' + config.type
+    block.setAttribute('draggable', 'true')
+    block.setAttribute('aria-label', 'Bloco de comando: ' + config.text)
+    block.setAttribute('aria-grabbed', 'false')
+    block.innerHTML = '<span class="block_icon">' + config.icon + '</span><span class="block_text">' + config.text + '</span>'
+    return block
   }
 
   snapBlockToWorkspace(block, clientX, clientY) {
@@ -130,12 +188,7 @@ export class DragDrop {
     })
 
     if (nearestStack) {
-      const afterBlock = this.findInsertionPoint(nearestStack, clientY)
-      if (afterBlock) {
-        afterBlock.insertAdjacentElement('afterend', block)
-      } else {
-        nearestStack.appendChild(block)
-      }
+      nearestStack.appendChild(block)
     } else {
       const newStack = document.createElement('div')
       newStack.className = 'blockStack'
@@ -147,18 +200,6 @@ export class DragDrop {
     setTimeout(() => {
       block.classList.remove('snapping')
     }, 200)
-  }
-
-  findInsertionPoint(stack, clientY) {
-    const blocks = stack.querySelectorAll('.block')
-    for (let i = 0; i < blocks.length; i++) {
-      const rect = blocks[i].getBoundingClientRect()
-      const blockCenterY = rect.top + rect.height / 2
-      if (clientY < blockCenterY) {
-        return blocks[i].previousElementSibling
-      }
-    }
-    return null
   }
 
   getBlockType(block) {
