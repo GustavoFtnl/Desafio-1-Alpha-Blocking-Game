@@ -19,25 +19,24 @@ export class TopBar {
    */
   render() {
     this.container.innerHTML = `
-       <h1 class="topBar_title">Temple Blocks</h1>
-      <div class="topBar_levelInfo">
+      <div style="display: flex; align-items: center; gap: var(--space-lg);">
+        <h1 class="topBar_title">Code Blocks Game</h1>
+        <div class="topBar_progress" style="display: none;">
+          <div class="topBar_progressLabel">
+            <span>Progresso</span>
+            <span class="progressPercent">0%</span>
+          </div>
+          <div class="topBar_progressBar">
+            <div class="topBar_progressFill" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: var(--space-md);">
         <span class="topBar_levelText">Nível 1/10</span>
-        
-        <!-- Sistema de estrelas (Gamificação) -->
         <div class="starRating" aria-label="Progresso de estrelas: 0 de 3">
-          <span class="star star--empty">*</span>
-          <span class="star star--empty">*</span>
-          <span class="star star--empty">*</span>
-        </div>
-        
-        <!-- Barra de progresso do nível -->
-        <div class="progressBar" aria-label="Progresso do jogo: 0%">
-          <div class="progressBar_fill" style="width: 0%"></div>
-        </div>
-        
-        <!-- Contador de blocos usados vs máximo -->
-        <div class="blockCounter">
-          <span>Blocos: 0/8</span>
+          <span class="star star--empty material-symbols-outlined">star</span>
+          <span class="star star--empty material-symbols-outlined">star</span>
+          <span class="star star--empty material-symbols-outlined">star</span>
         </div>
       </div>
     `
@@ -82,15 +81,20 @@ export class TopBar {
    * @param {number} percent - Porcentagem de progresso (0-100)
    */
   updateProgress(percent) {
-    const progressFill = this.container.querySelector('.progressBar_fill')
-    const progressBar = this.container.querySelector('.progressBar')
+    const progressFill = this.container.querySelector('.topBar_progressFill')
+    const progressPercent = this.container.querySelector('.progressPercent')
+    const progressContainer = this.container.querySelector('.topBar_progress')
+    
+    if (progressContainer) {
+      progressContainer.style.display = 'flex'
+    }
     
     if (progressFill) {
       progressFill.style.width = `${percent}%`
     }
     
-    if (progressBar) {
-      progressBar.setAttribute('aria-label', `Progresso do jogo: ${percent}%`)
+    if (progressPercent) {
+      progressPercent.textContent = `${Math.round(percent)}%`
     }
   }
 
@@ -100,19 +104,7 @@ export class TopBar {
    * @param {number} max - Máximo permitido
    */
   updateBlockCounter(used, max) {
-    const blockCounter = this.container.querySelector('.blockCounter')
-    if (!blockCounter) return
-
-    blockCounter.innerHTML = `<span>Blocos: ${used}/${max}</span>`
-    
-    // Remove classes de aviso anteriores
-    blockCounter.classList.remove('warning', 'danger')
-    
-    // Aplica classe conforme quantidade
-    if (used > max) {
-      blockCounter.classList.add('danger')
-    } else if (used === max) {
-      blockCounter.classList.add('warning')
-    }
+    // Este método não é usado no TopBar do exemplo
+    // O contador de blocos está no Stage
   }
 }

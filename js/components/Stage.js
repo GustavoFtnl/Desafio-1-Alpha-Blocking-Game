@@ -15,14 +15,15 @@ export class Stage {
 
     // Configurações do grid
     this.gridSize = 10;
-    this.cellSize = 40; // 400px / 10 células
+    this.cellSize = 40; // será calculado baseado no tamanho
 
-    // Estado inicial do ator (sempre começa em 0,0 conforme decisão)
-    this.x = 0;
-    this.y = 0;
+    // Estado inicial do ator
+    this.x = 4; // Centro do grid (5,5 em 1-indexed = 4,4 em 0-indexed)
+    this.y = 4;
     this.direction = 0; // 0=cima
 
-    // Elementos do DOM (serão criados no render)
+    this.maxBlocks = 8;
+
     this.stageGrid = null;
     this.actor = null;
     this.stageCells = null;
@@ -35,14 +36,27 @@ export class Stage {
    * Renderiza toda a estrutura do Stage dinamicamente
    */
   render() {
-    // Limpa o container
     this.container.innerHTML = "";
 
-    // Título (será atualizado pelo App.js com o nível atual)
-    this.titleElement = document.createElement("h2");
-    this.titleElement.className = "sidebar_title";
-    this.titleElement.textContent = "Palco (Stage)";
-    this.container.appendChild(this.titleElement);
+    const stageContent = document.createElement("div");
+    stageContent.className = "stageContent";
+
+    // Header com título e contador de blocos
+    const stageHeader = document.createElement("div");
+    stageHeader.className = "stageHeader";
+
+    const stageTitle = document.createElement("h3");
+    stageTitle.className = "stageTitle";
+    stageTitle.textContent = "Execução";
+
+    const blockCounter = document.createElement("span");
+    blockCounter.className = "stageBlockCounter";
+    blockCounter.textContent = `0/${this.maxBlocks} blocos`;
+    this.blockCounterElement = blockCounter;
+
+    stageHeader.appendChild(stageTitle);
+    stageHeader.appendChild(blockCounter);
+    stageContent.appendChild(stageHeader);
 
     // Grid 10x10
     this.stageGrid = document.createElement("div");
@@ -56,49 +70,66 @@ export class Stage {
       const cell = document.createElement("div");
       cell.className = "stageCell";
       cell.setAttribute("role", "gridcell");
+      
+      // Posiciona o ator no centro (4,4 = índice 44)
+      if (i === 44) {
+        cell.innerHTML = '<span style="font-size: 24px;">🤖</span>';
+      }
+      
       this.stageGrid.appendChild(cell);
       this.stageCells.push(cell);
     }
 
-    this.container.appendChild(this.stageGrid);
-
-    // Ator (Personagem) - Apenas o emoji 🤖
-    this.actor = document.createElement("div");
-    this.actor.className = "actor";
-    this.actor.setAttribute("aria-label", "Personagem do jogo: Robô");
-    this.actor.textContent = "🤖";
-    this.stageGrid.appendChild(this.actor);
+    stageContent.appendChild(this.stageGrid);
 
     // Controles de Execução
     this.controlsArea = document.createElement("div");
     this.controlsArea.className = "controlsArea";
     this.controlsArea.setAttribute("role", "toolbar");
-    this.controlsArea.setAttribute(
-      "aria-label",
-      "Controles de execução do código",
-    );
+    this.controlsArea.setAttribute("aria-label", "Controles de execução do código");
 
-    this.controlsArea.innerHTML = `
-      <button class="btn btn--run" aria-label="Executar código montado">
-        Executar
-      </button>
-      <button class="btn btn--pause" aria-label="Pausar execução">
-        Pausar
-      </button>
-      <button class="btn btn--clear" aria-label="Limpar workspace">
-        Limpar
-      </button>
+    // Botão Executar (verde)
+    const runBtn = document.createElement("button");
+    runBtn.className = "btn btn--run";
+    runBtn.setAttribute("aria-label", "Executar código");
+    runBtn.innerHTML = `
+      <span class="material-symbols-outlined">play_circle</span>
+      EXECUTAR
     `;
 
-    this.container.appendChild(this.controlsArea);
+    // Botões Pausar e Limpar (grid 2 colunas)
+    const controlsRow = document.createElement("div");
+    controlsRow.className = "controlsRowDual";
 
-    // Configura event listeners dos botões
+    const pauseBtn = document.createElement("button");
+    pauseBtn.className = "btn btn--pause";
+    pauseBtn.setAttribute("aria-label", "Pausar execução");
+    pauseBtn.innerHTML = `
+      <span class="material-symbols-outlined">pause</span>
+      Pausar
+    `;
+
+    const clearBtn = document.createElement("button");
+    clearBtn.className = "btn btn--clear";
+    clearBtn.setAttribute("aria-label", "Limpar workspace");
+    clearBtn.innerHTML = `
+      <span class="material-symbols-outlined">delete</span>
+      Limpar
+    `;
+
+    controlsRow.appendChild(pauseBtn);
+    controlsRow.appendChild(clearBtn);
+
+    this.controlsArea.appendChild(runBtn);
+    this.controlsArea.appendChild(controlsRow);
+
+    stageContent.appendChild(this.controlsArea);
+
+    // Scenario illustration (opcional - ignorado conforme pedido)
+
+    this.container.appendChild(stageContent);
+
     this.setupControlListeners();
-
-    // Posiciona o ator inicial
-    this.updateActorPosition();
-    this.updateActorRotation();
-    this.markCurrentCell();
   }
 
   /**
@@ -137,18 +168,35 @@ export class Stage {
    * @param {number} totalLevels - Total de níveis no jogo
    */
   updateTitle(level, totalLevels) {
-    if (this.titleElement) {
-      this.titleElement.textContent = `Nível ${level}/${totalLevels}`;
+    // O título é fixo "Execução" no exemplo
+  }
+
+  /**
+   * Atualiza o contador de blocos
+   * @param {number} used - Blocos usados
+   */
+  updateBlockCounter(used) {
+    if (this.blockCounterElement) {
+      this.blockCounterElement.textContent = `${used}/${this.maxBlocks} blocos`;
     }
   }
 
   /**
-   * Reseta o ator para a posição inicial (0,0) e direção padrão
+   * Define o limite máximo de blocos
+   * @param {number} max - Máximo de blocos permitidos
+   */
+  setMaxBlocks(max) {
+    this.maxBlocks = max;
+    this.updateBlockCounter(0);
+  }
+
+  /**
+   * Reseta o ator para a posição inicial (4,4) e direção padrão
    */
   reset() {
-    this.x = 0;
-    this.y = 0;
-    this.direction = 0; // 0=cima
+    this.x = 4;
+    this.y = 4;
+    this.direction = 0;
 
     // Limpa células visitadas
     this.stageCells.forEach((cell) => {
@@ -156,31 +204,7 @@ export class Stage {
     });
 
     // Marca posição inicial
-    this.updateActorPosition();
-    this.updateActorRotation();
     this.markCurrentCell();
-  }
-
-  /**
-   * Atualiza a posição visual do ator via CSS left/top
-   */
-  updateActorPosition() {
-    // Centraliza o ator no quadrado do grid
-    const offset = (this.cellSize - 30) / 2; // 30px é o tamanho do ator no CSS
-    const left = this.x * this.cellSize + offset;
-    const top = this.y * this.cellSize + offset;
-
-    this.actor.style.left = `${left}px`;
-    this.actor.style.top = `${top}px`;
-  }
-
-  /**
-   * Atualiza a rotação visual do ator baseada na direção
-   */
-  updateActorRotation() {
-    // Mapeamento: 0=cima=0deg, 1=direita=90deg, 2=baixo=180deg, 3=esquerda=270deg
-    const rotationMap = [0, 90, 180, 270];
-    this.actor.style.transform = `rotate(${rotationMap[this.direction]}deg)`;
   }
 
   /**
@@ -212,7 +236,6 @@ export class Stage {
    * @returns {boolean} true se moveu com sucesso, false se houve colisão
    */
   move() {
-    // Calcula nova posição baseada na direção
     let newX = this.x;
     let newY = this.y;
 
@@ -238,15 +261,13 @@ export class Stage {
       newY < 0 ||
       newY >= this.gridSize
     ) {
-      return false; // Colisão detectada
+      return false;
     }
 
-    // Atualiza posição
     this.clearCurrentCell();
     this.x = newX;
     this.y = newY;
 
-    this.updateActorPosition();
     this.markCurrentCell();
 
     return true;
@@ -257,15 +278,13 @@ export class Stage {
    */
   turnRight() {
     this.direction = (this.direction + 1) % 4;
-    this.updateActorRotation();
   }
 
   /**
    * Gira o ator 90 graus para a esquerda
    */
   turnLeft() {
-    this.direction = (this.direction + 3) % 4; // +3 equivale a -1 no módulo 4
-    this.updateActorRotation();
+    this.direction = (this.direction + 3) % 4;
   }
 
   /**

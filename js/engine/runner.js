@@ -115,6 +115,10 @@ export class Runner {
         await this.delay(this.commandDelay)
         break
         
+      case 'stop':
+        this.isRunning = false
+        break
+        
       case 'repeat':
         await this.executeRepeat(instruction)
         break

@@ -187,26 +187,19 @@ export class Parser {
   getBlockType(block) {
     if (block.classList.contains('block--move')) {
       return 'move'
-    } else if (block.classList.contains('block--direction')) {
-      return this.getDirectionType(block)
+    } else if (block.classList.contains('block--rotate')) {
+      return 'turnRight'
     } else if (block.classList.contains('block--repeat')) {
       return 'repeat'
     } else if (block.classList.contains('block--conditional')) {
       return 'if'
     } else if (block.classList.contains('block--action')) {
       return 'action'
+    } else if (block.classList.contains('block--control')) {
+      return 'stop'
     }
     
     return 'unknown'
-  }
-  
-  getDirectionType(block) {
-    const text = block.querySelector('.block_text')?.textContent || ''
-    if (text.includes('Direita')) return 'turnRight'
-    if (text.includes('Esquerda')) return 'turnLeft'
-    if (text.includes('Cima')) return 'moveUp'
-    if (text.includes('Baixo')) return 'moveDown'
-    return 'move'
   }
 
   /**

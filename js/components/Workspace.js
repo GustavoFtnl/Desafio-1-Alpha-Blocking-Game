@@ -20,11 +20,11 @@ export class Workspace {
   render() {
     this.container.innerHTML = `
       <div class="workspacePlaceholder">
-        Arraste blocos da sidebar para esta área
+        <span class="material-symbols-outlined workspacePlaceholderIcon">drag_pan</span>
+        <p class="workspacePlaceholderText">Arraste blocos aqui</p>
       </div>
     `
     
-    // Armazena referência ao workspace para o DragDrop usar
     this.workspaceElement = this.container
   }
 
@@ -41,7 +41,6 @@ export class Workspace {
    * @param {HTMLElement} blockStack - Elemento .blockStack para adicionar
    */
   addBlockStack(blockStack) {
-    // Oculta placeholder se existir
     const placeholder = this.container.querySelector('.workspacePlaceholder')
     if (placeholder) {
       placeholder.style.display = 'none'
@@ -57,13 +56,11 @@ export class Workspace {
     const stacks = this.container.querySelectorAll('.blockStack')
     stacks.forEach(stack => stack.remove())
     
-    // Mostra placeholder novamente
     const placeholder = this.container.querySelector('.workspacePlaceholder')
     if (placeholder) {
       placeholder.style.display = ''
     }
     
-    // Dispara evento de mudança de quantidade de blocos
     this.dispatchBlockCountChanged()
   }
 
