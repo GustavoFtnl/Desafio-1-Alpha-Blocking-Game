@@ -36,11 +36,6 @@
   --color-block-text: #ffffff;
   --color-block-hover-scale: 1.02;
 
-  /* --- Cores de Hover para Blocos --- */
-  --color-block-move-hover: #0ea271;
-  --color-block-rotate-hover: #d97706;
-  --color-block-control-hover: rgba(239, 68, 68, 0.05);
-
   /* --- Tipografia (Inter conforme Stitch) --- */
   --font-family:
     "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

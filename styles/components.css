@@ -274,7 +274,7 @@
 }
 
 .btn--run:hover {
-  background-color: var(--color-block-move-hover);
+  background-color: #0ea271;
 }
 
 .btn--pause {
@@ -283,7 +283,7 @@
 }
 
 .btn--pause:hover {
-  background-color: var(--color-block-rotate-hover);
+  background-color: #d97706;
 }
 
 .btn--clear {
@@ -293,7 +293,7 @@
 }
 
 .btn--clear:hover {
-  background-color: var(--color-block-control-hover);
+  background-color: rgba(239, 68, 68, 0.05);
 }
 
 /* === CONTADOR DE BLOCOS (Gamificação) === */
