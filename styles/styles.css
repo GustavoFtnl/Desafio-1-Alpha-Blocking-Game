@@ -1,0 +1,38 @@
+/**
+ * styles.css - Arquivo global que importa todos os módulos de CSS
+ * Este é o único arquivo CSS linkado no HTML
+ * Ordem de importação segue a arquitetura de CSS:
+ * 1. Variables (variáveis e custom properties)
+ * 2. Reset (reset básico)
+ * 3. Base (estilos base do body)
+ * 4. Layout (estrutura principal)
+ * 5. Components (componentes visuais)
+ * 6. Utilities (utilitários e responsividade)
+ */
+
+/* 1. Variables - Design System com custom properties */
+@import url('./variables.css');
+
+/* 2. Reset - Reset básico de CSS */
+@import url('./reset.css');
+
+/* 3. Base - Estilos base do elemento body */
+@import url('./base.css');
+
+/* 4. Layout - Estrutura principal da aplicação */
+@import url('./layout.css');
+
+/* 5. Components - Componentes visuais da interface */
+@import url('./components.css');
+
+/* 6. Utilities - Classes utilitárias e responsividade */
+@import url('./utilities.css');
+
+/* Estilos globais adicionais */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
