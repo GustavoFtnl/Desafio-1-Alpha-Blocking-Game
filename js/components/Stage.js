@@ -23,6 +23,7 @@ export class Stage {
     this.direction = 0; // 0=cima
 
     this.maxBlocks = 8;
+    this.currentLevel = 1;
 
     this.stageGrid = null;
     this.actor = null;
@@ -47,7 +48,8 @@ export class Stage {
 
     const stageTitle = document.createElement("h3");
     stageTitle.className = "stageTitle";
-    stageTitle.textContent = "Execução";
+    stageTitle.textContent = "Nível " + this.currentLevel;
+    this.stageTitleElement = stageTitle;
 
     const blockCounter = document.createElement("span");
     blockCounter.className = "stageBlockCounter";
@@ -165,10 +167,12 @@ export class Stage {
   /**
    * Atualiza o título do stage com o nível atual
    * @param {number} level - Nível atual do jogo
-   * @param {number} totalLevels - Total de níveis no jogo
    */
-  updateTitle(level, totalLevels) {
-    // O título é fixo "Execução" no exemplo
+  updateTitle(level) {
+    this.currentLevel = level;
+    if (this.stageTitleElement) {
+      this.stageTitleElement.textContent = "Nível " + level;
+    }
   }
 
   /**

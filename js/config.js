@@ -22,12 +22,22 @@ var CONFIG = {
     7: { maxBlocks: 20 },
     8: { maxBlocks: 22 },
     9: { maxBlocks: 24 },
-    10: { maxBlocks: 26 }
+    10: { maxBlocks: 26 },
+    11: { maxBlocks: 28 },
+    12: { maxBlocks: 30 },
+    13: { maxBlocks: 32 },
+    14: { maxBlocks: 34 },
+    15: { maxBlocks: 36 },
+    16: { maxBlocks: 38 },
+    17: { maxBlocks: 40 },
+    18: { maxBlocks: 42 },
+    19: { maxBlocks: 44 },
+    20: { maxBlocks: 46 }
   },
 
   DEFAULTS: {
     CURRENT_LEVEL: 1,
-    TOTAL_LEVELS: 10,
+    TOTAL_LEVELS: 20,
     INITIAL_STARS: 0,
     COMMAND_DELAY: 300,
     ACTOR_START_X: 4,

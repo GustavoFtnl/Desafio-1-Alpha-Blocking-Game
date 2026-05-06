@@ -69,6 +69,7 @@ const DOM = {
     const stage = this.getStageContainer();
     if (stage && stage.componentInstance) {
       stage.componentInstance.setMaxBlocks(gameState.getMaxBlocks());
+      stage.componentInstance.updateTitle(gameState.getCurrentLevel());
     }
   },
 

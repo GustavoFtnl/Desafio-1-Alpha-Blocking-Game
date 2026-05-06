@@ -72,6 +72,10 @@ Game.prototype.setupListeners = function() {
       self.handleLevelComplete();
     }
   });
+
+  document.addEventListener("levelSelected", function(e) {
+    self.handleLevelSelected(e.detail.level);
+  });
 };
 
 Game.prototype.runCode = function() {
@@ -172,11 +176,19 @@ Game.prototype.restartCareer = function() {
   this.clearWorkspace();
 };
 
+Game.prototype.handleLevelSelected = function(level) {
+  this.clearWorkspace();
+  this.stage.setMaxBlocks(gameState.getMaxBlocks());
+  this.stage.updateTitle(level);
+  this.updateUI();
+};
+
 Game.prototype.updateUI = function() {
   this.topBar.updateLevel(gameState.getCurrentLevel(), gameState.getTotalLevels());
   this.topBar.updateStars(gameState.getStarsForLevel(gameState.getCurrentLevel()));
   this.topBar.updateProgress(gameState.getProgressPercent());
   this.stage.setMaxBlocks(gameState.getMaxBlocks());
+  this.stage.updateTitle(gameState.getCurrentLevel());
 };
 
 export default Game;

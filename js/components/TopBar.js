@@ -5,14 +5,18 @@
  */
 
 import { gameState } from "../state.js";
+import { LevelsModal } from "./LevelsModal.js";
 
 var TopBar = function(container) {
   this.container = container;
+  this.levelsModal = new LevelsModal();
   this.render();
 };
 
 TopBar.prototype.render = function() {
   var userName = gameState.getUserName() || "";
+  var currentLevel = gameState.getCurrentLevel();
+  var currentStars = gameState.getStarsForLevel(currentLevel);
   
   this.container.innerHTML = 
     "<div style=\"display: flex; align-items: center; gap: var(--space-lg);\">" +
@@ -29,7 +33,12 @@ TopBar.prototype.render = function() {
       "</div>" +
     "</div>" +
     "<div style=\"display: flex; align-items: center; gap: var(--space-md);\">" +
-      "<span class=\"topBar_levelText\">Nível 1/10</span>" +
+      "<button class=\"btn btn--levelSelect\" id=\"levelSelectBtn\" aria-label=\"Selecionar nível\">" +
+        "<span class=\"levelSelectText\">Nível " + currentLevel + "</span>" +
+        "<div class=\"levelSelectStars\">" +
+          this.generateStarsHtml(currentStars) +
+        "</div>" +
+      "</button>" +
       "<div class=\"starRating\" aria-label=\"Progresso de estrelas: 0 de 3\">" +
         "<span class=\"star star--empty material-symbols-outlined\">star</span>" +
         "<span class=\"star star--empty material-symbols-outlined\">star</span>" +
@@ -45,6 +54,20 @@ TopBar.prototype.render = function() {
     "</div>";
     
   this.setupListeners();
+};
+
+TopBar.prototype.generateStarsHtml = function(starCount) {
+  var filledColor = "#fbbf24";
+  var emptyColor = "#d1d5db";
+  var html = "";
+  
+  for (var i = 0; i < 3; i++) {
+    var color = i < starCount ? filledColor : emptyColor;
+    html += "<svg class=\"starSvg\" viewBox=\"0 0 24 24\" width=\"16\" height=\"16\">" +
+      "<path fill=\"" + color + "\" d=\"M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z\"/>" +
+      "</svg>";
+  }
+  return html;
 };
 
 TopBar.prototype.setupListeners = function() {
@@ -65,6 +88,13 @@ TopBar.prototype.setupListeners = function() {
       self.container.dispatchEvent(event);
     });
   }
+  
+  var levelSelectBtn = this.container.querySelector("#levelSelectBtn");
+  if (levelSelectBtn) {
+    levelSelectBtn.addEventListener("click", function() {
+      self.openLevelSelectModal();
+    });
+  }
 };
 
 TopBar.prototype.escapeHtml = function(text) {
@@ -73,12 +103,42 @@ TopBar.prototype.escapeHtml = function(text) {
   return div.innerHTML;
 };
 
-TopBar.prototype.updateLevel = function(level, total) {
-  total = total || 10;
-  var levelText = this.container.querySelector(".topBar_levelText");
+TopBar.prototype.openLevelSelectModal = function() {
+  var self = this;
+  var currentLevel = gameState.getCurrentLevel();
+  
+  this.levelsModal.open(currentLevel, function(level) {
+    return gameState.getStarsForLevel(level);
+  }).then(function(selectedLevel) {
+    if (selectedLevel) {
+      gameState.setCurrentLevel(selectedLevel);
+      self.updateLevelButton(selectedLevel);
+      
+      var event = new CustomEvent("levelSelected", { 
+        bubbles: true,
+        detail: { level: selectedLevel }
+      });
+      self.container.dispatchEvent(event);
+    }
+  });
+};
+
+TopBar.prototype.updateLevelButton = function(level) {
+  var levelText = this.container.querySelector(".levelSelectText");
+  var starsContainer = this.container.querySelector(".levelSelectStars");
+  
   if (levelText) {
-    levelText.textContent = "Nível " + level + "/" + total;
+    levelText.textContent = "Nível " + level;
   }
+  
+  if (starsContainer) {
+    var stars = gameState.getStarsForLevel(level);
+    starsContainer.innerHTML = this.generateStarsHtml(stars);
+  }
+};
+
+TopBar.prototype.updateLevel = function(level, total) {
+  this.updateLevelButton(level);
 };
 
 TopBar.prototype.updateStars = function(count) {
