@@ -1,255 +1,192 @@
 /**
- * app.js - Orquestrador central da SPA
+ * app.js - Ponto de entrada principal da aplicação
+ * Orquestra componentes, eventos e execução
  * Comentários em português do Brasil
  */
 
-import { TopBar } from './components/TopBar.js'
-import { Sidebar } from './components/Sidebar.js'
-import { Workspace } from './components/Workspace.js'
-import { Stage } from './components/Stage.js'
-import { DragDrop } from './components/DragDrop.js'
-import { Modal } from './components/Modal.js'
-import { Parser } from './engine/parser.js'
-import { Runner } from './engine/runner.js'
+import CONFIG from "./config.js";
+import { gameState } from "./state.js";
+import DOM from "./dom.js";
 
-class App {
-  constructor() {
-    this.levelConfig = {
-      1: { maxBlocks: 8 },
-      2: { maxBlocks: 10 },
-      3: { maxBlocks: 12 },
-      4: { maxBlocks: 14 },
-      5: { maxBlocks: 16 },
-      6: { maxBlocks: 18 },
-      7: { maxBlocks: 20 },
-      8: { maxBlocks: 22 },
-      9: { maxBlocks: 24 },
-      10: { maxBlocks: 26 }
+import { TopBar } from "./components/TopBar.js";
+import { Sidebar } from "./components/Sidebar.js";
+import { Workspace } from "./components/Workspace.js";
+import { Stage } from "./components/Stage.js";
+import { DragDrop } from "./components/DragDrop.js";
+import { Modal } from "./components/Modal.js";
+import { Parser } from "./engine/parser.js";
+import { Runner } from "./engine/runner.js";
+
+var App = function() {
+  this.init();
+};
+
+App.prototype.init = function() {
+  DOM.init();
+  gameState.init();
+
+  this.initComponents();
+  this.setupEventListeners();
+  DOM.updateUIFromState();
+};
+
+App.prototype.initComponents = function() {
+  var topBarContainer = DOM.getTopBarContainer();
+  var sidebarContainer = DOM.getSidebarContainer();
+  var workspaceContainer = DOM.getWorkspaceContainer();
+  var stageContainer = DOM.getStageContainer();
+
+  this.topBar = new TopBar(topBarContainer);
+  this.sidebar = new Sidebar(sidebarContainer);
+  this.workspace = new Workspace(workspaceContainer);
+  this.stage = new Stage(stageContainer);
+  this.modal = new Modal();
+  this.parser = new Parser();
+  this.runner = new Runner(this.stage);
+
+  this.dragDrop = new DragDrop(
+    this.sidebar.getPaletteElement(),
+    this.workspace.getWorkspaceElement()
+  );
+
+  topBarContainer.componentInstance = this.topBar;
+  sidebarContainer.componentInstance = this.sidebar;
+  workspaceContainer.componentInstance = this.workspace;
+  stageContainer.componentInstance = this.stage;
+};
+
+App.prototype.setupEventListeners = function() {
+  var workspaceContainer = DOM.getWorkspaceContainer();
+  var self = this;
+
+  workspaceContainer.addEventListener("blockCountChanged", function(e) {
+    var maxBlocks = gameState.getMaxBlocks();
+    self.stage.updateBlockCounter(e.detail.count);
+  });
+
+  var stageContainer = DOM.getStageContainer();
+  stageContainer.addEventListener("stageRun", function() { self.runCode(); });
+  stageContainer.addEventListener("stagePause", function() { self.togglePause(); });
+  stageContainer.addEventListener("stageClear", function() { self.clearWorkspace(); });
+
+  document.addEventListener("levelComplete", function(e) {
+    if (e.detail.success) {
+      self.handleLevelComplete();
     }
-    
-    this.currentLevel = 1
-    this.stars = {}
-    
-    this.setupLayoutStructure()
-    this.initComponents()
-    this.loadGameState()
-    this.setupEventListeners()
-    this.updateUI()
-  }
+  });
 
-  /**
-   * Cria a estrutura de layout dinamicamente e anexa ao elemento raiz
-   */
-  setupLayoutStructure() {
-    let root = document.getElementById('root')
-    if (!root) {
-      root = document.createElement('div')
-      root.id = 'root'
-      document.body.appendChild(root)
+  gameState.addListener(function(event, data) {
+    if (event === "levelChanged" || event === "starsChanged") {
+      self.updateUIFromState();
     }
-    
-    // Estrutura: header + main (flex)
-    root.innerHTML = `
-      <header class="topBar"></header>
-      <main class="appLayout">
-        <aside class="sidebar"></aside>
-        <section class="workspaceArea"></section>
-        <aside class="stageContainer"></aside>
-      </main>
-    `
+  });
+};
+
+App.prototype.runCode = function() {
+  var self = this;
+  var totalBlocks = this.parser.countBlocks();
+  var maxBlocks = gameState.getMaxBlocks();
+
+  if (totalBlocks > maxBlocks) {
+    alert("Você excedeu o limite de blocos! Máximo: " + maxBlocks + ", usados: " + totalBlocks + ".");
   }
 
-  initComponents() {
-    const topBarContainer = document.querySelector('.topBar')
-    const sidebarContainer = document.querySelector('.sidebar')
-    const workspaceContainer = document.querySelector('.workspaceArea')
-    const stageContainer = document.querySelector('.stageContainer')
-    
-    this.topBar = new TopBar(topBarContainer)
-    this.sidebar = new Sidebar(sidebarContainer)
-    this.workspace = new Workspace(workspaceContainer)
-    this.stage = new Stage(stageContainer)
-    this.modal = new Modal()
-    
-    this.parser = new Parser()
-    this.runner = new Runner(this.stage)
-    
-    this.dragDrop = new DragDrop(
-      this.sidebar.getPaletteElement(),
-      this.workspace.getWorkspaceElement()
-    )
+  if (this.runner.running) {
+    this.runner.stop();
+    setTimeout(function() {
+      self.executeInstructions();
+    }, 100);
+  } else {
+    this.executeInstructions();
+  }
+};
+
+App.prototype.executeInstructions = function() {
+  var instructions = this.parser.parse();
+
+  if (instructions.length === 0) {
+    alert("Adicione blocos ao workspace antes de executar!");
+    return;
   }
 
-  loadGameState() {
-    try {
-      const savedLevel = localStorage.getItem('alphaBlockingGame_currentLevel')
-      const savedStars = localStorage.getItem('alphaBlockingGame_stars')
-      
-      if (savedLevel !== null) {
-        this.currentLevel = parseInt(savedLevel)
-      }
-      
-      if (savedStars !== null) {
-        this.stars = JSON.parse(savedStars)
-      }
-    } catch (error) {
-      console.error('Erro ao carregar estado do jogo:', error)
+  this.stage.reset();
+  this.runner.run(instructions);
+};
+
+App.prototype.togglePause = function() {
+  if (this.runner.paused) {
+    this.runner.resume();
+  } else {
+    this.runner.pause();
+  }
+};
+
+App.prototype.clearWorkspace = function() {
+  if (this.runner.running) {
+    this.runner.stop();
+  }
+
+  this.workspace.clear();
+  this.stage.reset();
+};
+
+App.prototype.handleLevelComplete = function() {
+  var totalBlocks = this.parser.countBlocks();
+  var maxBlocks = gameState.getMaxBlocks();
+
+  var stars = gameState.completeLevel(totalBlocks);
+
+  if (gameState.getCurrentLevel() >= gameState.getTotalLevels()) {
+    this.showGameCompleteModal(stars);
+  } else {
+    this.showLevelCompleteModal(stars, maxBlocks, totalBlocks);
+  }
+};
+
+App.prototype.showLevelCompleteModal = function(stars, maxBlocks, usedBlocks) {
+  var self = this;
+  var contentHtml = Modal.createLevelCompleteHtml(stars, maxBlocks, usedBlocks);
+
+  this.modal.open(contentHtml).then(function() {
+    var nextLevelBtn = self.modal.modalElement.querySelector("#nextLevelBtn");
+    if (nextLevelBtn) {
+      nextLevelBtn.addEventListener("click", function() {
+        self.modal.close();
+        gameState.advanceLevel();
+        self.clearWorkspace();
+      });
     }
-  }
+  });
+};
 
-  saveGameState() {
-    try {
-      localStorage.setItem('alphaBlockingGame_currentLevel', this.currentLevel.toString())
-      localStorage.setItem('alphaBlockingGame_stars', JSON.stringify(this.stars))
-    } catch (error) {
-      console.error('Erro ao salvar estado do jogo:', error)
+App.prototype.showGameCompleteModal = function(finalStars) {
+  var self = this;
+  var contentHtml = Modal.createGameCompleteHtml(finalStars);
+
+  this.modal.open(contentHtml).then(function() {
+    var restartBtn = self.modal.modalElement.querySelector("#restartCareerBtn");
+    if (restartBtn) {
+      restartBtn.addEventListener("click", function() {
+        self.modal.close();
+        self.restartCareer();
+      });
     }
-  }
+  });
+};
 
-  setupEventListeners() {
-    const workspaceContainer = document.querySelector('.workspaceArea')
-    workspaceContainer.addEventListener('blockCountChanged', (e) => {
-      const maxBlocks = this.levelConfig[this.currentLevel]?.maxBlocks || 8
-      this.stage.updateBlockCounter(e.detail.count)
-    })
-    
-    const stageContainer = document.querySelector('.stageContainer')
-    stageContainer.addEventListener('stageRun', () => this.runCode())
-    stageContainer.addEventListener('stagePause', () => this.togglePause())
-    stageContainer.addEventListener('stageClear', () => this.clearWorkspace())
-    
-    document.addEventListener('levelComplete', (e) => {
-      if (e.detail.success) {
-        this.handleLevelComplete()
-      }
-    })
-  }
+App.prototype.restartCareer = function() {
+  gameState.resetCareer();
+  DOM.clearWorkspaceVisual();
+  this.clearWorkspace();
+};
 
-  async runCode() {
-    const totalBlocks = this.parser.countBlocks()
-    const maxBlocks = this.levelConfig[this.currentLevel]?.maxBlocks || 8
-    
-    if (totalBlocks > maxBlocks) {
-      alert('Você excedeu o limite de blocos! Máximo: ' + maxBlocks + ', usados: ' + totalBlocks + '.')
-    }
-    
-    if (this.runner.running) {
-      this.runner.stop()
-      await new Promise(resolve => setTimeout(resolve, 100))
-    }
-    
-    this.stage.reset()
-    
-    const instructions = this.parser.parse()
-    
-    if (instructions.length === 0) {
-      alert('Adicione blocos ao workspace antes de executar!')
-      return
-    }
-    
-    await this.runner.run(instructions)
-  }
+App.prototype.updateUIFromState = function() {
+  this.topBar.updateLevel(gameState.getCurrentLevel(), gameState.getTotalLevels());
+  this.topBar.updateStars(gameState.getStarsForLevel(gameState.getCurrentLevel()));
+  this.topBar.updateProgress(gameState.getProgressPercent());
+  this.stage.setMaxBlocks(gameState.getMaxBlocks());
+};
 
-  togglePause() {
-    if (this.runner.paused) {
-      this.runner.resume()
-    } else {
-      this.runner.pause()
-    }
-  }
-
-  clearWorkspace() {
-    if (this.runner.running) {
-      this.runner.stop()
-    }
-    
-    this.workspace.clear()
-    this.stage.reset()
-  }
-
-  handleLevelComplete() {
-    const totalBlocks = this.parser.countBlocks()
-    const maxBlocks = this.levelConfig[this.currentLevel]?.maxBlocks || 8
-    const stars = this.calculateStars(totalBlocks, maxBlocks)
-    
-    this.stars[this.currentLevel] = stars
-    
-    if (this.currentLevel >= 10) {
-      this.showGameCompleteModal(stars)
-    } else {
-      this.showLevelCompleteModal(stars, maxBlocks, totalBlocks)
-    }
-    
-    this.saveGameState()
-  }
-
-  calculateStars(usedBlocks, maxBlocks) {
-    if (usedBlocks <= maxBlocks) {
-      const percentage = usedBlocks / maxBlocks
-      if (percentage <= 0.7) {
-        return 3
-      } else if (percentage <= 1.0) {
-        return 2
-      }
-    }
-    return 1
-  }
-
-  async showLevelCompleteModal(stars, maxBlocks, usedBlocks) {
-    const contentHtml = Modal.createLevelCompleteHtml(stars, maxBlocks, usedBlocks)
-    await this.modal.open(contentHtml)
-    
-    const nextLevelBtn = this.modal.modalElement.querySelector('#nextLevelBtn')
-    nextLevelBtn.addEventListener('click', () => {
-      this.modal.close()
-      this.currentLevel++
-      this.updateUI()
-      this.clearWorkspace()
-    })
-  }
-
-  async showGameCompleteModal(finalStars) {
-    const contentHtml = Modal.createGameCompleteHtml(finalStars)
-    await this.modal.open(contentHtml)
-    
-    const restartBtn = this.modal.modalElement.querySelector('#restartCareerBtn')
-    restartBtn.addEventListener('click', () => {
-      this.modal.close()
-      this.restartCareer()
-    })
-  }
-
-  restartCareer() {
-    try {
-      localStorage.removeItem('alphaBlockingGame_currentLevel')
-      localStorage.removeItem('alphaBlockingGame_stars')
-    } catch (error) {
-      console.error('Erro ao limpar localStorage:', error)
-    }
-    
-    this.currentLevel = 1
-    this.stars = {}
-    this.updateUI()
-    this.clearWorkspace()
-  }
-
-  updateUI() {
-    this.topBar.updateLevel(this.currentLevel, 10)
-    
-    const currentStars = this.stars[this.currentLevel] || 0
-    this.topBar.updateStars(currentStars)
-    
-    const progress = (this.currentLevel - 1) / 10 * 100
-    this.topBar.updateProgress(progress)
-    
-    const maxBlocks = this.levelConfig[this.currentLevel]?.maxBlocks || 8
-    this.stage.setMaxBlocks(maxBlocks)
-    
-    const totalBlocks = this.parser.countBlocks()
-    this.stage.updateBlockCounter(totalBlocks)
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  new App()
-})
+document.addEventListener("DOMContentLoaded", function() {
+  new App();
+});
