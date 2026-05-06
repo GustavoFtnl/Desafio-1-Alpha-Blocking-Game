@@ -8,7 +8,7 @@ import CONFIG from "./config.js";
 import { gameState } from "./state.js";
 import DOM from "./dom.js";
 
-import { Home } from "./components/Home.js";
+import { Home } from "./pages/Home.js";
 import { TopBar } from "./components/TopBar.js";
 import { Sidebar } from "./components/Sidebar.js";
 import { Workspace } from "./components/Workspace.js";
@@ -19,17 +19,33 @@ import { Parser } from "./engine/parser.js";
 import { Runner } from "./engine/runner.js";
 
 var App = function() {
-  this.mode = "home"; // "home" ou "game"
+  this.mode = "home";
   this.init();
 };
 
 App.prototype.init = function() {
   DOM.init();
   gameState.init();
-
-  this.initComponents();
-  this.setupEventListeners();
+  this.setupGlobalListeners();
   this.checkMode();
+};
+
+App.prototype.setupGlobalListeners = function() {
+  var self = this;
+  
+  document.addEventListener("showGame", function() {
+    self.showGameScreen();
+  });
+
+  document.addEventListener("exitToHome", function() {
+    self.exitToHome();
+  });
+
+  gameState.addListener(function(event, data) {
+    if (event === "userNameChanged") {
+      self.updateUserNameDisplay();
+    }
+  });
 };
 
 App.prototype.checkMode = function() {
@@ -57,6 +73,7 @@ App.prototype.showGameScreen = function() {
   DOM.renderAppLayout();
   
   this.initComponents();
+  this.setupGameListeners();
   DOM.updateUIFromState();
 };
 
@@ -83,24 +100,6 @@ App.prototype.initComponents = function() {
   sidebarContainer.componentInstance = this.sidebar;
   workspaceContainer.componentInstance = this.workspace;
   stageContainer.componentInstance = this.stage;
-};
-
-App.prototype.setupEventListeners = function() {
-  var self = this;
-  
-  document.addEventListener("showGame", function() {
-    self.showGameScreen();
-  });
-
-  gameState.addListener(function(event, data) {
-    if (event === "userNameChanged") {
-      self.updateUserNameDisplay();
-    }
-  });
-  
-  if (this.mode === "game") {
-    this.setupGameListeners();
-  }
 };
 
 App.prototype.setupGameListeners = function() {
@@ -226,6 +225,15 @@ App.prototype.restartCareer = function() {
   gameState.resetCareer();
   DOM.clearWorkspaceVisual();
   this.clearWorkspace();
+};
+
+App.prototype.exitToHome = function() {
+  if (confirm("Tem certeza que deseja sair? Seu progresso será salvo.")) {
+    if (this.runner && this.runner.running) {
+      this.runner.stop();
+    }
+    this.showHomeScreen();
+  }
 };
 
 App.prototype.updateUIFromState = function() {

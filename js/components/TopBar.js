@@ -1,6 +1,6 @@
 /**
  * TopBar.js - Componente da barra superior gamificada
- * Renderiza dinamicamente: título, nível, estrelas, progresso e contador de blocos
+ * Renderiza dinamicamente: título, nível, estrelas, progresso e botão sair
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
@@ -35,7 +35,24 @@ TopBar.prototype.render = function() {
         "<span class=\"star star--empty material-symbols-outlined\">star</span>" +
         "<span class=\"star star--empty material-symbols-outlined\">star</span>" +
       "</div>" +
+      "<button class=\"btn btn--exit\" id=\"exitBtn\" aria-label=\"Sair do jogo\">" +
+        "<span class=\"material-symbols-outlined\">logout</span>" +
+        "Sair" +
+      "</button>" +
     "</div>";
+    
+  this.setupExitListener();
+};
+
+TopBar.prototype.setupExitListener = function() {
+  var exitBtn = this.container.querySelector("#exitBtn");
+  if (exitBtn) {
+    var self = this;
+    exitBtn.addEventListener("click", function() {
+      var event = new CustomEvent("exitToHome", { bubbles: true });
+      self.container.dispatchEvent(event);
+    });
+  }
 };
 
 TopBar.prototype.escapeHtml = function(text) {
@@ -106,7 +123,6 @@ TopBar.prototype.updateUserName = function(name) {
 
 TopBar.prototype.updateBlockCounter = function(used, max) {
   // Este método não é usado no TopBar do exemplo
-  // O contador de blocos está no Stage
 };
 
 export default TopBar;

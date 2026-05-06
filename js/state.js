@@ -1,6 +1,6 @@
 /**
  * state.js - Gerenciador de estado global da aplicação
- * Gerencia currentLevel, stars e persistência no LocalStorage
+ * Gerencia múltiplos usuários, currentLevel, stars e persistência no LocalStorage
  * Implementa padrão Observer para notificar mudanças
  * Comentários em português do Brasil
  */
@@ -8,9 +8,8 @@
 import CONFIG from "./config.js";
 
 var GameState = function() {
-  this.currentLevel = CONFIG.DEFAULTS.CURRENT_LEVEL;
-  this.stars = {};
-  this.userName = "";
+  this.currentUser = null;
+  this.users = [];
   this._listeners = [];
 };
 
@@ -20,42 +19,101 @@ GameState.prototype.init = function() {
 
 GameState.prototype.loadFromStorage = function() {
   try {
-    var savedLevel = localStorage.getItem(CONFIG.STORAGE_KEYS.CURRENT_LEVEL);
-    var savedStars = localStorage.getItem(CONFIG.STORAGE_KEYS.STARS);
-    var savedName = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_NAME);
+    var savedUsers = localStorage.getItem(CONFIG.STORAGE_KEYS.USERS);
+    var savedCurrentUser = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_NAME);
 
-    if (savedLevel !== null) {
-      this.currentLevel = parseInt(savedLevel, 10);
+    if (savedUsers !== null) {
+      this.users = JSON.parse(savedUsers);
     }
 
-    if (savedStars !== null) {
-      this.stars = JSON.parse(savedStars);
-    }
-
-    if (savedName !== null) {
-      this.userName = savedName;
+    if (savedCurrentUser !== null && this.users.length > 0) {
+      this.currentUser = this.findUser(savedCurrentUser);
     }
   } catch (error) {
-    console.error("Erro ao carregar estado do jogo:", error);
+    console.error("Erro ao carregar estado:", error);
+    this.users = [];
   }
 };
 
-GameState.prototype.saveToStorage = function() {
+GameState.prototype.saveUsersToStorage = function() {
   try {
-    localStorage.setItem(CONFIG.STORAGE_KEYS.CURRENT_LEVEL, this.currentLevel.toString());
-    localStorage.setItem(CONFIG.STORAGE_KEYS.STARS, JSON.stringify(this.stars));
+    localStorage.setItem(CONFIG.STORAGE_KEYS.USERS, JSON.stringify(this.users));
   } catch (error) {
-    console.error("Erro ao salvar estado do jogo:", error);
+    console.error("Erro ao salvar usuários:", error);
+  }
+};
+
+GameState.prototype.findUser = function(name) {
+  for (var i = 0; i < this.users.length; i++) {
+    if (this.users[i].name === name) {
+      return this.users[i];
+    }
+  }
+  return null;
+};
+
+GameState.prototype.getUsers = function() {
+  return this.users;
+};
+
+GameState.prototype.getUserName = function() {
+  return this.currentUser ? this.currentUser.name : "";
+};
+
+GameState.prototype.hasUsers = function() {
+  return this.users.length > 0;
+};
+
+GameState.prototype.switchUser = function(name) {
+  var user = this.findUser(name);
+  if (user) {
+    this.currentUser = user;
+    this.saveCurrentUser();
+    this._notifyListeners("userChanged", { user: user });
+    return true;
+  }
+  return false;
+};
+
+GameState.prototype.createUser = function(name) {
+  var existing = this.findUser(name);
+  if (existing) {
+    alert("Usuário já existe!");
+    return false;
+  }
+
+  var newUser = {
+    name: name,
+    level: CONFIG.DEFAULTS.CURRENT_LEVEL,
+    stars: {}
+  };
+
+  this.users.push(newUser);
+  this.currentUser = newUser;
+  this.saveUsersToStorage();
+  this.saveCurrentUser();
+  this._notifyListeners("userCreated", { user: newUser });
+  return true;
+};
+
+GameState.prototype.saveCurrentUser = function() {
+  try {
+    if (this.currentUser) {
+      localStorage.setItem(CONFIG.STORAGE_KEYS.USER_NAME, this.currentUser.name);
+    }
+  } catch (error) {
+    console.error("Erro ao salvar usuário atual:", error);
   }
 };
 
 GameState.prototype.getCurrentLevel = function() {
-  return this.currentLevel;
+  return this.currentUser ? this.currentUser.level : CONFIG.DEFAULTS.CURRENT_LEVEL;
 };
 
 GameState.prototype.getMaxBlocks = function() {
-  var levelConfig = CONFIG.LEVEL_CONFIG[this.currentLevel];
-  return levelConfig ? levelConfig.maxBlocks : CONFIG.DEFAULTS.CURRENT_LEVEL * 2 + 6;
+  var level = this.getCurrentLevel();
+  var levelConfig = CONFIG.LEVEL_CONFIG[level];
+  return levelConfig ? levelConfig.maxBlocks : level * 2 + 6;
 };
 
 GameState.prototype.getTotalLevels = function() {
@@ -63,51 +121,38 @@ GameState.prototype.getTotalLevels = function() {
 };
 
 GameState.prototype.getStarsForLevel = function(level) {
-  return this.stars[level] || CONFIG.DEFAULTS.INITIAL_STARS;
+  return this.currentUser && this.currentUser.stars ? 
+    (this.currentUser.stars[level] || CONFIG.DEFAULTS.INITIAL_STARS) : 
+    CONFIG.DEFAULTS.INITIAL_STARS;
 };
 
 GameState.prototype.getAllStars = function() {
-  var result = {};
-  for (var key in this.stars) {
-    if (this.stars.hasOwnProperty(key)) {
-      result[key] = this.stars[key];
-    }
-  }
-  return result;
-};
-
-GameState.prototype.getUserName = function() {
-  return this.userName;
-};
-
-GameState.prototype.setUserName = function(name) {
-  this.userName = name;
-  try {
-    localStorage.setItem(CONFIG.STORAGE_KEYS.USER_NAME, name);
-  } catch (error) {
-    console.error("Erro ao salvar nome:", error);
-  }
-  this._notifyListeners("userNameChanged", { userName: name });
+  return this.currentUser && this.currentUser.stars ? 
+    this.currentUser.stars : {};
 };
 
 GameState.prototype.setCurrentLevel = function(level) {
-  this.currentLevel = level;
-  this.saveToStorage();
-  this._notifyListeners("levelChanged", { level: level });
+  if (this.currentUser) {
+    this.currentUser.level = level;
+    this.saveUsersToStorage();
+    this._notifyListeners("levelChanged", { level: level });
+  }
 };
 
 GameState.prototype.advanceLevel = function() {
-  if (this.currentLevel < CONFIG.DEFAULTS.TOTAL_LEVELS) {
-    this.currentLevel++;
-    this.saveToStorage();
-    this._notifyListeners("levelChanged", { level: this.currentLevel });
+  if (this.currentUser && this.currentUser.level < CONFIG.DEFAULTS.TOTAL_LEVELS) {
+    this.currentUser.level++;
+    this.saveUsersToStorage();
+    this._notifyListeners("levelChanged", { level: this.currentUser.level });
   }
 };
 
 GameState.prototype.setStarsForLevel = function(level, stars) {
-  this.stars[level] = stars;
-  this.saveToStorage();
-  this._notifyListeners("starsChanged", { level: level, stars: stars });
+  if (this.currentUser) {
+    this.currentUser.stars[level] = stars;
+    this.saveUsersToStorage();
+    this._notifyListeners("starsChanged", { level: level, stars: stars });
+  }
 };
 
 GameState.prototype.calculateStars = function(usedBlocks) {
@@ -126,26 +171,21 @@ GameState.prototype.calculateStars = function(usedBlocks) {
 
 GameState.prototype.completeLevel = function(usedBlocks) {
   var stars = this.calculateStars(usedBlocks);
-  this.setStarsForLevel(this.currentLevel, stars);
+  this.setStarsForLevel(this.getCurrentLevel(), stars);
   return stars;
 };
 
 GameState.prototype.resetCareer = function() {
-  try {
-    localStorage.removeItem(CONFIG.STORAGE_KEYS.CURRENT_LEVEL);
-    localStorage.removeItem(CONFIG.STORAGE_KEYS.STARS);
-  } catch (error) {
-    console.error("Erro ao limpar localStorage:", error);
+  if (this.currentUser) {
+    this.currentUser.level = CONFIG.DEFAULTS.CURRENT_LEVEL;
+    this.currentUser.stars = {};
+    this.saveUsersToStorage();
+    this._notifyListeners("careerReset", {});
   }
-
-  this.currentLevel = CONFIG.DEFAULTS.CURRENT_LEVEL;
-  this.stars = {};
-  this.userName = "";
-  this._notifyListeners("careerReset", {});
 };
 
 GameState.prototype.getProgressPercent = function() {
-  return ((this.currentLevel - 1) / CONFIG.DEFAULTS.TOTAL_LEVELS) * 100;
+  return ((this.getCurrentLevel() - 1) / CONFIG.DEFAULTS.TOTAL_LEVELS) * 100;
 };
 
 GameState.prototype.addListener = function(callback) {

@@ -459,3 +459,55 @@
   font-weight: 600;
   color: var(--color-secondary);
 }
+
+.btn--exit {
+  background-color: transparent;
+  color: var(--color-on-surface-variant);
+  border: 1px solid var(--color-outline-variant);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.btn--exit:hover {
+  background-color: var(--color-surface-container);
+  color: var(--color-logic-control);
+}
+
+.homeUserSection {
+  margin-bottom: var(--space-xl);
+}
+
+.homeUserSelectBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.homeSelect {
+  width: 100%;
+}
+
+.homeSelectBtn {
+  width: 100%;
+  margin-top: var(--space-sm);
+}
+
+.homeDivider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-body-size);
+}
+
+.homeDivider::before,
+.homeDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-outline-variant);
+}
+
+.homeNewUserBtn {
+  width: 100%;
+}
