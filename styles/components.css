@@ -511,3 +511,127 @@
 .homeNewUserBtn {
   width: 100%;
 }
+
+.btn--ranking {
+  background-color: var(--color-secondary);
+  color: var(--color-block-text);
+  width: 100%;
+  margin-top: var(--space-lg);
+}
+
+.btn--ranking:hover {
+  filter: brightness(1.1);
+}
+
+.btn--rankingTop {
+  background-color: transparent;
+  color: var(--color-secondary);
+  border: 1px solid var(--color-outline-variant);
+  padding: var(--space-sm);
+}
+
+.btn--rankingTop:hover {
+  background-color: var(--color-secondary);
+  color: var(--color-surface);
+}
+
+/* === TELA DE RANKING === */
+.rankingScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-primary-container) 0%, var(--color-background) 100%);
+  padding: var(--space-md);
+}
+
+.rankingContainer {
+  max-width: 600px;
+  width: 100%;
+}
+
+.rankingContent {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-modal);
+}
+
+.rankingTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  font-size: var(--font-display-size);
+  font-weight: var(--font-display-weight);
+  color: var(--color-primary);
+  margin-bottom: var(--space-lg);
+}
+
+.rankingTitle .material-symbols-outlined {
+  font-size: 36px;
+}
+
+.rankingTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--space-lg);
+}
+
+.rankingTable th,
+.rankingTable td {
+  padding: var(--space-md);
+  text-align: center;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.rankingTable th {
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-label-bold-size);
+}
+
+.rankingRow--top {
+  background-color: var(--color-surface-container-low);
+}
+
+.rankingPosition {
+  font-weight: 700;
+  font-size: var(--font-body-size);
+}
+
+.rankingName {
+  text-align: left;
+  font-weight: 600;
+}
+
+.rankingStat {
+  font-size: var(--font-body-size);
+}
+
+.rankingCriteria {
+  background-color: var(--color-surface-container);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-lg);
+  font-size: var(--font-body-size);
+  color: var(--color-on-surface-variant);
+}
+
+.rankingCriteria p {
+  margin-bottom: var(--space-sm);
+  font-weight: 600;
+}
+
+.rankingCriteria ol {
+  margin: 0;
+  padding-left: var(--space-lg);
+}
+
+.rankingCriteria li {
+  margin-bottom: var(--space-xs);
+}
+
+.rankingBackBtn {
+  width: 100%;
+}

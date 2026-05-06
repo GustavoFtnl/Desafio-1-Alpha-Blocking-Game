@@ -1,6 +1,6 @@
 /**
  * TopBar.js - Componente da barra superior gamificada
- * Renderiza dinamicamente: título, nível, estrelas, progresso e botão sair
+ * Renderiza: título, nível, estrelas, progresso, botões ranking e sair
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
@@ -35,21 +35,33 @@ TopBar.prototype.render = function() {
         "<span class=\"star star--empty material-symbols-outlined\">star</span>" +
         "<span class=\"star star--empty material-symbols-outlined\">star</span>" +
       "</div>" +
+      "<button class=\"btn btn--rankingTop\" id=\"rankingBtn\" aria-label=\"Ver ranking\">" +
+        "<span class=\"material-symbols-outlined\">leaderboard</span>" +
+      "</button>" +
       "<button class=\"btn btn--exit\" id=\"exitBtn\" aria-label=\"Sair do jogo\">" +
         "<span class=\"material-symbols-outlined\">logout</span>" +
         "Sair" +
       "</button>" +
     "</div>";
     
-  this.setupExitListener();
+  this.setupListeners();
 };
 
-TopBar.prototype.setupExitListener = function() {
+TopBar.prototype.setupListeners = function() {
+  var self = this;
+  
   var exitBtn = this.container.querySelector("#exitBtn");
   if (exitBtn) {
-    var self = this;
     exitBtn.addEventListener("click", function() {
       var event = new CustomEvent("exitToHome", { bubbles: true });
+      self.container.dispatchEvent(event);
+    });
+  }
+  
+  var rankingBtn = this.container.querySelector("#rankingBtn");
+  if (rankingBtn) {
+    rankingBtn.addEventListener("click", function() {
+      var event = new CustomEvent("showRanking", { bubbles: true });
       self.container.dispatchEvent(event);
     });
   }

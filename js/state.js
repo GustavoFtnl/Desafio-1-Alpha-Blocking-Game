@@ -1,6 +1,6 @@
 /**
  * state.js - Gerenciador de estado global da aplicação
- * Gerencia múltiplos usuários, currentLevel, stars e persistência no LocalStorage
+ * Gerencia múltiplos usuários, currentLevel, stars, blocksUsed e ranking
  * Implementa padrão Observer para notificar mudanças
  * Comentários em português do Brasil
  */
@@ -85,7 +85,8 @@ GameState.prototype.createUser = function(name) {
   var newUser = {
     name: name,
     level: CONFIG.DEFAULTS.CURRENT_LEVEL,
-    stars: {}
+    stars: {},
+    blocksUsed: {}
   };
 
   this.users.push(newUser);
@@ -149,10 +150,29 @@ GameState.prototype.advanceLevel = function() {
 
 GameState.prototype.setStarsForLevel = function(level, stars) {
   if (this.currentUser) {
+    if (!this.currentUser.stars) {
+      this.currentUser.stars = {};
+    }
     this.currentUser.stars[level] = stars;
     this.saveUsersToStorage();
     this._notifyListeners("starsChanged", { level: level, stars: stars });
   }
+};
+
+GameState.prototype.saveBlocksUsed = function(level, blocks) {
+  if (this.currentUser) {
+    if (!this.currentUser.blocksUsed) {
+      this.currentUser.blocksUsed = {};
+    }
+    this.currentUser.blocksUsed[level] = blocks;
+    this.saveUsersToStorage();
+  }
+};
+
+GameState.prototype.getBlocksUsedForLevel = function(level) {
+  return this.currentUser && this.currentUser.blocksUsed ? 
+    (this.currentUser.blocksUsed[level] || 0) : 
+    0;
 };
 
 GameState.prototype.calculateStars = function(usedBlocks) {
@@ -171,7 +191,9 @@ GameState.prototype.calculateStars = function(usedBlocks) {
 
 GameState.prototype.completeLevel = function(usedBlocks) {
   var stars = this.calculateStars(usedBlocks);
-  this.setStarsForLevel(this.getCurrentLevel(), stars);
+  var level = this.getCurrentLevel();
+  this.setStarsForLevel(level, stars);
+  this.saveBlocksUsed(level, usedBlocks);
   return stars;
 };
 
@@ -179,6 +201,7 @@ GameState.prototype.resetCareer = function() {
   if (this.currentUser) {
     this.currentUser.level = CONFIG.DEFAULTS.CURRENT_LEVEL;
     this.currentUser.stars = {};
+    this.currentUser.blocksUsed = {};
     this.saveUsersToStorage();
     this._notifyListeners("careerReset", {});
   }
@@ -186,6 +209,71 @@ GameState.prototype.resetCareer = function() {
 
 GameState.prototype.getProgressPercent = function() {
   return ((this.getCurrentLevel() - 1) / CONFIG.DEFAULTS.TOTAL_LEVELS) * 100;
+};
+
+GameState.prototype.getTotalCompletedLevels = function() {
+  var count = 0;
+  for (var i = 0; i < this.users.length; i++) {
+    var user = this.users[i];
+    if (user.stars) {
+      for (var level in user.stars) {
+        if (user.stars[level] > 0) {
+          count++;
+        }
+      }
+    }
+  }
+  return count;
+};
+
+GameState.prototype.getUserStats = function(user) {
+  var totalStars = 0;
+  var completedLevels = 0;
+  var totalBlocks = 0;
+
+  if (user.stars) {
+    for (var level in user.stars) {
+      var stars = user.stars[level];
+      if (stars > 0) {
+        totalStars += stars;
+        completedLevels++;
+      }
+    }
+  }
+
+  if (user.blocksUsed) {
+    for (var level in user.blocksUsed) {
+      totalBlocks += user.blocksUsed[level] || 0;
+    }
+  }
+
+  return {
+    name: user.name,
+    level: user.level,
+    completedLevels: completedLevels,
+    totalStars: totalStars,
+    totalBlocks: totalBlocks
+  };
+};
+
+GameState.prototype.getRanking = function() {
+  var ranking = [];
+
+  for (var i = 0; i < this.users.length; i++) {
+    ranking.push(this.getUserStats(this.users[i]));
+  }
+
+  ranking.sort(function(a, b) {
+    if (b.completedLevels !== a.completedLevels) {
+      return b.completedLevels - a.completedLevels;
+    }
+    if (b.totalStars !== a.totalStars) {
+      return b.totalStars - a.totalStars;
+    }
+    return a.totalBlocks - b.totalBlocks;
+  });
+
+  return ranking;
 };
 
 GameState.prototype.addListener = function(callback) {

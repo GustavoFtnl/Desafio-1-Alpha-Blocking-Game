@@ -1,6 +1,6 @@
 /**
  * app.js - Ponto de entrada principal da aplicação
- * Orquestra entre páginas Home e Game
+ * Orquestra entre páginas Home, Game e Ranking
  * Comentários em português do Brasil
  */
 
@@ -10,6 +10,7 @@ import DOM from "./dom.js";
 
 import { Home } from "./pages/Home.js";
 import { Game } from "./pages/Game.js";
+import { Ranking } from "./pages/Ranking.js";
 
 var App = function() {
   this.mode = "home";
@@ -28,6 +29,14 @@ App.prototype.setupGlobalListeners = function() {
   
   document.addEventListener("showGame", function() {
     self.showGameScreen();
+  });
+
+  document.addEventListener("showHome", function() {
+    self.showHomeScreen();
+  });
+
+  document.addEventListener("showRanking", function() {
+    self.showRankingScreen();
   });
 
   document.addEventListener("exitToHome", function() {
@@ -62,6 +71,15 @@ App.prototype.showGameScreen = function() {
   
   var gameContainer = root.querySelector(".gameScreen");
   this.game = new Game(gameContainer);
+};
+
+App.prototype.showRankingScreen = function() {
+  this.mode = "ranking";
+  var root = document.getElementById(CONFIG.DOM_IDS.ROOT);
+  root.innerHTML = "<div class=\"rankingScreen\"></div>";
+  
+  var rankingContainer = root.querySelector(".rankingScreen");
+  this.ranking = new Ranking(rankingContainer);
 };
 
 App.prototype.exitToHome = function() {
