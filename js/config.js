@@ -7,7 +7,9 @@
 var CONFIG = {
   STORAGE_KEYS: {
     CURRENT_LEVEL: "alphaBlockingGame_currentLevel",
-    STARS: "alphaBlockingGame_stars"
+    STARS: "alphaBlockingGame_stars",
+    USER_NAME: "alphaBlockingGame_userName",
+    USERS: "alphaBlockingGame_users"
   },
 
   LEVEL_CONFIG: {

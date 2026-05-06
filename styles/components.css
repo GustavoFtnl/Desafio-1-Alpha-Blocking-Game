@@ -334,3 +334,304 @@
 .material-symbols-outlined {
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
+
+/* === TELA INICIAL (HOME) === */
+.homeScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-primary-container) 0%, var(--color-background) 100%);
+  padding: var(--space-md);
+}
+
+.homeContainer {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+.homeContent {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-modal);
+}
+
+.homeTitle {
+  font-size: 36px;
+  font-weight: var(--font-display-weight);
+  color: var(--color-primary);
+  margin-bottom: var(--space-sm);
+}
+
+.homeSubtitle {
+  font-size: var(--font-body-size);
+  color: var(--color-on-surface-variant);
+  margin-bottom: var(--space-xl);
+}
+
+.homeForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.homeLabel {
+  font-size: var(--font-body-size);
+  font-weight: 600;
+  color: var(--color-on-surface);
+  text-align: left;
+}
+
+.homeInput {
+  padding: var(--space-md);
+  border: 2px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-body-size);
+  transition: border-color var(--transition-hover);
+}
+
+.homeInput:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+}
+
+.homeStartBtn {
+  width: 100%;
+  justify-content: center;
+}
+
+
+.homeWelcome {
+  margin-bottom: var(--space-xl);
+}
+
+.homeWelcomeText {
+  font-size: var(--font-h1-size);
+  color: var(--color-on-surface);
+  margin-bottom: var(--space-sm);
+}
+
+.homeLevelInfo {
+  font-size: var(--font-body-size);
+  color: var(--color-on-surface-variant);
+  margin-bottom: var(--space-lg);
+}
+
+.homeContinueBtn,
+.homeRestartBtn {
+  width: 100%;
+  margin-bottom: var(--space-sm);
+}
+
+.homeFeatures {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-lg);
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-outline-variant);
+}
+
+
+.homeFeature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.homeFeatureIcon {
+  font-size: 28px;
+  color: var(--color-secondary);
+}
+
+.homeFeature p {
+  font-size: var(--font-label-bold-size);
+  color: var(--color-on-surface-variant);
+}
+
+.topBar_userName {
+  font-size: var(--font-body-size);
+  font-weight: 600;
+  color: var(--color-secondary);
+}
+
+.btn--exit {
+  background-color: transparent;
+  color: var(--color-on-surface-variant);
+  border: 1px solid var(--color-outline-variant);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.btn--exit:hover {
+  background-color: var(--color-surface-container);
+  color: var(--color-logic-control);
+}
+
+.homeUserSection {
+  margin-bottom: var(--space-xl);
+}
+
+.homeUserSelectBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.homeSelect {
+  width: 100%;
+}
+
+.homeSelectBtn {
+  width: 100%;
+  margin-top: var(--space-sm);
+}
+
+.homeDivider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-body-size);
+}
+
+.homeDivider::before,
+.homeDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--color-outline-variant);
+}
+
+.homeNewUserBtn {
+  width: 100%;
+}
+
+.btn--ranking {
+  background-color: var(--color-secondary);
+  color: var(--color-block-text);
+  width: 100%;
+  margin-top: var(--space-lg);
+}
+
+.btn--ranking:hover {
+  filter: brightness(1.1);
+}
+
+.btn--rankingTop {
+  background-color: transparent;
+  color: var(--color-secondary);
+  border: 1px solid var(--color-outline-variant);
+  padding: var(--space-sm);
+}
+
+.btn--rankingTop:hover {
+  background-color: var(--color-secondary);
+  color: var(--color-surface);
+}
+
+/* === TELA DE RANKING === */
+.rankingScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-primary-container) 0%, var(--color-background) 100%);
+  padding: var(--space-md);
+}
+
+.rankingContainer {
+  max-width: 600px;
+  width: 100%;
+}
+
+.rankingContent {
+  background-color: var(--color-surface-container-lowest);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-modal);
+}
+
+.rankingTitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  font-size: var(--font-display-size);
+  font-weight: var(--font-display-weight);
+  color: var(--color-primary);
+  margin-bottom: var(--space-lg);
+}
+
+.rankingTitle .material-symbols-outlined {
+  font-size: 36px;
+}
+
+.rankingTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--space-lg);
+}
+
+.rankingTable th,
+.rankingTable td {
+  padding: var(--space-md);
+  text-align: center;
+  border-bottom: 1px solid var(--color-outline-variant);
+}
+
+.rankingTable th {
+  font-weight: 600;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-label-bold-size);
+}
+
+.rankingRow--top {
+  background-color: var(--color-surface-container-low);
+}
+
+.rankingPosition {
+  font-weight: 700;
+  font-size: var(--font-body-size);
+}
+
+.rankingName {
+  text-align: left;
+  font-weight: 600;
+}
+
+.rankingStat {
+  font-size: var(--font-body-size);
+}
+
+.rankingCriteria {
+  background-color: var(--color-surface-container);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-lg);
+  font-size: var(--font-body-size);
+  color: var(--color-on-surface-variant);
+}
+
+.rankingCriteria p {
+  margin-bottom: var(--space-sm);
+  font-weight: 600;
+}
+
+.rankingCriteria ol {
+  margin: 0;
+  padding-left: var(--space-lg);
+}
+
+.rankingCriteria li {
+  margin-bottom: var(--space-xs);
+}
+
+.rankingBackBtn {
+  width: 100%;
+}
