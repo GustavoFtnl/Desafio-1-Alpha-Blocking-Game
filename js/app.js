@@ -8,6 +8,7 @@ import CONFIG from "./config.js";
 import { gameState } from "./state.js";
 import DOM from "./dom.js";
 
+import { Home } from "./components/Home.js";
 import { TopBar } from "./components/TopBar.js";
 import { Sidebar } from "./components/Sidebar.js";
 import { Workspace } from "./components/Workspace.js";
@@ -18,6 +19,7 @@ import { Parser } from "./engine/parser.js";
 import { Runner } from "./engine/runner.js";
 
 var App = function() {
+  this.mode = "home"; // "home" ou "game"
   this.init();
 };
 
@@ -27,6 +29,34 @@ App.prototype.init = function() {
 
   this.initComponents();
   this.setupEventListeners();
+  this.checkMode();
+};
+
+App.prototype.checkMode = function() {
+  var hasName = gameState.getUserName() && gameState.getUserName().length > 0;
+  
+  if (hasName) {
+    this.showGameScreen();
+  } else {
+    this.showHomeScreen();
+  }
+};
+
+App.prototype.showHomeScreen = function() {
+  this.mode = "home";
+  var root = document.getElementById(CONFIG.DOM_IDS.ROOT);
+  root.innerHTML = "<div class=\"homeScreen\"></div>";
+  
+  var homeContainer = root.querySelector(".homeScreen");
+  this.home = new Home(homeContainer);
+  this.home.setupListeners();
+};
+
+App.prototype.showGameScreen = function() {
+  this.mode = "game";
+  DOM.renderAppLayout();
+  
+  this.initComponents();
   DOM.updateUIFromState();
 };
 
@@ -56,8 +86,26 @@ App.prototype.initComponents = function() {
 };
 
 App.prototype.setupEventListeners = function() {
-  var workspaceContainer = DOM.getWorkspaceContainer();
   var self = this;
+  
+  document.addEventListener("showGame", function() {
+    self.showGameScreen();
+  });
+
+  gameState.addListener(function(event, data) {
+    if (event === "userNameChanged") {
+      self.updateUserNameDisplay();
+    }
+  });
+  
+  if (this.mode === "game") {
+    this.setupGameListeners();
+  }
+};
+
+App.prototype.setupGameListeners = function() {
+  var self = this;
+  var workspaceContainer = DOM.getWorkspaceContainer();
 
   workspaceContainer.addEventListener("blockCountChanged", function(e) {
     var maxBlocks = gameState.getMaxBlocks();
@@ -74,12 +122,12 @@ App.prototype.setupEventListeners = function() {
       self.handleLevelComplete();
     }
   });
+};
 
-  gameState.addListener(function(event, data) {
-    if (event === "levelChanged" || event === "starsChanged") {
-      self.updateUIFromState();
-    }
-  });
+App.prototype.updateUserNameDisplay = function() {
+  if (this.topBar && this.topBar.updateUserName) {
+    this.topBar.updateUserName(gameState.getUserName());
+  }
 };
 
 App.prototype.runCode = function() {
