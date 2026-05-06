@@ -20,12 +20,13 @@ export class Sidebar {
    */
   render() {
     const blockTypes = [
-      { type: "block--move", icon: "move_up", text: "Mover para frente" },
-      { type: "block--rotate", icon: "rotate_right", text: "Girar 90°" },
-      { type: "block--repeat", icon: "loop", text: "Repetir 3x" },
-      { type: "block--conditional", icon: "question_mark", text: "Se obstáculo..." },
-      { type: "block--action", icon: "play_arrow", text: "Coletar Item" },
-      { type: "block--control", icon: "stop", text: "Parar Execução" },
+      { type: "block--move", icon: "move_up", text: "Mover" },
+      { type: "block--direction", icon: "→", text: "Direita" },
+      { type: "block--direction", icon: "←", text: "Esquerda" },
+      { type: "block--direction", icon: "↑", text: "Cima" },
+      { type: "block--direction", icon: "↓", text: "Baixo" },
+      { type: "block--repeat", icon: "loop", text: "Repetir" },
+      { type: "block--action", icon: "play_arrow", text: "Ação" },
     ];
 
     this.container.innerHTML = `
