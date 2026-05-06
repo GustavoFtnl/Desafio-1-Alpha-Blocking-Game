@@ -3,17 +3,9 @@
  * Comentários em português do Brasil
  */
 
-export class DragDrop {
-  static blockConfigs = [
-    { type: "block--move", icon: "move_up", text: "Mover para frente" },
-    { type: "block--direction", icon: "→", text: "Direita" },
-    { type: "block--direction", icon: "←", text: "Esquerda" },
-    { type: "block--direction", icon: "↑", text: "Cima" },
-    { type: "block--direction", icon: "↓", text: "Baixo" },
-    { type: "block--repeat", icon: "loop", text: "Repetir" },
-    { type: "block--action", icon: "play_arrow", text: "Ação" },
-  ];
+import { Block } from "./Block.js";
 
+export class DragDrop {
   constructor(paletteElement, workspaceElement) {
     this.palette = paletteElement;
     this.workspace = workspaceElement;
@@ -33,7 +25,7 @@ export class DragDrop {
       if (!block) return;
       this.draggedBlock = block;
       this.isFromPalette = true;
-      const blockType = this.getBlockType(block);
+      const blockType = Block.getType(block);
       e.dataTransfer.setData("text/plain", blockType);
       e.dataTransfer.effectAllowed = "copy";
       block.classList.add("dragging");
@@ -72,7 +64,7 @@ export class DragDrop {
 
       if (this.isFromPalette) {
         if (this.draggedBlock) {
-          blockToInsert = this.cloneBlock(this.draggedBlock);
+          blockToInsert = Block.clone(this.draggedBlock);
         } else if (blockType) {
           blockToInsert = this.createBlock(blockType);
         }
@@ -140,25 +132,12 @@ export class DragDrop {
     });
   }
 
-  cloneBlock(originalBlock) {
-    const clone = originalBlock.cloneNode(true);
-    clone.classList.remove("dragging");
-    clone.setAttribute("aria-grabbed", "false");
-    clone.setAttribute("draggable", "true");
-    return clone;
-  }
-
   createBlock(type) {
-    const config = DragDrop.blockConfigs.find((c) => c.type === type);
+    const configs = Block.getConfigs();
+    const config = configs.find((c) => c.type === type);
     if (!config) return null;
 
-    const block = document.createElement("div");
-    block.className = "block " + config.type;
-    block.setAttribute("draggable", "true");
-    block.setAttribute("aria-label", "Bloco de comando: " + config.text);
-    block.setAttribute("aria-grabbed", "false");
-    block.innerHTML = `<span class="material-symbols-outlined blockIcon">${config.icon}</span><span class="block_text">${config.text}</span>`;
-    return block;
+    return Block.createElement(config.text, config.icon, config.type);
   }
 
   addBlockToWorkspace(block) {
@@ -179,16 +158,6 @@ export class DragDrop {
     setTimeout(() => {
       block.classList.remove("snapping");
     }, 200);
-  }
-
-  getBlockType(block) {
-    const classes = block.className.split(" ");
-    for (const cls of classes) {
-      if (cls.startsWith("block--")) {
-        return cls;
-      }
-    }
-    return "block--move";
   }
 
   dispatchBlockCountChanged() {

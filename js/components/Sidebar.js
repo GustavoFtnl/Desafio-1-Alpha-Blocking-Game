@@ -4,6 +4,8 @@
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
+import { Block } from "./Block.js";
+
 export class Sidebar {
   /**
    * Construtor do Sidebar
@@ -19,15 +21,18 @@ export class Sidebar {
    * Renderiza a sidebar com título e paleta de blocos
    */
   render() {
-    const blockTypes = [
-      { type: "block--move", icon: "move_up", text: "Mover" },
-      { type: "block--direction", icon: "→", text: "Direita" },
-      { type: "block--direction", icon: "←", text: "Esquerda" },
-      { type: "block--direction", icon: "↑", text: "Cima" },
-      { type: "block--direction", icon: "↓", text: "Baixo" },
-      { type: "block--repeat", icon: "loop", text: "Repetir" },
-      { type: "block--action", icon: "play_arrow", text: "Ação" },
-    ];
+    const blockConfigs = Block.getConfigs();
+
+    const blocksHtml = blockConfigs
+      .map((config) => {
+        const blockElement = Block.createElement(
+          config.text,
+          config.icon,
+          config.type,
+        );
+        return blockElement.outerHTML;
+      })
+      .join("");
 
     this.container.innerHTML = `
       <div class="sidebar_content">
@@ -37,18 +42,7 @@ export class Sidebar {
         </div>
         <p class="sidebar_subtitle">Arraste os blocos</p>
         <div class="blockPalette">
-          ${blockTypes
-            .map(
-              (block) => `
-            <div class="block ${block.type}" draggable="true" 
-                 aria-label="Bloco de comando: ${block.text}" 
-                 aria-grabbed="false">
-              <span class="material-symbols-outlined blockIcon">${block.icon}</span>
-              <span class="block_text">${block.text}</span>
-            </div>
-          `,
-            )
-            .join("")}
+          ${blocksHtml}
         </div>
         <button class="sidebar_newProjectBtn">Novo Projeto</button>
       </div>
