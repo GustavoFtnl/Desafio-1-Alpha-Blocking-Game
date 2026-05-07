@@ -283,7 +283,6 @@ export class Stage {
       const cell = this.stageCells[index];
       if (cell) {
         cell.classList.add("hasWall");
-        cell.innerHTML = '<span class="cellIcon">🧱</span>';
       }
     });
 
