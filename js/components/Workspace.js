@@ -55,12 +55,15 @@ export class Workspace {
   clear() {
     const stacks = this.container.querySelectorAll('.blockStack')
     stacks.forEach(stack => stack.remove())
-    
+
+    const containers = this.container.querySelectorAll('.blockContainer')
+    containers.forEach(container => container.remove())
+
     const placeholder = this.container.querySelector('.workspacePlaceholder')
     if (placeholder) {
       placeholder.style.display = ''
     }
-    
+
     this.dispatchBlockCountChanged()
   }
 

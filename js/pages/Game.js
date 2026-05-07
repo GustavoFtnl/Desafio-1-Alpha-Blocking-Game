@@ -123,6 +123,9 @@ Game.prototype.clearWorkspace = function() {
   }
 
   this.workspace.clear();
+  if (this.dragDrop) {
+    this.dragDrop.clearWorkspace();
+  }
   this.stage.reset();
 };
 

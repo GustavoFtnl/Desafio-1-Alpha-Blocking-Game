@@ -30,15 +30,19 @@ export class Parser {
       // Verifica blocos de direção para Move
       const blockSlot = container.querySelector(':scope > .blockSlot')
       if (blockSlot) {
-        const directionBlocks = blockSlot.querySelectorAll(':scope > .block--direction')
+        const directionBlocks = blockSlot.querySelectorAll('.block--direction')
         if (directionBlocks.length > 0) {
           instruction.directions = Array.from(directionBlocks).map(dirBlock => this.getDirectionType(dirBlock))
         }
-        
+
         // Verifica blocos filhos para Repeat/Se (corpo do loop/condição)
         if (mainBlock.classList.contains('block--repeat') || mainBlock.classList.contains('block--conditional')) {
-          const childBlocks = blockSlot.querySelectorAll(':scope > .block:not(.block--direction)')
-          instruction.body = Array.from(childBlocks).map(child => this.parseBlock(child)).filter(Boolean)
+          const childBlocks = blockSlot.querySelectorAll('.block:not(.block--direction)')
+          const parsedChildren = Array.from(childBlocks).map(child => {
+            processedBlocks.add(child)
+            return this.parseBlock(child)
+          }).filter(Boolean)
+          instruction.body = parsedChildren
         }
       }
       
@@ -68,12 +72,18 @@ export class Parser {
    */
   parseBlock(block) {
     if (block.classList.contains('block--repeat')) {
-      const blockText = block.querySelector('.block_text')
-      const textContent = blockText ? blockText.textContent : ''
-      let repeatCount = 2
-      const match = textContent.match(/\((\d+)x\)/)
-      if (match) {
-        repeatCount = parseInt(match[1])
+      const inputElement = block.querySelector('.blockRepeatInput')
+      let repeatCount = 1
+      if (inputElement && inputElement.value) {
+        repeatCount = parseInt(inputElement.value, 10)
+        if (isNaN(repeatCount) || repeatCount < 1) {
+          repeatCount = 1
+        } else if (repeatCount > 10) {
+          repeatCount = 10
+        }
+      }
+      if (inputElement && !inputElement.value) {
+        inputElement.value = 1
       }
       return {
         type: 'repeat',
@@ -198,8 +208,33 @@ export class Parser {
     } else if (block.classList.contains('block--control')) {
       return 'stop'
     }
-    
+
     return 'unknown'
+  }
+
+  /**
+   * Extrai o tipo de direção de um bloco direction
+   * @param {HTMLElement} block - Elemento do bloco de direção
+   * @returns {string} Tipo de direção (right, left, up, down)
+   */
+  getDirectionType(block) {
+    const iconElement = block.querySelector('.blockIcon');
+    const textElement = block.querySelector('.block_text');
+
+    const icon = iconElement ? iconElement.textContent.trim() : '';
+    const text = textElement ? textElement.textContent.trim() : '';
+
+    if (text === 'Direita' || icon === '→') {
+      return 'right';
+    } else if (text === 'Esquerda' || icon === '←') {
+      return 'left';
+    } else if (text === 'Cima' || icon === '↑') {
+      return 'up';
+    } else if (text === 'Baixo' || icon === '↓') {
+      return 'down';
+    }
+
+    return 'right';
   }
 
   /**

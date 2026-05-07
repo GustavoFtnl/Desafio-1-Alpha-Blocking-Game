@@ -143,20 +143,22 @@
 .workspaceArea {
   flex: 1;
   background-color: var(--color-surface);
-  
+
   /* Grade estilo Blueprint conforme Stitch - com subgrid */
-  background-image: 
+  background-image:
     linear-gradient(to right, #e2e8f0 1px, transparent 1px),
     linear-gradient(to bottom, #e2e8f0 1px, transparent 1px),
     linear-gradient(to right, #cbd5e1 1px, transparent 1px),
     linear-gradient(to bottom, #cbd5e1 1px, transparent 1px);
   background-size: 24px 24px, 24px 24px, 96px 96px, 96px 96px;
-  
+
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  padding: var(--space-lg);
+  overflow: auto;
 }
 
 /* Estado de dragover (quando arrastando bloco sobre a área) */
@@ -169,10 +171,20 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--space-md);
   pointer-events: none;
   opacity: 0.3;
   text-align: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.workspacePlaceholder.hidden {
+  display: none !important;
 }
 
 .workspacePlaceholderIcon {
