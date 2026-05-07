@@ -81,7 +81,7 @@ export class Stage {
       
       // Posiciona o ator no canto superior esquerdo (0,0)
       if (i === 0) {
-        cell.innerHTML = '<span style="font-size: 24px;">🤖</span>';
+        cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
         cell.classList.add("actorCell");
       }
       
@@ -229,7 +229,7 @@ export class Stage {
 
     if (cell) {
       cell.classList.add("visited", "current", "actorCell");
-      cell.innerHTML = '<span style="font-size: 24px;">🤖</span>';
+      cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
     }
   }
 
@@ -317,7 +317,7 @@ export class Stage {
 
     if (cell) {
       cell.classList.add("actorCell", "visited", "current");
-      cell.innerHTML = '<span style="font-size: 24px;">🤖</span>';
+      cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
     }
   }
 
