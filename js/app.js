@@ -55,6 +55,10 @@ App.prototype.checkMode = function() {
 };
 
 App.prototype.showHomeScreen = function() {
+  if (this.mode === "game" && this.game) {
+    document.dispatchEvent(new CustomEvent("saveWorkspace"));
+  }
+  
   this.mode = "home";
   var root = document.getElementById(CONFIG.DOM_IDS.ROOT);
   root.innerHTML = "<div class=\"homeScreen\"></div>";
@@ -71,9 +75,17 @@ App.prototype.showGameScreen = function() {
   
   var gameContainer = root.querySelector(".gameScreen");
   this.game = new Game(gameContainer);
+  
+  setTimeout(function() {
+    document.dispatchEvent(new CustomEvent("loadWorkspace"));
+  }, 100);
 };
 
 App.prototype.showRankingScreen = function() {
+  if (this.mode === "game" && this.game) {
+    document.dispatchEvent(new CustomEvent("saveWorkspace"));
+  }
+  
   this.mode = "ranking";
   var root = document.getElementById(CONFIG.DOM_IDS.ROOT);
   root.innerHTML = "<div class=\"rankingScreen\"></div>";

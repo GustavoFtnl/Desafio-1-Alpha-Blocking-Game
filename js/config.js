@@ -9,7 +9,8 @@ var CONFIG = {
     CURRENT_LEVEL: "alphaBlockingGame_currentLevel",
     STARS: "alphaBlockingGame_stars",
     USER_NAME: "alphaBlockingGame_userName",
-    USERS: "alphaBlockingGame_users"
+    USERS: "alphaBlockingGame_users",
+    WORKSPACE_BLOCKS: "alphaBlockingGame_workspaceBlocks"
   },
 
   LEVEL_CONFIG: {
