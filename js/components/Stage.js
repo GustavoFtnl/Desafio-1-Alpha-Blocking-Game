@@ -208,13 +208,8 @@ export class Stage {
     this.x = this.start.x;
     this.y = this.start.y;
 
-    // Limpa células visuais (mantém elementos do nível)
-    this.stageCells.forEach(cell => {
-      cell.classList.remove("visited", "current");
-    });
-
-    // Renderiza o ator na posição inicial
-    this.renderActor();
+    // Redesenha todos os elementos do nível (limpa e renderiza ator, walls, traps, trophy)
+    this.renderLevelElements();
   }
 
   /**

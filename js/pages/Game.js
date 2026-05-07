@@ -202,7 +202,6 @@ Game.prototype.clearWorkspace = function() {
 
 Game.prototype.handleLevelComplete = function() {
   this.clearExecutingBlocks();
-  this.setRetryButtonToRun();
 
   if (this.runner.running) {
     this.runner.stop();
@@ -242,6 +241,8 @@ Game.prototype.showLevelCompleteModal = function(stars, maxBlocks, usedBlocks) {
       });
     }
   });
+
+  this.setRunButtonToRetry();
 };
 
 Game.prototype.showGameCompleteModal = function(finalStars) {
@@ -257,6 +258,8 @@ Game.prototype.showGameCompleteModal = function(finalStars) {
       });
     }
   });
+
+  this.setRunButtonToRetry();
 };
 
 Game.prototype.restartCareer = function() {
