@@ -236,16 +236,18 @@ Game.prototype.showLevelCompleteModal = function(stars, maxBlocks, usedBlocks) {
   var self = this;
   var contentHtml = Modal.createLevelCompleteHtml(stars, maxBlocks, usedBlocks);
 
-  this.modal.open(contentHtml).then(function() {
-    var nextLevelBtn = self.modal.modalElement.querySelector(".btn");
-    if (nextLevelBtn) {
-      nextLevelBtn.addEventListener("click", function() {
-        self.modal.close();
-        gameState.advanceLevel();
-        self.clearWorkspace();
-      });
-    }
-  });
+  this.modal.open(contentHtml);
+
+  var nextLevelBtn = this.modal.modalElement.querySelector(".btn");
+  if (nextLevelBtn) {
+    nextLevelBtn.addEventListener("click", function() {
+      self.modal.close();
+      gameState.advanceLevel();
+      self.clearWorkspace();
+      self.loadLevelConfig();
+      self.updateUI();
+    });
+  }
 
   this.setRunButtonToRetry();
 };
@@ -254,15 +256,15 @@ Game.prototype.showGameCompleteModal = function(finalStars) {
   var self = this;
   var contentHtml = Modal.createGameCompleteHtml(finalStars);
 
-  this.modal.open(contentHtml).then(function() {
-    var restartBtn = self.modal.modalElement.querySelector(".btn");
-    if (restartBtn) {
-      restartBtn.addEventListener("click", function() {
-        self.modal.close();
-        self.restartCareer();
-      });
-    }
-  });
+  this.modal.open(contentHtml);
+
+  var restartBtn = this.modal.modalElement.querySelector(".btn");
+  if (restartBtn) {
+    restartBtn.addEventListener("click", function() {
+      self.modal.close();
+      self.restartCareer();
+    });
+  }
 
   this.setRunButtonToRetry();
 };
@@ -271,6 +273,8 @@ Game.prototype.restartCareer = function() {
   gameState.resetCareer();
   DOM.clearWorkspaceVisual();
   this.clearWorkspace();
+  this.loadLevelConfig();
+  this.updateUI();
 };
 
 Game.prototype.handleLevelSelected = function(level) {
