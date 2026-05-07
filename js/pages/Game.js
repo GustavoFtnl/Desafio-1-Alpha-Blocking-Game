@@ -149,15 +149,16 @@ Game.prototype.handleLevelFailed = function() {
   var self = this;
   var contentHtml = Modal.createLevelFailedHtml();
 
-  this.modal.open(contentHtml).then(function() {
-    var retryBtn = self.modal.modalElement.querySelector(".btn");
-    if (retryBtn) {
-      retryBtn.addEventListener("click", function() {
-        self.modal.close();
-        self.stage.reset();
-      });
-    }
-  });
+  var modalOpened = this.modal.open(contentHtml);
+
+  var retryBtn = this.modal.modalElement.querySelector(".btn");
+  if (retryBtn) {
+    retryBtn.addEventListener("click", function() {
+      self.modal.close();
+      self.stage.reset();
+      self.setRetryButtonToRun();
+    });
+  }
 
   this.setRunButtonToRetry();
 };
