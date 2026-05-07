@@ -130,6 +130,15 @@ export class Workspace {
     const containers = this.container.querySelectorAll('.blockContainer')
     containers.forEach(container => container.remove())
 
+    const workspaceContent = this.container.querySelector('.workspaceContent')
+    if (workspaceContent) {
+      const absoluteBlocks = workspaceContent.querySelectorAll('.block[style*="position: absolute"]')
+      absoluteBlocks.forEach(block => block.remove())
+      
+      const absoluteContainers = workspaceContent.querySelectorAll('.blockContainer[style*="position: absolute"]')
+      absoluteContainers.forEach(container => container.remove())
+    }
+
     this.panX = 0
     this.panY = 0
     this.updatePanPosition()

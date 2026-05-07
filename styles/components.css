@@ -249,6 +249,17 @@
   padding: var(--space-xs);
 }
 
+.workspaceContent .blockContainer[style*="position: absolute"] {
+  display: flex;
+  flex-direction: column;
+}
+
+.workspaceContent .blockContainer[style*="position: absolute"] .blockSlot {
+  display: flex;
+  visibility: visible;
+  min-height: 48px;
+}
+
 .blockContainer > .block {
   position: relative;
 }
