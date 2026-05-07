@@ -45,7 +45,8 @@ Game.prototype.initComponents = function() {
 
   this.dragDrop = new DragDrop(
     this.sidebar.getPaletteElement(),
-    this.workspace.getWorkspaceElement()
+    this.workspace.getWorkspaceElement(),
+    this.workspace
   );
 
   topBarContainer.componentInstance = this.topBar;
@@ -128,6 +129,9 @@ Game.prototype.clearWorkspace = function() {
   }
 
   this.workspace.clear();
+  if (this.dragDrop) {
+    this.dragDrop.clearWorkspace();
+  }
   this.stage.reset();
 };
 

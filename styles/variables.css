@@ -32,6 +32,7 @@
 
   /* --- Cores dos Blocos por Categoria Funcional --- */
   --color-logic-move: #10b981;
+  --color-logic-direction: #34d399;
   --color-logic-rotate: #f59e0b;
   --color-logic-repeat: #a855f7;
   --color-logic-if: #ec4899;
@@ -42,7 +43,7 @@
   
   /* Alias para compatibilidade */
   --color-block-move: var(--color-logic-move);
-  --color-block-direction: var(--color-logic-move);
+  --color-block-direction: var(--color-logic-direction);
   --color-block-repeat: var(--color-logic-repeat);
   --color-block-conditional: var(--color-logic-if);
   --color-block-action: var(--color-logic-action);
