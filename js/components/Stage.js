@@ -18,12 +18,19 @@ export class Stage {
     this.cellSize = 40; // será calculado baseado no tamanho
 
     // Estado inicial do ator
-    this.x = 4; // Centro do grid (5,5 em 1-indexed = 4,4 em 0-indexed)
-    this.y = 4;
+    this.x = 0; // Canto superior esquerdo (0,0)
+    this.y = 0;
     this.direction = 0; // 0=cima
 
     this.maxBlocks = 8;
     this.currentLevel = 1;
+
+    // Elementos do nível
+    this.currentLevelConfig = null;
+    this.start = { x: 0, y: 0 };
+    this.walls = [];
+    this.traps = [];
+    this.trophy = { x: 0, y: 0 };
 
     this.stageGrid = null;
     this.actor = null;
@@ -73,9 +80,10 @@ export class Stage {
       cell.className = "stageCell";
       cell.setAttribute("role", "gridcell");
       
-      // Posiciona o ator no centro (4,4 = índice 44)
-      if (i === 44) {
+      // Posiciona o ator no canto superior esquerdo (0,0)
+      if (i === 0) {
         cell.innerHTML = '<span style="font-size: 24px;">🤖</span>';
+        cell.classList.add("actorCell");
       }
       
       this.stageGrid.appendChild(cell);
@@ -195,36 +203,45 @@ export class Stage {
   }
 
   /**
-   * Reseta o ator para a posição inicial (4,4) e direção padrão
+   * Reseta o ator para a posição inicial do nível
    */
   reset() {
-    this.x = 4;
-    this.y = 4;
+    this.x = this.start.x;
+    this.y = this.start.y;
     this.direction = 0;
 
-    // Limpa células visitadas
-    this.stageCells.forEach((cell) => {
+    // Limpa células visuais (mantém elementos do nível)
+    this.stageCells.forEach(cell => {
       cell.classList.remove("visited", "current");
     });
 
-    // Marca posição inicial
-    this.markCurrentCell();
+    // Renderiza o ator na posição inicial
+    this.renderActor();
   }
 
   /**
    * Marca a célula atual como visitada e atual
    */
   markCurrentCell() {
+    // Remove ator de todas as células
+    this.stageCells.forEach(cell => {
+      if (cell.classList.contains("actorCell")) {
+        cell.innerHTML = "";
+        cell.classList.remove("actorCell");
+      }
+    });
+
     const cellIndex = this.y * this.gridSize + this.x;
     const cell = this.stageCells[cellIndex];
 
     if (cell) {
-      cell.classList.add("visited", "current");
+      cell.classList.add("visited", "current", "actorCell");
+      cell.innerHTML = '<span style="font-size: 24px;">🤖</span>';
     }
   }
 
   /**
-   * Remove a marcação de célula atual
+   * Remove a marcação de célula atual (mantém visitada)
    */
   clearCurrentCell() {
     const cellIndex = this.y * this.gridSize + this.x;
@@ -292,12 +309,145 @@ export class Stage {
   }
 
   /**
-   * Verifica se uma posição está dentro dos limites do grid
+   * Atualiza a rotação visual do ator
+   */
+  updateActorRotation() {
+    const cellIndex = this.y * this.gridSize + this.x;
+    const cell = this.stageCells[cellIndex];
+    if (cell && cell.classList.contains("actorCell")) {
+      const span = cell.querySelector("span");
+      if (span) {
+        const rotation = this.direction * 90;
+        span.style.display = "inline-block";
+        span.style.transform = `rotate(${rotation}deg)`;
+      }
+    }
+  }
+
+  /**
+   * Define a configuração do nível atual
+   * @param {Object} levelConfig - Configuração do nível (start, trophy, walls, traps)
+   */
+  setLevelConfig(levelConfig) {
+    this.currentLevelConfig = levelConfig;
+    this.start = levelConfig.start || { x: 0, y: 0 };
+    this.walls = levelConfig.walls || [];
+    this.traps = levelConfig.traps || [];
+    this.trophy = levelConfig.trophy || { x: 0, y: 0 };
+    this.maxBlocks = levelConfig.maxBlocks || this.maxBlocks;
+    
+    // Define posição inicial do ator
+    this.x = this.start.x;
+    this.y = this.start.y;
+    this.direction = 0;
+    
+    // Renderiza todos os elementos (walls, traps, trophy, ator)
+    this.renderLevelElements();
+  }
+
+  /**
+   * Renderiza os elementos do nível no grid (walls, traps, trophy, ator)
+   */
+  renderLevelElements() {
+    if (!this.stageCells || !this.stageGrid) return;
+
+    // Limpa células (remove ator também)
+    this.stageCells.forEach(cell => {
+      cell.innerHTML = "";
+      cell.classList.remove("hasWall", "hasTrap", "hasTrophy", "actorCell", "visited", "current");
+    });
+
+    // Renderiza paredes
+    this.walls.forEach(wall => {
+      const index = wall.y * this.gridSize + wall.x;
+      const cell = this.stageCells[index];
+      if (cell) {
+        cell.classList.add("hasWall");
+        cell.innerHTML = '<span class="cellIcon">🧱</span>';
+      }
+    });
+
+    // Renderiza armadilhas
+    this.traps.forEach(trap => {
+      const index = trap.y * this.gridSize + trap.x;
+      const cell = this.stageCells[index];
+      if (cell) {
+        cell.classList.add("hasTrap");
+        cell.innerHTML = '<span class="cellIcon">💣</span>';
+      }
+    });
+
+    // Renderiza troféu
+    const trophyIndex = this.trophy.y * this.gridSize + this.trophy.x;
+    const trophyCell = this.stageCells[trophyIndex];
+    if (trophyCell) {
+      trophyCell.classList.add("hasTrophy");
+      trophyCell.innerHTML = '<span class="cellIcon">🏆</span>';
+    }
+
+    // Renderiza ator na posição inicial
+    this.renderActor();
+  }
+
+  /**
+   * Renderiza o ator na posição atual
+   */
+  renderActor() {
+    const cellIndex = this.y * this.gridSize + this.x;
+    const cell = this.stageCells[cellIndex];
+
+    if (cell) {
+      cell.classList.add("actorCell", "visited", "current");
+      cell.innerHTML = '<span style="font-size: 24px;">🤖</span>';
+      this.updateActorRotation();
+    }
+  }
+
+  /**
+   * Verifica colisão com uma posição específica
    * @param {number} x - Coordenada X
    * @param {number} y - Coordenada Y
-   * @returns {boolean} true se dentro dos limites
+   * @returns {string} Tipo de elemento: "wall", "trap", "trophy" ou null
    */
-  isWithinBounds(x, y) {
-    return x >= 0 && x < this.gridSize && y >= 0 && y < this.gridSize;
+  checkCollision(x, y) {
+    // Verifica parede
+    if (this.walls.some(w => w.x === x && w.y === y)) {
+      return "wall";
+    }
+    // Verifica armadilha
+    if (this.traps.some(t => t.x === x && t.y === y)) {
+      return "trap";
+    }
+    // Verifica troféu
+    if (this.trophy.x === x && this.trophy.y === y) {
+      return "trophy";
+    }
+    return null;
+  }
+
+  /**
+   * Verifica se há parede na direção do movimento
+   * @returns {boolean} true se houver parede na próxima posição
+   */
+  hasWallAhead() {
+    let nextX = this.x;
+    let nextY = this.y;
+
+    switch (this.direction) {
+      case 0: // cima
+        nextY--;
+        break;
+      case 1: // direita
+        nextX++;
+        break;
+      case 2: // baixo
+        nextY++;
+        break;
+      case 3: // esquerda
+        nextX--;
+        break;
+    }
+
+    return this.walls.some(w => w.x === nextX && w.y === nextY);
   }
 }

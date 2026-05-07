@@ -6,6 +6,7 @@
 
 import { gameState } from "../state.js";
 import DOM from "../dom.js";
+import { getLevelConfig } from "../config-levels.js";
 
 import { TopBar } from "../components/TopBar.js";
 import { Sidebar } from "../components/Sidebar.js";
@@ -51,11 +52,19 @@ Game.prototype.initComponents = function() {
   sidebarContainer.componentInstance = this.sidebar;
   workspaceContainer.componentInstance = this.workspace;
   stageContainer.componentInstance = this.stage;
+
+  // Carrega configuração do nível atual
+  this.loadLevelConfig();
 };
 
 Game.prototype.setupListeners = function() {
   var self = this;
   var workspaceContainer = DOM.getWorkspaceContainer();
+
+  // Listener para mudança de nível
+  document.addEventListener("levelSelected", function(e) {
+    self.handleLevelSelected(e.detail.level);
+  });
 
   workspaceContainer.addEventListener("blockCountChanged", function(e) {
     var maxBlocks = gameState.getMaxBlocks();
@@ -71,10 +80,6 @@ Game.prototype.setupListeners = function() {
     if (e.detail.success) {
       self.handleLevelComplete();
     }
-  });
-
-  document.addEventListener("levelSelected", function(e) {
-    self.handleLevelSelected(e.detail.level);
   });
 };
 
@@ -177,9 +182,9 @@ Game.prototype.restartCareer = function() {
 };
 
 Game.prototype.handleLevelSelected = function(level) {
+  gameState.setCurrentLevel(level);
   this.clearWorkspace();
-  this.stage.setMaxBlocks(gameState.getMaxBlocks());
-  this.stage.updateTitle(level);
+  this.loadLevelConfig();
   this.updateUI();
 };
 
@@ -187,9 +192,23 @@ Game.prototype.updateUI = function() {
   this.topBar.updateLevel(gameState.getCurrentLevel(), gameState.getTotalLevels());
   this.topBar.updateStars(gameState.getStarsForLevel(gameState.getCurrentLevel()));
   this.topBar.updateProgress(gameState.getProgressPercent());
-  this.stage.setMaxBlocks(gameState.getMaxBlocks());
   this.stage.updateTitle(gameState.getCurrentLevel());
+  this.loadLevelConfig();
 };
 
 export default Game;
 export { Game };
+
+/**
+ * Carrega a configuração do nível atual e aplica no Stage
+ */
+Game.prototype.loadLevelConfig = function() {
+  var currentLevel = gameState.getCurrentLevel();
+  var levelConfig = getLevelConfig(currentLevel);
+  
+  if (levelConfig) {
+    this.stage.setLevelConfig(levelConfig);
+    this.stage.updateTitle(currentLevel);
+    this.stage.updateBlockCounter(0);
+  }
+};

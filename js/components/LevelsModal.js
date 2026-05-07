@@ -70,18 +70,15 @@ export class LevelsModal {
 
     for (let level = 1; level <= totalLevels; level++) {
       const stars = getStarsForLevelFn ? getStarsForLevelFn(level) : 0;
-      const isCompleted = stars >= 1;
-      const isLocked = !isCompleted && level > 1;
 
       const starsHtml = this.generateStarsSvg(stars);
 
       html += `
         <button 
-          class="levelItem ${isLocked ? "levelItem--locked" : ""}" 
+          class="levelItem" 
           data-level="${level}"
           role="option"
           aria-label="Nível ${level}, ${stars} estrela${stars !== 1 ? "s" : ""}"
-          ${isLocked ? "disabled" : ""}
         >
           <span class="levelItem_number">Nível ${level}</span>
           <div class="levelItem_stars">${starsHtml}</div>
@@ -119,22 +116,24 @@ export class LevelsModal {
    * @param {function} getStarsForLevelFn - Função para obter estrelas
    */
   setupListeners(currentLevel, getStarsForLevelFn) {
-    const closeBtn = this.modalElement.querySelector("#levelsModalCloseBtn");
+    var self = this;
+    var closeBtn = this.modalElement.querySelector("#levelsModalCloseBtn");
     if (closeBtn) {
-      closeBtn.addEventListener("click", () => {
-        this.close();
+      closeBtn.addEventListener("click", function() {
+        self.close();
       });
     }
 
-    const levelItems = this.modalElement.querySelectorAll(".levelItem:not([disabled])");
-    levelItems.forEach((item) => {
-      item.addEventListener("click", () => {
-        const level = parseInt(item.dataset.level, 10);
-        this.close();
-        if (this.resolvePromise) {
-          this.resolvePromise(level);
-          this.resolvePromise = null;
+    var levelItems = this.modalElement.querySelectorAll(".levelItem");
+    levelItems.forEach(function(item) {
+      item.addEventListener("click", function() {
+        var level = parseInt(item.dataset.level, 10);
+        // Resolver ANTES de fechar
+        if (self.resolvePromise) {
+          self.resolvePromise(level);
+          self.resolvePromise = null;
         }
+        self.close();
       });
     });
   }
