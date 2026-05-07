@@ -182,7 +182,6 @@ export class Block {
       { type: "block--direction", icon: "↑", text: "Cima" },
       { type: "block--direction", icon: "↓", text: "Baixo" },
       { type: "block--repeat", icon: "loop", text: "Repetir" },
-      { type: "block--action", icon: "play_arrow", text: "Ação" },
     ];
   }
 
@@ -225,7 +224,26 @@ export class Block {
     if (!parentType) return false;
 
     const acceptedTypes = Block.getAcceptedChildTypes(parentType);
-    return acceptedTypes.includes(childType);
+    if (!acceptedTypes.includes(childType)) {
+      return false;
+    }
+
+    if (parentType === "block--repeat") {
+      return true;
+    }
+
+    const parentContainer = parentBlock.closest(".blockContainer");
+    if (parentContainer) {
+      const slot = parentContainer.querySelector(".blockSlot");
+      if (slot) {
+        const existingBlocks = slot.querySelectorAll(".block");
+        if (parentType === "block--move") {
+          return existingBlocks.length < 1;
+        }
+      }
+    }
+
+    return true;
   }
 
   /**

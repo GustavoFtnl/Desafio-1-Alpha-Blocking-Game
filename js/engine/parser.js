@@ -203,8 +203,6 @@ export class Parser {
       return 'repeat'
     } else if (block.classList.contains('block--conditional')) {
       return 'if'
-    } else if (block.classList.contains('block--action')) {
-      return 'action'
     } else if (block.classList.contains('block--control')) {
       return 'stop'
     }

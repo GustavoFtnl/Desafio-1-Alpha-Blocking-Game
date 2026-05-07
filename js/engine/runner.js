@@ -107,25 +107,15 @@ export class Runner {
         this.stage.direction = 2 // baixo
         this.stage.updateActorRotation()
         this.stage.move()
-        this.stage.direction = savedDir2
+this.stage.direction = savedDir2
         this.stage.updateActorRotation()
         break
-        
-      case 'action':
-        await this.delay(this.commandDelay)
-        break
-        
+
       case 'stop':
         this.isRunning = false
         break
-        
+
       case 'repeat':
-        await this.executeRepeat(instruction)
-        break
-        
-      case 'if':
-        await this.executeConditional(instruction)
-        break
         
       default:
         console.warn(`Tipo de instrução desconhecido: ${instruction.type}`)

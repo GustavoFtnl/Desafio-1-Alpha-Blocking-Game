@@ -93,7 +93,7 @@
 
 /* Estado de arrasto (dragging) */
 .block.dragging {
-  opacity: 0.8;
+  opacity: 1;
   transform: scale(1.05);
   box-shadow: var(--shadow-block-dragging);
   cursor: grabbing;
@@ -112,8 +112,15 @@
 
 /* Bloco pausado */
 .block.paused {
-  opacity: 0.6;
+  opacity: 1;
   animation: none;
+}
+
+/* Bloco selecionado */
+.block.selected {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  transform: scale(1.02);
 }
 
 /* Ícone do bloco */
@@ -127,9 +134,12 @@
 }
 
 /* --- Variações de Blocos por Categoria (Cores) --- */
-.block--move,
-.block--direction {
+.block--move {
   background-color: var(--color-logic-move);
+}
+
+.block--direction {
+  background-color: var(--color-logic-direction);
 }
 
 .block--rotate {
@@ -154,10 +164,6 @@
 
 .block--conditional {
   background-color: var(--color-logic-if);
-}
-
-.block--action {
-  background-color: var(--color-logic-action);
 }
 
 .block--control {
@@ -326,6 +332,28 @@
   content: "Arraste direções (→ ← ↑ ↓)" !important;
 }
 
+.blockSlot > .block > .blockSlot,
+.blockContainer > .block + .blockSlot {
+  margin-left: var(--space-md);
+  margin-top: var(--space-xs);
+  padding: var(--space-sm);
+}
+
+.blockSlot > .block .blockSlot:empty,
+.blockSlot > .block > .blockSlot:empty {
+  visibility: hidden;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+}
+
+.blockSlot > .block .blockSlot:empty::before,
+.blockSlot > .block > .blockSlot:empty::before {
+  display: none;
+}
+
 .blockSlot.dragover {
   background-color: rgba(0, 0, 0, 0.08);
   border-style: solid;
@@ -343,7 +371,7 @@
 }
 
 .blockSlot .block.dragging {
-  opacity: 0.5;
+  opacity: 1;
 }
 
 /* === ESTILOS DE BOTÕES === */
@@ -473,7 +501,7 @@
 
 /* === ESTADOS DE ARRASTE (Acessibilidade) === */
 [aria-grabbed="true"] {
-  opacity: 0.7;
+  opacity: 1;
   cursor: grabbing;
 }
 

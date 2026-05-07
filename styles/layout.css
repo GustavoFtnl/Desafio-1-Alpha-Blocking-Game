@@ -142,6 +142,8 @@
 /* === WORKSPACE (Dropzone - Área de Soltar) === */
 .workspaceArea {
   flex: 1;
+  min-width: 400px;
+  width: 100%;
   background-color: var(--color-surface);
 
   /* Grade estilo Blueprint conforme Stitch - com subgrid */
@@ -154,11 +156,18 @@
 
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: var(--space-lg);
-  overflow: auto;
+  overflow: hidden;
+}
+
+.workspaceContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.05s ease-out;
 }
 
 /* Estado de dragover (quando arrastando bloco sobre a área) */
@@ -205,6 +214,12 @@
   gap: 0;
   width: 100%;
   max-width: 280px;
+}
+
+.blockContainer > .block {
+  width: 100%;
+  max-width: 260px;
+  box-sizing: border-box;
 }
 
 /* === STAGE (Grid 10x10 - Mapa do Jogo) === */
@@ -321,4 +336,51 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-md);
+}
+
+/* === LIXEIRA (Remover Blocos) === */
+.trashArea {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-md);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-micro), visibility var(--transition-micro);
+}
+
+.trashArea.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.trashButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  transition: background-color var(--transition-micro), color var(--transition-micro), transform var(--transition-micro);
+}
+
+.trashButton:hover {
+  background-color: var(--color-logic-control);
+  color: var(--color-on-primary);
+  transform: scale(1.1);
+}
+
+.trashButton.dragover {
+  background-color: var(--color-logic-control);
+  color: var(--color-on-primary);
+  transform: scale(1.15);
+  box-shadow: var(--shadow-block-dragging);
+}
+
+.trashIcon {
+  font-size: 24px;
 }

@@ -44,7 +44,8 @@ Game.prototype.initComponents = function() {
 
   this.dragDrop = new DragDrop(
     this.sidebar.getPaletteElement(),
-    this.workspace.getWorkspaceElement()
+    this.workspace.getWorkspaceElement(),
+    this.workspace
   );
 
   topBarContainer.componentInstance = this.topBar;
