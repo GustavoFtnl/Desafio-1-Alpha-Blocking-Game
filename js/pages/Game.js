@@ -131,20 +131,61 @@ Game.prototype.executeInstructions = function() {
     return;
   }
 
+  this.disableExecutionButtons();
+  this.stage.enablePauseButton();
+  this.stage.setResumeToPause();
   this.stage.reset();
   this.runner.run(instructions);
+};
+
+Game.prototype.disableExecutionButtons = function() {
+  var stageContainer = DOM.getStageContainer();
+  var runButton = stageContainer.querySelector(".btn--run");
+  var clearButton = stageContainer.querySelector(".btn--clear");
+
+  if (runButton) {
+    runButton.classList.add("btn--disabled");
+    runButton.disabled = true;
+  }
+
+  if (clearButton) {
+    clearButton.classList.add("btn--disabled");
+    clearButton.disabled = true;
+  }
+};
+
+Game.prototype.enableExecutionButtons = function() {
+  var stageContainer = DOM.getStageContainer();
+  var runButton = stageContainer.querySelector(".btn--run");
+  var clearButton = stageContainer.querySelector(".btn--clear");
+
+  if (runButton) {
+    runButton.classList.remove("btn--disabled");
+    runButton.disabled = false;
+  }
+
+  if (clearButton) {
+    clearButton.classList.remove("btn--disabled");
+    clearButton.disabled = false;
+  }
 };
 
 Game.prototype.togglePause = function() {
   if (this.runner.paused) {
     this.runner.resume();
+    this.stage.setResumeToPause();
+    this.disableExecutionButtons();
   } else {
     this.runner.pause();
+    this.stage.setPauseToResume();
+    this.enableExecutionButtons();
   }
 };
 
 Game.prototype.handleLevelFailed = function() {
   this.clearExecutingBlocks();
+  this.enableExecutionButtons();
+  this.stage.disablePauseButton();
 
   var self = this;
   var contentHtml = Modal.createLevelFailedHtml();
@@ -164,6 +205,8 @@ Game.prototype.handleLevelFailed = function() {
 };
 
 Game.prototype.handleExecutionComplete = function() {
+  this.enableExecutionButtons();
+  this.stage.disablePauseButton();
   this.setRunButtonToRetry();
 };
 
@@ -202,6 +245,7 @@ Game.prototype.clearWorkspace = function() {
     this.dragDrop.clearWorkspace();
   }
   this.stage.reset();
+  this.stage.disablePauseButton();
   this.setRetryButtonToRun();
 };
 
@@ -211,6 +255,9 @@ Game.prototype.handleLevelComplete = function() {
   if (this.runner.running) {
     this.runner.stop();
   }
+
+  this.enableExecutionButtons();
+  this.stage.disablePauseButton();
 
   var totalBlocks = this.parser.countBlocks();
   var maxBlocks = gameState.getMaxBlocks();

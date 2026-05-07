@@ -434,6 +434,13 @@
   background-color: var(--color-error-container);
 }
 
+/* Botões desabilitados durante execução */
+.btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* === CONTADOR DE BLOCOS (Gamificação) === */
 .blockCounter {
   font-size: var(--font-label-bold-size);

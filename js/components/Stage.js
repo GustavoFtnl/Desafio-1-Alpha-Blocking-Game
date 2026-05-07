@@ -112,7 +112,8 @@ export class Stage {
     controlsRow.className = "controlsRowDual";
 
     const pauseBtn = document.createElement("button");
-    pauseBtn.className = "btn btn--pause";
+    pauseBtn.className = "btn btn--pause btn--disabled";
+    pauseBtn.disabled = true;
     pauseBtn.setAttribute("aria-label", "Pausar execução");
     pauseBtn.innerHTML = `
       <span class="material-symbols-outlined">pause</span>
@@ -169,6 +170,49 @@ export class Stage {
         const event = new CustomEvent("stageClear", { bubbles: true });
         this.container.dispatchEvent(event);
       });
+    }
+  }
+
+  /**
+   * Desabilita o botão de pausar e reseta o texto para "Pausar"
+   */
+  disablePauseButton() {
+    const pauseButton = this.controlsArea.querySelector(".btn--pause");
+    if (pauseButton) {
+      pauseButton.disabled = true;
+      pauseButton.classList.add("btn--disabled");
+      pauseButton.innerHTML = '<span class="material-symbols-outlined">pause</span> Pausar';
+    }
+  }
+
+  /**
+   * Habilita o botão de pausar
+   */
+  enablePauseButton() {
+    const pauseButton = this.controlsArea.querySelector(".btn--pause");
+    if (pauseButton) {
+      pauseButton.disabled = false;
+      pauseButton.classList.remove("btn--disabled");
+    }
+  }
+
+  /**
+   * Altera o texto do botão de pausar para "Retomar"
+   */
+  setPauseToResume() {
+    const pauseButton = this.controlsArea.querySelector(".btn--pause");
+    if (pauseButton) {
+      pauseButton.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> Retomar';
+    }
+  }
+
+  /**
+   * Altera o texto do botão de retomar para "Pausar"
+   */
+  setResumeToPause() {
+    const pauseButton = this.controlsArea.querySelector(".btn--pause");
+    if (pauseButton) {
+      pauseButton.innerHTML = '<span class="material-symbols-outlined">pause</span> Pausar';
     }
   }
 
