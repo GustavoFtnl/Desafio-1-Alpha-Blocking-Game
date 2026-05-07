@@ -148,7 +148,7 @@ Game.prototype.handleLevelFailed = function() {
   var contentHtml = Modal.createLevelFailedHtml();
 
   this.modal.open(contentHtml).then(function() {
-    var retryBtn = self.modal.modalElement.querySelector("#retryBtn");
+    var retryBtn = self.modal.modalElement.querySelector(".btn");
     if (retryBtn) {
       retryBtn.addEventListener("click", function() {
         self.modal.close();
@@ -201,6 +201,13 @@ Game.prototype.clearWorkspace = function() {
 };
 
 Game.prototype.handleLevelComplete = function() {
+  this.clearExecutingBlocks();
+  this.setRetryButtonToRun();
+
+  if (this.runner.running) {
+    this.runner.stop();
+  }
+
   var totalBlocks = this.parser.countBlocks();
   var maxBlocks = gameState.getMaxBlocks();
 
@@ -213,12 +220,20 @@ Game.prototype.handleLevelComplete = function() {
   }
 };
 
+Game.prototype.clearExecutingBlocks = function() {
+  var workspaceContainer = DOM.getWorkspaceContainer();
+  var executingBlocks = workspaceContainer.querySelectorAll(".executing");
+  executingBlocks.forEach(function(block) {
+    block.classList.remove("executing");
+  });
+};
+
 Game.prototype.showLevelCompleteModal = function(stars, maxBlocks, usedBlocks) {
   var self = this;
   var contentHtml = Modal.createLevelCompleteHtml(stars, maxBlocks, usedBlocks);
 
   this.modal.open(contentHtml).then(function() {
-    var nextLevelBtn = self.modal.modalElement.querySelector("#nextLevelBtn");
+    var nextLevelBtn = self.modal.modalElement.querySelector(".btn");
     if (nextLevelBtn) {
       nextLevelBtn.addEventListener("click", function() {
         self.modal.close();
@@ -234,7 +249,7 @@ Game.prototype.showGameCompleteModal = function(finalStars) {
   var contentHtml = Modal.createGameCompleteHtml(finalStars);
 
   this.modal.open(contentHtml).then(function() {
-    var restartBtn = self.modal.modalElement.querySelector("#restartCareerBtn");
+    var restartBtn = self.modal.modalElement.querySelector(".btn");
     if (restartBtn) {
       restartBtn.addEventListener("click", function() {
         self.modal.close();

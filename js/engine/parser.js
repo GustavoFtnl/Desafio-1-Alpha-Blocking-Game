@@ -16,35 +16,30 @@ export class Parser {
    * @returns {Array} Array de instruções para o runner
    */
   parse() {
-    const instructions = [];
-    const processedElements = new Set();
+    const instructions = []
+    const processedElements = new Set()
 
-    const blockStacks = this.workspace.querySelectorAll(".blockStack");
-    console.log("Parser: Encontrou blockStacks:", blockStacks.length);
+    const blockStacks = this.workspace.querySelectorAll(".blockStack")
 
     blockStacks.forEach(stack => {
-      const directChildren = stack.children;
-      console.log("Parser: Stack tem filhos diretos:", directChildren.length);
+      const directChildren = stack.children
 
       Array.from(directChildren).forEach(element => {
-        console.log("Parser: Processing element:", element.className);
-        if (processedElements.has(element)) return;
-        processedElements.add(element);
+        if (processedElements.has(element)) return
+        processedElements.add(element)
 
-        const parsed = this.parseElement(element);
-        console.log("Parser: Parsed result:", parsed);
+        const parsed = this.parseElement(element)
         if (parsed) {
           if (Array.isArray(parsed)) {
-            instructions.push(...parsed);
+            instructions.push(...parsed)
           } else {
-            instructions.push(parsed);
+            instructions.push(parsed)
           }
         }
-      });
-    });
+      })
+    })
 
-    console.log("Parser: Total instructions:", instructions.length, instructions);
-    return instructions;
+    return instructions
   }
 
   /**
@@ -117,22 +112,19 @@ export class Parser {
    * @returns {string} Direction: up, down, left, right
    */
   getDirectionFromBlock(directionBlock) {
-    // O bloco direction pode ter ícone ou texto como filho direto
-    let content = directionBlock.textContent.trim();
-    
-    console.log("Parser getDirection: content =", JSON.stringify(content));
+    const content = directionBlock.textContent.trim()
 
     if (content.includes("→") || content.includes("Direita")) {
-      return "moveRight";
+      return "moveRight"
     } else if (content.includes("←") || content.includes("Esquerda")) {
-      return "moveLeft";
+      return "moveLeft"
     } else if (content.includes("↑") || content.includes("Cima")) {
-      return "moveUp";
+      return "moveUp"
     } else if (content.includes("↓") || content.includes("Baixo")) {
-      return "moveDown";
+      return "moveDown"
     }
 
-    return "moveRight";
+    return "moveRight"
   }
 
   /**

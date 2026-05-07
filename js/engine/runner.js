@@ -29,7 +29,6 @@ export class Runner {
       return;
     }
 
-    console.log("Runner: Recebeu instruções:", instructions.length, instructions);
     this.instructions = instructions;
     this.currentIndex = 0;
     this.isRunning = true;
@@ -37,7 +36,6 @@ export class Runner {
 
     try {
       for (const instruction of this.instructions) {
-        console.log("Runner: Executando instrução:", instruction.type);
         if (!this.isRunning) break;
 
         if (this.isPaused) {
@@ -86,28 +84,18 @@ export class Runner {
    * @returns {Promise<{moved: boolean}>} Resultado do movimento
    */
   async executeAction(instruction) {
-    console.log("Runner executeAction: tipo =", instruction.type);
-    let result;
     switch (instruction.type) {
       case "moveUp":
-        result = this.stage.moveUp();
-        console.log("Runner: moveUp resultado =", result);
-        return result;
+        return this.stage.moveUp();
 
       case "moveDown":
-        result = this.stage.moveDown();
-        console.log("Runner: moveDown resultado =", result);
-        return result;
+        return this.stage.moveDown();
 
       case "moveLeft":
-        result = this.stage.moveLeft();
-        console.log("Runner: moveLeft resultado =", result);
-        return result;
+        return this.stage.moveLeft();
 
       case "moveRight":
-        result = this.stage.moveRight();
-        console.log("Runner: moveRight resultado =", result);
-        return result;
+        return this.stage.moveRight();
 
       case "repeat":
         return await this.handleRepeat(instruction.count, instruction.body);
