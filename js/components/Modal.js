@@ -237,9 +237,11 @@ export class Modal {
       <h2 class="modal_title modal_title--danger">Ops! 😵</h2>
       <p>Você atingiu uma armadilha!</p>
       <p>Volte a posição inicial e tente outro caminho.</p>
-      <button class="btn btn--run" id="${uniqueId}" aria-label="Tentar novamente">
-        Tentar Novamente
-      </button>
+      <div class="modal_actions">
+        <button class="btn btn--run" id="${uniqueId}" aria-label="Tentar novamente">
+          Tentar Novamente
+        </button>
+      </div>
     `
   }
 
@@ -254,9 +256,11 @@ export class Modal {
       <h2 class="modal_title">Código encerrado! 🏁</h2>
       <p>Você não alcançou o troféu.</p>
       <p>Seu código terminou antes de chegar ao objetivo.</p>
-      <button class="btn btn--run" id="${uniqueId}" aria-label="Tentar novamente">
-        Tentar Novamente
-      </button>
+      <div class="modal_actions">
+        <button class="btn btn--run" id="${uniqueId}" aria-label="Tentar novamente">
+          Tentar Novamente
+        </button>
+      </div>
     `
   }
 }

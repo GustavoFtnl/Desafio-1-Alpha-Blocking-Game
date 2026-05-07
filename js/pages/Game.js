@@ -144,6 +144,8 @@ Game.prototype.togglePause = function() {
 };
 
 Game.prototype.handleLevelFailed = function() {
+  this.clearExecutingBlocks();
+
   var self = this;
   var contentHtml = Modal.createLevelFailedHtml();
 
@@ -156,6 +158,8 @@ Game.prototype.handleLevelFailed = function() {
       });
     }
   });
+
+  this.setRunButtonToRetry();
 };
 
 Game.prototype.handleExecutionComplete = function() {
