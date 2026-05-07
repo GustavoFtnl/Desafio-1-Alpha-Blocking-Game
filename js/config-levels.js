@@ -6,15 +6,46 @@
  */
 
 const CONFIG_LEVELS = [
-  // Nível 1: Introdução - Movimento básico
+  // Nível 1: Corredor Central
   {
     id: 1,
-    name: "Introdução",
-    start: { x: 0, y: 0 },
-    trophy: { x: 2, y: 0 },
-    walls: [],
+    name: "Corredor Central",
+    start: { x: 0, y: 4 },
+    trophy: { x: 9, y: 4 },
+
+    holes: [
+      { x: 0, y: 0 }
+    ],
+
+    walls: [
+      // Linha superior
+      { x: 0, y: 3 },
+      { x: 1, y: 3 },
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
+      { x: 4, y: 3 },
+      { x: 5, y: 3 },
+      { x: 6, y: 3 },
+      { x: 7, y: 3 },
+      { x: 8, y: 3 },
+      { x: 9, y: 3 },
+
+      // Linha inferior
+      { x: 0, y: 5 },
+      { x: 1, y: 5 },
+      { x: 2, y: 5 },
+      { x: 3, y: 5 },
+      { x: 4, y: 5 },
+      { x: 5, y: 5 },
+      { x: 6, y: 5 },
+      { x: 7, y: 5 },
+      { x: 8, y: 5 },
+      { x: 9, y: 5 },
+    ],
+
     traps: [],
-    maxBlocks: 8
+
+    maxBlocks: 12,
   },
 
   // Nível 2: Primeira Parede
@@ -25,7 +56,7 @@ const CONFIG_LEVELS = [
     trophy: { x: 3, y: 0 },
     walls: [{ x: 1, y: 0 }],
     traps: [],
-    maxBlocks: 10
+    maxBlocks: 10,
   },
 
   // Nível 3: Primeira Armadilha
@@ -34,9 +65,12 @@ const CONFIG_LEVELS = [
     name: "Primeira Armadilha",
     start: { x: 0, y: 0 },
     trophy: { x: 3, y: 0 },
-    walls: [{ x: 1, y: 0 }, { x: 2, y: 0 }],
+    walls: [
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+    ],
     traps: [{ x: 1, y: 1 }],
-    maxBlocks: 12
+    maxBlocks: 12,
   },
 
   // Nível 4: Desvio Simples
@@ -45,9 +79,13 @@ const CONFIG_LEVELS = [
     name: "Desvio Simples",
     start: { x: 0, y: 0 },
     trophy: { x: 4, y: 1 },
-    walls: [{ x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }],
+    walls: [
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 3, y: 0 },
+    ],
     traps: [],
-    maxBlocks: 14
+    maxBlocks: 14,
   },
 
   // Nível 5: Armadilha e Parede
@@ -56,9 +94,15 @@ const CONFIG_LEVELS = [
     name: "Armadilha e Parede",
     start: { x: 0, y: 0 },
     trophy: { x: 4, y: 1 },
-    walls: [{ x: 1, y: 0 }, { x: 2, y: 0 }],
-    traps: [{ x: 2, y: 1 }, { x: 3, y: 1 }],
-    maxBlocks: 16
+    walls: [
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+    ],
+    traps: [
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+    ],
+    maxBlocks: 16,
   },
 
   // Nível 6: Labirinto Simples
@@ -68,12 +112,14 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 5, y: 2 },
     walls: [
-      { x: 1, y: 0 }, { x: 2, y: 0 },
-      { x: 1, y: 1 }, { x: 2, y: 1 },
-      { x: 1, y: 2 }
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 1, y: 2 },
     ],
     traps: [{ x: 3, y: 1 }],
-    maxBlocks: 18
+    maxBlocks: 18,
   },
 
   // Nível 7: Caminho Alternativo
@@ -83,11 +129,18 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 5, y: 2 },
     walls: [
-      { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 },
-      { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 }
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 3, y: 0 },
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
     ],
-    traps: [{ x: 1, y: 2 }, { x: 2, y: 2 }],
-    maxBlocks: 20
+    traps: [
+      { x: 1, y: 2 },
+      { x: 2, y: 2 },
+    ],
+    maxBlocks: 20,
   },
 
   // Nível 8: Armadilhas em Linha
@@ -101,9 +154,9 @@ const CONFIG_LEVELS = [
       { x: 1, y: 0 },
       { x: 2, y: 0 },
       { x: 4, y: 0 },
-      { x: 5, y: 0 }
+      { x: 5, y: 0 },
     ],
-    maxBlocks: 22
+    maxBlocks: 22,
   },
 
   // Nível 9: Sala de Troféu
@@ -113,12 +166,18 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 7, y: 3 },
     walls: [
-      { x: 5, y: 2 }, { x: 6, y: 2 },
-      { x: 5, y: 3 }, { x: 6, y: 3 },
-      { x: 5, y: 4 }, { x: 6, y: 4 }
+      { x: 5, y: 2 },
+      { x: 6, y: 2 },
+      { x: 5, y: 3 },
+      { x: 6, y: 3 },
+      { x: 5, y: 4 },
+      { x: 6, y: 4 },
     ],
-    traps: [{ x: 5, y: 1 }, { x: 6, y: 1 }],
-    maxBlocks: 24
+    traps: [
+      { x: 5, y: 1 },
+      { x: 6, y: 1 },
+    ],
+    maxBlocks: 24,
   },
 
   // Nível 10: Zigzag
@@ -128,16 +187,19 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 9, y: 0 },
     walls: [
-      { x: 2, y: 0 }, { x: 2, y: 1 },
-      { x: 4, y: 1 }, { x: 4, y: 2 },
-      { x: 6, y: 2 }, { x: 6, y: 3 }
+      { x: 2, y: 0 },
+      { x: 2, y: 1 },
+      { x: 4, y: 1 },
+      { x: 4, y: 2 },
+      { x: 6, y: 2 },
+      { x: 6, y: 3 },
     ],
     traps: [
       { x: 1, y: 1 },
       { x: 3, y: 2 },
-      { x: 5, y: 3 }
+      { x: 5, y: 3 },
     ],
-    maxBlocks: 26
+    maxBlocks: 26,
   },
 
   // Nível 11: Corredor
@@ -147,15 +209,19 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 9, y: 4 },
     walls: [
-      { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 3, y: 2 },
-      { x: 1, y: 3 }, { x: 2, y: 3 }, { x: 3, y: 3 }
+      { x: 1, y: 2 },
+      { x: 2, y: 2 },
+      { x: 3, y: 2 },
+      { x: 1, y: 3 },
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
     ],
     traps: [
       { x: 1, y: 1 },
       { x: 5, y: 2 },
-      { x: 3, y: 4 }
+      { x: 3, y: 4 },
     ],
-    maxBlocks: 28
+    maxBlocks: 28,
   },
 
   // Nível 12: Ilha
@@ -165,14 +231,19 @@ const CONFIG_LEVELS = [
     start: { x: 5, y: 5 },
     trophy: { x: 5, y: 5 },
     walls: [
-      { x: 3, y: 4 }, { x: 4, y: 4 },
-      { x: 6, y: 4 }, { x: 7, y: 4 },
-      { x: 3, y: 5 }, { x: 7, y: 5 },
-      { x: 3, y: 6 }, { x: 4, y: 6 },
-      { x: 6, y: 6 }, { x: 7, y: 6 }
+      { x: 3, y: 4 },
+      { x: 4, y: 4 },
+      { x: 6, y: 4 },
+      { x: 7, y: 4 },
+      { x: 3, y: 5 },
+      { x: 7, y: 5 },
+      { x: 3, y: 6 },
+      { x: 4, y: 6 },
+      { x: 6, y: 6 },
+      { x: 7, y: 6 },
     ],
     traps: [],
-    maxBlocks: 30
+    maxBlocks: 30,
   },
 
   // Nível 13: Ponte
@@ -182,19 +253,25 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 9, y: 5 },
     walls: [
-      { x: 2, y: 2 }, { x: 3, y: 2 },
-      { x: 2, y: 3 }, { x: 3, y: 3 },
-      { x: 2, y: 4 }, { x: 3, y: 4 },
-      { x: 6, y: 2 }, { x: 7, y: 2 },
-      { x: 6, y: 3 }, { x: 7, y: 3 },
-      { x: 6, y: 4 }, { x: 7, y: 4 }
+      { x: 2, y: 2 },
+      { x: 3, y: 2 },
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
+      { x: 2, y: 4 },
+      { x: 3, y: 4 },
+      { x: 6, y: 2 },
+      { x: 7, y: 2 },
+      { x: 6, y: 3 },
+      { x: 7, y: 3 },
+      { x: 6, y: 4 },
+      { x: 7, y: 4 },
     ],
     traps: [
       { x: 4, y: 2 },
       { x: 5, y: 3 },
-      { x: 4, y: 4 }
+      { x: 4, y: 4 },
     ],
-    maxBlocks: 32
+    maxBlocks: 32,
   },
 
   // Nível 14: Labirinto Médio
@@ -204,18 +281,25 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 8, y: 8 },
     walls: [
-      { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 },
-      { x: 1, y: 1 }, { x: 3, y: 1 },
-      { x: 1, y: 2 }, { x: 2, y: 2 },
-      { x: 5, y: 1 }, { x: 5, y: 2 }, { x: 5, y: 3 },
-      { x: 7, y: 0 }, { x: 7, y: 1 }
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 3, y: 0 },
+      { x: 1, y: 1 },
+      { x: 3, y: 1 },
+      { x: 1, y: 2 },
+      { x: 2, y: 2 },
+      { x: 5, y: 1 },
+      { x: 5, y: 2 },
+      { x: 5, y: 3 },
+      { x: 7, y: 0 },
+      { x: 7, y: 1 },
     ],
     traps: [
       { x: 2, y: 1 },
       { x: 4, y: 2 },
-      { x: 6, y: 1 }
+      { x: 6, y: 1 },
     ],
-    maxBlocks: 34
+    maxBlocks: 34,
   },
 
   // Nível 15: Espiral
@@ -225,15 +309,22 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 4, y: 4 },
     walls: [
-      { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 1 },
-      { x: 1, y: 2 }, { x: 4, y: 2 },
-      { x: 1, y: 3 }, { x: 2, y: 3 }, { x: 3, y: 3 }, { x: 4, y: 3 }
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 4, y: 1 },
+      { x: 1, y: 2 },
+      { x: 4, y: 2 },
+      { x: 1, y: 3 },
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
+      { x: 4, y: 3 },
     ],
     traps: [
       { x: 2, y: 2 },
-      { x: 3, y: 2 }
+      { x: 3, y: 2 },
     ],
-    maxBlocks: 36
+    maxBlocks: 36,
   },
 
   // Nível 16: Campo Minado
@@ -244,13 +335,19 @@ const CONFIG_LEVELS = [
     trophy: { x: 9, y: 9 },
     walls: [],
     traps: [
-      { x: 1, y: 1 }, { x: 2, y: 2 }, { x: 3, y: 3 },
-      { x: 4, y: 4 }, { x: 5, y: 5 },
-      { x: 6, y: 6 }, { x: 7, y: 7 },
-      { x: 3, y: 1 }, { x: 5, y: 3 },
-      { x: 7, y: 5 }, { x: 8, y: 6 }
+      { x: 1, y: 1 },
+      { x: 2, y: 2 },
+      { x: 3, y: 3 },
+      { x: 4, y: 4 },
+      { x: 5, y: 5 },
+      { x: 6, y: 6 },
+      { x: 7, y: 7 },
+      { x: 3, y: 1 },
+      { x: 5, y: 3 },
+      { x: 7, y: 5 },
+      { x: 8, y: 6 },
     ],
-    maxBlocks: 38
+    maxBlocks: 38,
   },
 
   // Nível 17: Fortaleza
@@ -260,16 +357,30 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 8, y: 5 },
     walls: [
-      { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 5, y: 1 },
-      { x: 1, y: 2 }, { x: 5, y: 2 },
-      { x: 1, y: 3 }, { x: 5, y: 3 },
-      { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }, { x: 5, y: 4 }
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 4, y: 1 },
+      { x: 5, y: 1 },
+      { x: 1, y: 2 },
+      { x: 5, y: 2 },
+      { x: 1, y: 3 },
+      { x: 5, y: 3 },
+      { x: 1, y: 4 },
+      { x: 2, y: 4 },
+      { x: 3, y: 4 },
+      { x: 4, y: 4 },
+      { x: 5, y: 4 },
     ],
     traps: [
-      { x: 2, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 2 },
-      { x: 2, y: 3 }, { x: 3, y: 3 }, { x: 4, y: 3 }
+      { x: 2, y: 2 },
+      { x: 3, y: 2 },
+      { x: 4, y: 2 },
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
+      { x: 4, y: 3 },
     ],
-    maxBlocks: 40
+    maxBlocks: 40,
   },
 
   // Nível 18: Caos
@@ -279,16 +390,27 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 9, y: 9 },
     walls: [
-      { x: 0, y: 2 }, { x: 2, y: 0 }, { x: 2, y: 3 },
-      { x: 4, y: 0 }, { x: 4, y: 4 }, { x: 6, y: 2 },
-      { x: 6, y: 5 }, { x: 8, y: 3 }
+      { x: 0, y: 2 },
+      { x: 2, y: 0 },
+      { x: 2, y: 3 },
+      { x: 4, y: 0 },
+      { x: 4, y: 4 },
+      { x: 6, y: 2 },
+      { x: 6, y: 5 },
+      { x: 8, y: 3 },
     ],
     traps: [
-      { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 2 },
-      { x: 5, y: 1 }, { x: 5, y: 3 }, { x: 5, y: 5 },
-      { x: 7, y: 1 }, { x: 7, y: 4 }, { x: 7, y: 5 }
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 2 },
+      { x: 5, y: 1 },
+      { x: 5, y: 3 },
+      { x: 5, y: 5 },
+      { x: 7, y: 1 },
+      { x: 7, y: 4 },
+      { x: 7, y: 5 },
     ],
-    maxBlocks: 42
+    maxBlocks: 42,
   },
 
   // Nível 19: Labirinto Grande
@@ -298,20 +420,34 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 9, y: 9 },
     walls: [
-      { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 },
-      { x: 1, y: 2 }, { x: 5, y: 1 }, { x: 6, y: 1 },
-      { x: 1, y: 3 }, { x: 3, y: 3 }, { x: 4, y: 3 },
-      { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 },
-      { x: 5, y: 3 }, { x: 5, y: 4 }, { x: 5, y: 5 },
-      { x: 7, y: 3 }, { x: 7, y: 4 },
-      { x: 7, y: 5 }, { x: 8, y: 5 }
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 1, y: 2 },
+      { x: 5, y: 1 },
+      { x: 6, y: 1 },
+      { x: 1, y: 3 },
+      { x: 3, y: 3 },
+      { x: 4, y: 3 },
+      { x: 1, y: 4 },
+      { x: 2, y: 4 },
+      { x: 3, y: 4 },
+      { x: 5, y: 3 },
+      { x: 5, y: 4 },
+      { x: 5, y: 5 },
+      { x: 7, y: 3 },
+      { x: 7, y: 4 },
+      { x: 7, y: 5 },
+      { x: 8, y: 5 },
     ],
     traps: [
-      { x: 2, y: 2 }, { x: 4, y: 2 },
-      { x: 6, y: 3 }, { x: 6, y: 4 },
-      { x: 8, y: 4 }
+      { x: 2, y: 2 },
+      { x: 4, y: 2 },
+      { x: 6, y: 3 },
+      { x: 6, y: 4 },
+      { x: 8, y: 4 },
     ],
-    maxBlocks: 44
+    maxBlocks: 44,
   },
 
   // Nível 20: Desafio Final
@@ -321,30 +457,53 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 0 },
     trophy: { x: 9, y: 9 },
     walls: [
-      { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 },
-      { x: 1, y: 1 }, { x: 4, y: 1 },
-      { x: 1, y: 2 }, { x: 4, y: 2 },
-      { x: 1, y: 3 }, { x: 2, y: 3 }, { x: 3, y: 3 },
-      { x: 6, y: 0 }, { x: 7, y: 0 }, { x: 8, y: 0 },
-      { x: 6, y: 1 }, { x: 7, y: 1 },
-      { x: 6, y: 2 }, { x: 9, y: 2 },
-      { x: 8, y: 3 }, { x: 9, y: 3 },
-      { x: 6, y: 4 }, { x: 7, y: 4 },
-      { x: 3, y: 5 }, { x: 4, y: 5 },
-      { x: 5, y: 6 }, { x: 6, y: 6 }
+      { x: 1, y: 0 },
+      { x: 2, y: 0 },
+      { x: 3, y: 0 },
+      { x: 1, y: 1 },
+      { x: 4, y: 1 },
+      { x: 1, y: 2 },
+      { x: 4, y: 2 },
+      { x: 1, y: 3 },
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
+      { x: 6, y: 0 },
+      { x: 7, y: 0 },
+      { x: 8, y: 0 },
+      { x: 6, y: 1 },
+      { x: 7, y: 1 },
+      { x: 6, y: 2 },
+      { x: 9, y: 2 },
+      { x: 8, y: 3 },
+      { x: 9, y: 3 },
+      { x: 6, y: 4 },
+      { x: 7, y: 4 },
+      { x: 3, y: 5 },
+      { x: 4, y: 5 },
+      { x: 5, y: 6 },
+      { x: 6, y: 6 },
     ],
     traps: [
-      { x: 1, y: 4 }, { x: 2, y: 4 },
-      { x: 5, y: 0 }, { x: 5, y: 1 }, { x: 5, y: 2 },
-      { x: 8, y: 1 }, { x: 9, y: 1 },
-      { x: 7, y: 2 }, { x: 8, y: 2 },
-      { x: 5, y: 3 }, { x: 6, y: 3 },
-      { x: 3, y: 4 }, { x: 4, y: 4 },
-      { x: 4, y: 6 }, { x: 5, y: 7 },
-      { x: 7, y: 7 }, { x: 8, y: 7 }
+      { x: 1, y: 4 },
+      { x: 2, y: 4 },
+      { x: 5, y: 0 },
+      { x: 5, y: 1 },
+      { x: 5, y: 2 },
+      { x: 8, y: 1 },
+      { x: 9, y: 1 },
+      { x: 7, y: 2 },
+      { x: 8, y: 2 },
+      { x: 5, y: 3 },
+      { x: 6, y: 3 },
+      { x: 3, y: 4 },
+      { x: 4, y: 4 },
+      { x: 4, y: 6 },
+      { x: 5, y: 7 },
+      { x: 7, y: 7 },
+      { x: 8, y: 7 },
     ],
-    maxBlocks: 46
-  }
+    maxBlocks: 46,
+  },
 ];
 
 /**
@@ -353,7 +512,7 @@ const CONFIG_LEVELS = [
  * @returns {Object|null} Configuração do nível ou null se não existir
  */
 function getLevelConfig(levelId) {
-  return CONFIG_LEVELS.find(level => level.id === levelId) || null;
+  return CONFIG_LEVELS.find((level) => level.id === levelId) || null;
 }
 
 /**

@@ -306,6 +306,11 @@
   border: 2px solid black;
 }
 
+/* Célula com buraco */
+.stageCell.hasHole {
+  background-color: var(--color-primary);
+}
+
 /* Célula com troféu */
 .stageCell.hasTrophy {
   font-size: 2em;
