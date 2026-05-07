@@ -111,4 +111,38 @@ export class Modal {
     }
     return html
   }
+
+  /**
+   * Cria HTML para o modal de nível falhou (atingiu armadilha)
+   * @returns {string} HTML do modal
+   */
+  static createLevelFailedHtml() {
+    return `
+      <h2 class="modal_title" style="color: var(--color-danger);">Ops! *
+        <span style="font-size: 48px;">💥</span>
+      </h2>
+      <p>Você atingiu uma armadilha!</p>
+      <p>Volte a posição inicial e tente outro caminho.</p>
+      <button class="btn btn--run" id="retryBtn" aria-label="Tentar novamente">
+        Tentar Novamente
+      </button>
+    `
+  }
+
+  /**
+   * Cria HTML para o modal de nível incompleto (não alcançou o troféu)
+   * @returns {string} HTML do modal
+   */
+  static createLevelIncompleteHtml() {
+    return `
+      <h2 class="modal_title">Código encerrado! *
+        <span style="font-size: 48px;">🏁</span>
+      </h2>
+      <p>Você não alcançou o troféu.</p>
+      <p>Seu código terminou antes de chegar ao objetivo.</p>
+      <button class="btn btn--run" id="retryBtn" aria-label="Tentar novamente">
+        Tentar Novamente
+      </button>
+    `
+  }
 }

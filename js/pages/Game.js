@@ -82,10 +82,30 @@ Game.prototype.setupListeners = function() {
       self.handleLevelComplete();
     }
   });
+
+  document.addEventListener("levelFailed", function(e) {
+    if (e.detail.reason === "trap") {
+      self.handleLevelFailed();
+    }
+  });
+
+  document.addEventListener("executionComplete", function(e) {
+    if (e.detail.reachedEnd) {
+      self.handleExecutionComplete();
+    }
+  });
 };
 
 Game.prototype.runCode = function() {
   var self = this;
+  var stageContainer = DOM.getStageContainer();
+  var runButton = stageContainer.querySelector(".btn--run");
+
+  if (runButton && runButton.dataset.retryMode === "true") {
+    this.resetStageFromRetry();
+    return;
+  }
+
   var totalBlocks = this.parser.countBlocks();
   var maxBlocks = gameState.getMaxBlocks();
 
@@ -123,6 +143,50 @@ Game.prototype.togglePause = function() {
   }
 };
 
+Game.prototype.handleLevelFailed = function() {
+  var self = this;
+  var contentHtml = Modal.createLevelFailedHtml();
+
+  this.modal.open(contentHtml).then(function() {
+    var retryBtn = self.modal.modalElement.querySelector("#retryBtn");
+    if (retryBtn) {
+      retryBtn.addEventListener("click", function() {
+        self.modal.close();
+        self.stage.reset();
+      });
+    }
+  });
+};
+
+Game.prototype.handleExecutionComplete = function() {
+  this.setRunButtonToRetry();
+};
+
+Game.prototype.setRunButtonToRetry = function() {
+  var stageContainer = DOM.getStageContainer();
+  var runButton = stageContainer.querySelector(".btn--run");
+
+  if (runButton) {
+    runButton.innerHTML = '<span class="material-symbols-outlined">replay</span> Tentar Novamente';
+    runButton.dataset.retryMode = "true";
+  }
+};
+
+Game.prototype.setRetryButtonToRun = function() {
+  var stageContainer = DOM.getStageContainer();
+  var runButton = stageContainer.querySelector(".btn--run");
+
+  if (runButton) {
+    runButton.innerHTML = '<span class="material-symbols-outlined">play_circle</span> EXECUTAR';
+    runButton.dataset.retryMode = "false";
+  }
+};
+
+Game.prototype.resetStageFromRetry = function() {
+  this.stage.reset();
+  this.setRetryButtonToRun();
+};
+
 Game.prototype.clearWorkspace = function() {
   if (this.runner.running) {
     this.runner.stop();
@@ -133,6 +197,7 @@ Game.prototype.clearWorkspace = function() {
     this.dragDrop.clearWorkspace();
   }
   this.stage.reset();
+  this.setRetryButtonToRun();
 };
 
 Game.prototype.handleLevelComplete = function() {
