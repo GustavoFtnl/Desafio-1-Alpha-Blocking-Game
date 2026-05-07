@@ -13,9 +13,7 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 4 },
     trophy: { x: 9, y: 4 },
 
-    holes: [
-      { x: 0, y: 0 }
-    ],
+    holes: [{ x: 0, y: 0 }],
 
     walls: [
       // Linha superior

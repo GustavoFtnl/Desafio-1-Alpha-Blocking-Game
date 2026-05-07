@@ -258,17 +258,17 @@ export class Stage {
     this.traps = levelConfig.traps || [];
     this.trophy = levelConfig.trophy || { x: 0, y: 0 };
     this.maxBlocks = levelConfig.maxBlocks || this.maxBlocks;
-    
+
     // Define posição inicial do ator
     this.x = this.start.x;
     this.y = this.start.y;
 
-    // Renderiza todos os elementos (walls, traps, trophy, ator)
+    // Renderiza todos os elementos (walls, holes, traps, trophy, ator)
     this.renderLevelElements();
   }
 
   /**
-   * Renderiza os elementos do nível no grid (walls, traps, trophy, ator)
+   * Renderiza os elementos do nível no grid (walls, holes, traps, trophy, ator)
    */
   renderLevelElements() {
     if (!this.stageCells || !this.stageGrid) return;
@@ -355,23 +355,15 @@ export class Stage {
   }
 
   /**
-   * Verifica se há parede em uma posição específica
+   * Verifica se há parede ou buraco em uma posição específica
    * @param {number} x - Coordenada X
    * @param {number} y - Coordenada Y
-   * @returns {boolean} true se houver parede na posição
+   * @returns {boolean} true se houver parede ou buraco na posição
    */
   hasWallAt(x, y) {
-    return this.walls.some(w => w.x === x && w.y === y);
-  }
-
-  /**
-   * Verifica se há buraco em uma posição específica
-   * @param {number} x - Coordenada X
-   * @param {number} y - Coordenada Y
-   * @returns {boolean} true se houver buraco na posição
-   */
-  hasHoleAt(x, y) {
-    return this.holes.some(h => h.x === x && h.y === y);
+    const hasWall = this.walls.some(w => w.x === x && w.y === y);
+    const hasHole = this.holes.some(h => h.x === x && h.y === y);
+    return hasWall || hasHole;
   }
 
   /**
@@ -383,10 +375,6 @@ export class Stage {
 
     if (this.hasWallAt(this.x, nextY)) {
       return {moved: false, reason: "wall"};
-    }
-
-    if (this.hasHoleAt(this.x, nextY)) {
-      return {moved: false, reason: "hole"};
     }
 
     if (nextY < 0) {
@@ -411,10 +399,6 @@ export class Stage {
       return {moved: false, reason: "wall"};
     }
 
-    if (this.hasHoleAt(this.x, nextY)) {
-      return {moved: false, reason: "hole"};
-    }
-
     if (nextY >= this.gridSize) {
       return {moved: false, reason: "border"};
     }
@@ -437,10 +421,6 @@ export class Stage {
       return {moved: false, reason: "wall"};
     }
 
-    if (this.hasHoleAt(nextX, this.y)) {
-      return {moved: false, reason: "hole"};
-    }
-
     if (nextX < 0) {
       return {moved: false, reason: "border"};
     }
@@ -461,10 +441,6 @@ export class Stage {
 
     if (this.hasWallAt(nextX, this.y)) {
       return {moved: false, reason: "wall"};
-    }
-
-    if (this.hasHoleAt(nextX, this.y)) {
-      return {moved: false, reason: "hole"};
     }
 
     if (nextX >= this.gridSize) {
