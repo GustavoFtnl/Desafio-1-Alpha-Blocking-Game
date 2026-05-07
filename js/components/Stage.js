@@ -20,7 +20,6 @@ export class Stage {
     // Estado inicial do ator
     this.x = 0; // Canto superior esquerdo (0,0)
     this.y = 0;
-    this.direction = 0; // 0=cima
 
     this.maxBlocks = 8;
     this.currentLevel = 1;
@@ -208,7 +207,6 @@ export class Stage {
   reset() {
     this.x = this.start.x;
     this.y = this.start.y;
-    this.direction = 0;
 
     // Limpa células visuais (mantém elementos do nível)
     this.stageCells.forEach(cell => {
@@ -253,78 +251,6 @@ export class Stage {
   }
 
   /**
-   * Move o ator na direção atual
-   * @returns {boolean} true se moveu com sucesso, false se houve colisão
-   */
-  move() {
-    let newX = this.x;
-    let newY = this.y;
-
-    switch (this.direction) {
-      case 0: // cima
-        newY--;
-        break;
-      case 1: // direita
-        newX++;
-        break;
-      case 2: // baixo
-        newY++;
-        break;
-      case 3: // esquerda
-        newX--;
-        break;
-    }
-
-    // Verifica colisão com as bordas do grid (0-9)
-    if (
-      newX < 0 ||
-      newX >= this.gridSize ||
-      newY < 0 ||
-      newY >= this.gridSize
-    ) {
-      return false;
-    }
-
-    this.clearCurrentCell();
-    this.x = newX;
-    this.y = newY;
-
-    this.markCurrentCell();
-
-    return true;
-  }
-
-  /**
-   * Gira o ator 90 graus para a direita
-   */
-  turnRight() {
-    this.direction = (this.direction + 1) % 4;
-  }
-
-  /**
-   * Gira o ator 90 graus para a esquerda
-   */
-  turnLeft() {
-    this.direction = (this.direction + 3) % 4;
-  }
-
-  /**
-   * Atualiza a rotação visual do ator
-   */
-  updateActorRotation() {
-    const cellIndex = this.y * this.gridSize + this.x;
-    const cell = this.stageCells[cellIndex];
-    if (cell && cell.classList.contains("actorCell")) {
-      const span = cell.querySelector("span");
-      if (span) {
-        const rotation = this.direction * 90;
-        span.style.display = "inline-block";
-        span.style.transform = `rotate(${rotation}deg)`;
-      }
-    }
-  }
-
-  /**
    * Define a configuração do nível atual
    * @param {Object} levelConfig - Configuração do nível (start, trophy, walls, traps)
    */
@@ -339,8 +265,7 @@ export class Stage {
     // Define posição inicial do ator
     this.x = this.start.x;
     this.y = this.start.y;
-    this.direction = 0;
-    
+
     // Renderiza todos os elementos (walls, traps, trophy, ator)
     this.renderLevelElements();
   }
@@ -399,7 +324,6 @@ export class Stage {
     if (cell) {
       cell.classList.add("actorCell", "visited", "current");
       cell.innerHTML = '<span style="font-size: 24px;">🤖</span>';
-      this.updateActorRotation();
     }
   }
 
@@ -426,28 +350,131 @@ export class Stage {
   }
 
   /**
-   * Verifica se há parede na direção do movimento
-   * @returns {boolean} true se houver parede na próxima posição
+   * Verifica se há parede em uma posição específica
+   * @param {number} x - Coordenada X
+   * @param {number} y - Coordenada Y
+   * @returns {boolean} true se houver parede na posição
    */
-  hasWallAhead() {
-    let nextX = this.x;
-    let nextY = this.y;
+  hasWallAt(x, y) {
+    return this.walls.some(w => w.x === x && w.y === y);
+  }
 
-    switch (this.direction) {
-      case 0: // cima
-        nextY--;
-        break;
-      case 1: // direita
-        nextX++;
-        break;
-      case 2: // baixo
-        nextY++;
-        break;
-      case 3: // esquerda
-        nextX--;
-        break;
+  /**
+   * Move o ator para cima (absoluto)
+   * @returns {Object} {moved: boolean, reason: string}
+   */
+  moveUp() {
+    const nextY = this.y - 1;
+
+    if (this.hasWallAt(this.x, nextY)) {
+      return {moved: false, reason: "wall"};
     }
 
-    return this.walls.some(w => w.x === nextX && w.y === nextY);
+    if (nextY < 0) {
+      return {moved: false, reason: "border"};
+    }
+
+    this.clearCurrentCell();
+    this.y = nextY;
+    this.markCurrentCell();
+
+    return {moved: true};
   }
-}
+
+  /**
+   * Move o ator para baixo (absoluto)
+   * @returns {Object} {moved: boolean, reason: string}
+   */
+  moveDown() {
+    const nextY = this.y + 1;
+
+    if (this.hasWallAt(this.x, nextY)) {
+      return {moved: false, reason: "wall"};
+    }
+
+    if (nextY >= this.gridSize) {
+      return {moved: false, reason: "border"};
+    }
+
+    this.clearCurrentCell();
+    this.y = nextY;
+    this.markCurrentCell();
+
+    return {moved: true};
+  }
+
+  /**
+   * Move o ator para esquerda (absoluto)
+   * @returns {Object} {moved: boolean, reason: string}
+   */
+  moveLeft() {
+    const nextX = this.x - 1;
+
+    if (this.hasWallAt(nextX, this.y)) {
+      return {moved: false, reason: "wall"};
+    }
+
+    if (nextX < 0) {
+      return {moved: false, reason: "border"};
+    }
+
+    this.clearCurrentCell();
+    this.x = nextX;
+    this.markCurrentCell();
+
+    return {moved: true};
+  }
+
+  /**
+   * Move o ator para direita (absoluto)
+   * @returns {Object} {moved: boolean, reason: string}
+   */
+  moveRight() {
+    const nextX = this.x + 1;
+
+    if (this.hasWallAt(nextX, this.y)) {
+      return {moved: false, reason: "wall"};
+    }
+
+    if (nextX >= this.gridSize) {
+      return {moved: false, reason: "border"};
+    }
+
+    this.clearCurrentCell();
+    this.x = nextX;
+    this.markCurrentCell();
+
+    return {moved: true};
+  }
+
+  /**
+   * Verifica se há armadilha na posição atual do ator
+   * @returns {boolean} true se houver armadilha
+   */
+  isTrapAtCurrentPosition() {
+    return this.traps.some(t => t.x === this.x && t.y === this.y);
+  }
+
+  /**
+   * Verifica se há troféu na posição atual do ator
+   * @returns {boolean} true se houver troféu
+   */
+  isTrophyAtCurrentPosition() {
+    return this.trophy.x === this.x && this.trophy.y === this.y;
+  }
+
+  /**
+   * Verifica colisão na posição atual (após movimento)
+   * @returns {string|null} "trap", "trophy" ou null
+   */
+  checkCollisionAtCurrentPosition() {
+    if (this.isTrapAtCurrentPosition()) {
+      return "trap";
+    }
+    if (this.isTrophyAtCurrentPosition()) {
+      return "trophy";
+    }
+    return null;
+  }
+
+  }
