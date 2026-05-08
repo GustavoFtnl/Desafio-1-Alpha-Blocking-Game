@@ -254,10 +254,6 @@ export class Block {
       return false;
     }
 
-    if (parentType === "block--start" || parentType === "block--repeat") {
-      return true;
-    }
-
     const parentContainer = parentBlock.closest(".blockContainer");
     if (parentContainer) {
       const slot = parentContainer.querySelector(".blockSlot");

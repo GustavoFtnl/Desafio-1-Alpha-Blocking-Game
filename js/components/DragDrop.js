@@ -163,13 +163,7 @@ export class DragDrop {
           let canAccept = false;
 
           if (parentBlock) {
-            const parentType = Block.getType(parentBlock);
-            if (
-              parentType === "block--repeat" ||
-              parentType === "block--start"
-            ) {
-              canAccept = true;
-            }
+            canAccept = Block.canAccept(parentBlock, blockType);
           }
 
           if (!canAccept && isDirection) {
@@ -370,6 +364,13 @@ export class DragDrop {
     stack.appendChild(element);
   }
 
+  clearAllDragOverClasses() {
+    const allSlots = this.workspace.querySelectorAll(".blockSlot");
+    allSlots.forEach((slot) => {
+      slot.classList.remove("dragover", "dragover--valid", "dragover--invalid");
+    });
+  }
+
   setupPaletteListeners() {
     this.palette.addEventListener("dragstart", (e) => {
       const block = e.target.closest(".block");
@@ -420,39 +421,6 @@ export class DragDrop {
         let canAccept = false;
         if (parentBlock) {
           canAccept = Block.canAccept(parentBlock, blockType);
-        }
-
-        if (!canAccept) {
-          if (parentBlock) {
-            const parentType = Block.getType(parentBlock);
-            if (parentType === "block--start") {
-              if (blockType === "block--move" || blockType === "block--repeat") {
-                canAccept = true;
-              }
-            } else if (blockType === "block--repeat" || blockType === "block--move") {
-              canAccept = true;
-            }
-          }
-        }
-
-        if (
-          !canAccept &&
-          (blockType === "block--move" ||
-            blockType === "block--repeat" ||
-            this.draggedBlock?.classList?.contains("block--move") ||
-            this.draggedBlock?.classList?.contains("block--repeat"))
-        ) {
-          const slotContainer = slot.closest(".blockContainer");
-          if (slotContainer) {
-            const slotParent = slotContainer.querySelector(":scope > .block");
-            if (
-              slotParent &&
-              (slotParent.classList.contains("block--repeat") ||
-                slotParent.classList.contains("block--start"))
-            ) {
-              canAccept = true;
-            }
-          }
         }
 
         if (canAccept) {
@@ -523,39 +491,6 @@ export class DragDrop {
         }
 
         if (!canAccept) {
-          if (parentBlock) {
-            const parentType = Block.getType(parentBlock);
-            if (parentType === "block--start") {
-              if (blockType === "block--move" || blockType === "block--repeat") {
-                canAccept = true;
-              }
-            } else if (blockType === "block--repeat" || blockType === "block--move") {
-              canAccept = true;
-            }
-          }
-        }
-
-        if (
-          !canAccept &&
-          (blockType === "block--move" ||
-            blockType === "block--repeat" ||
-            this.draggedBlock?.classList?.contains("block--move") ||
-            this.draggedBlock?.classList?.contains("block--repeat"))
-        ) {
-          const slotContainer = slot.closest(".blockContainer");
-          if (slotContainer) {
-            const slotParent = slotContainer.querySelector(":scope > .block");
-            if (
-              slotParent &&
-              (slotParent.classList.contains("block--repeat") ||
-                slotParent.classList.contains("block--start"))
-            ) {
-              canAccept = true;
-            }
-          }
-        }
-
-        if (!canAccept) {
           return;
         }
 
@@ -579,6 +514,8 @@ export class DragDrop {
         this.updatePlaceholder();
         this.dispatchBlockCountChanged();
         this.draggedBlock = null;
+
+        this.clearAllDragOverClasses();
         return;
       }
 
@@ -616,9 +553,10 @@ export class DragDrop {
       const dropX = e.clientX - workspaceRect.left;
       const dropY = e.clientY - workspaceRect.top;
 
-      this.addBlockToWorkspace(blockToInsert, dropX, dropY);
-      this.dispatchBlockCountChanged();
-    });
+this.addBlockToWorkspace(blockToInsert, dropX, dropY);
+        this.dispatchBlockCountChanged();
+        this.clearAllDragOverClasses();
+      });
 
     this.workspace.addEventListener("dragstart", (e) => {
       const block = e.target.closest(".block");
@@ -704,6 +642,7 @@ export class DragDrop {
         }
       }
 
+      this.clearAllDragOverClasses();
       this.draggedBlock = null;
       this.wasInContainer = false;
     });
