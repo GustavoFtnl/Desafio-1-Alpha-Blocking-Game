@@ -14,12 +14,334 @@ export class DragDrop {
     this.isFromPalette = false;
     this.maxBlocks = null;
     this.wasInContainer = false;
+    this.isDraggingFree = false;
+    this.dragOffsetX = 0;
+    this.dragOffsetY = 0;
+    this.draggedElement = null;
     this.init();
   }
 
   init() {
     this.setupPaletteListeners();
     this.setupWorkspaceListeners();
+    this.setupFreeDragListeners();
+  }
+
+  setupFreeDragListeners() {
+    this.workspace.addEventListener("mousedown", (e) => {
+      const clickedElement = e.target;
+      const block = clickedElement.closest(".block");
+
+      if (!block) return;
+      if (this.palette.contains(block)) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      let elementToDrag = block;
+
+      const container = block.closest(".blockContainer");
+      const workspaceContent =
+        this.workspace.querySelector(".workspaceContent");
+
+      if (container) {
+        const blockInside = container.querySelector(":scope > .block");
+        const blockType = Block.getType(block);
+
+        // Permite arrastar apenas o bloco direcional单独 (não o container inteiro)
+        if (blockType === "block--direction") {
+          elementToDrag = block;
+        } else if (blockInside && Block.hasSlot(blockInside)) {
+          elementToDrag = container;
+        }
+      } else if (
+        block.parentElement &&
+        block.parentElement.classList &&
+        block.parentElement.classList.contains("blockStack")
+      ) {
+        elementToDrag = block;
+      } else if (block.parentElement === workspaceContent) {
+        elementToDrag = block;
+      }
+
+      const rect = elementToDrag.getBoundingClientRect();
+
+      this.draggedElement = elementToDrag;
+      this.isDraggingFree = true;
+
+      this.dragOffsetX = e.clientX - rect.left;
+      this.dragOffsetY = e.clientY - rect.top;
+
+      this.dragStartLeft = rect.left;
+      this.dragStartTop = rect.top;
+
+      elementToDrag.style.position = "absolute";
+      elementToDrag.style.zIndex = "10000";
+      elementToDrag.style.transition = "none";
+      elementToDrag.style.filter = "none";
+      elementToDrag.style.transform = "none";
+
+      if (elementToDrag.parentElement !== workspaceContent) {
+        workspaceContent.appendChild(elementToDrag);
+      }
+
+      elementToDrag.style.left =
+        rect.left - workspaceContent.getBoundingClientRect().left + "px";
+      elementToDrag.style.top =
+        rect.top - workspaceContent.getBoundingClientRect().top + "px";
+
+      elementToDrag.classList.add("dragging");
+      elementToDrag.classList.add("freeDragging");
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!this.isDraggingFree || !this.draggedElement) return;
+
+      const workspaceContent =
+        this.workspace.querySelector(".workspaceContent");
+      const contentRect = workspaceContent.getBoundingClientRect();
+      const newX = e.clientX - contentRect.left - this.dragOffsetX;
+      const newY = e.clientY - contentRect.top - this.dragOffsetY;
+
+      this.draggedElement.style.left = newX + "px";
+      this.draggedElement.style.top = newY + "px";
+    });
+
+    document.addEventListener("mouseup", (e) => {
+      if (!this.isDraggingFree || !this.draggedElement) return;
+
+      const element = this.draggedElement;
+      const workspaceContent =
+        this.workspace.querySelector(".workspaceContent");
+      const contentRect = workspaceContent.getBoundingClientRect();
+
+      element.classList.remove("dragging");
+      element.classList.remove("freeDragging");
+      element.style.zIndex = "";
+      element.style.width = "";
+      element.style.transition = "";
+
+      const isBlockContainer = element.classList.contains("blockContainer");
+
+      const finalLeft = element.offsetLeft;
+      const finalTop = element.offsetTop;
+
+      if (
+        finalLeft < -50 ||
+        finalTop < -50 ||
+        finalLeft > contentRect.width + 50 ||
+        finalTop > contentRect.height + 50
+      ) {
+        element.remove();
+        this.updatePlaceholder();
+        this.dispatchBlockCountChanged();
+        if (this.workspaceInstance) {
+          this.workspaceInstance.checkBlocks();
+        }
+      } else {
+        let hasChildren = false;
+        let blockType = Block.getType(element);
+
+        if (!blockType && element.classList.contains("blockContainer")) {
+          const innerBlock = element.querySelector(":scope > .block");
+          if (innerBlock) {
+            blockType = Block.getType(innerBlock);
+            hasChildren = Block.hasSlot(innerBlock);
+          }
+        }
+
+        const isDirection = blockType === "block--direction";
+        const canHaveChildren =
+          blockType === "block--repeat" || blockType === "block--move";
+
+        if (isDirection || (canHaveChildren && hasChildren)) {
+          const targetSlot = this.findBlockSlotAtPosition(
+            e.clientX,
+            e.clientY,
+            element,
+          );
+
+          if (targetSlot) {
+            const parentBlock = targetSlot.previousElementSibling;
+            let canAccept = false;
+
+            if (parentBlock) {
+              const parentType = Block.getType(parentBlock);
+              if (parentType === "block--repeat") {
+                canAccept = true;
+              }
+            }
+
+            if (!canAccept && isDirection) {
+              canAccept =
+                parentBlock && Block.canAccept(parentBlock, blockType);
+            }
+
+            if (canAccept) {
+              element.style.position = "";
+              element.style.left = "";
+              element.style.top = "";
+              element.style.zIndex = "";
+
+              targetSlot.appendChild(element);
+
+              this.updatePlaceholder();
+              this.dispatchBlockCountChanged();
+              if (this.workspaceInstance) {
+                this.workspaceInstance.checkBlocks();
+              }
+
+              this.draggedElement = null;
+              this.isDraggingFree = false;
+              return;
+            }
+          }
+        }
+
+        element.style.position = "absolute";
+        element.style.left = finalLeft + "px";
+        element.style.top = finalTop + "px";
+
+        if (element.parentElement !== workspaceContent) {
+          workspaceContent.appendChild(element);
+        }
+
+        this.cleanupFreeDraggedElement(element, isBlockContainer);
+      }
+
+      this.draggedElement = null;
+      this.isDraggingFree = false;
+    });
+
+    this.findBlockSlotAtPosition = function (clientX, clientY, draggedElement) {
+      const allElements = document.elementsFromPoint(clientX, clientY);
+
+      for (let el of allElements) {
+        if (
+          el === draggedElement ||
+          (draggedElement && draggedElement.contains(el))
+        ) {
+          continue;
+        }
+
+        if (el.classList && el.classList.contains("blockSlot")) {
+          const rect = el.getBoundingClientRect();
+          if (
+            clientX >= rect.left &&
+            clientX <= rect.right &&
+            clientY >= rect.top &&
+            clientY <= rect.bottom
+          ) {
+            return el;
+          }
+        }
+
+        if (el.classList && el.classList.contains("block")) {
+          const container = el.closest(".blockContainer");
+          if (container) {
+            const slot = container.querySelector(".blockSlot");
+            if (slot) {
+              const rect = slot.getBoundingClientRect();
+              if (
+                clientX >= rect.left &&
+                clientX <= rect.right &&
+                clientY >= rect.top &&
+                clientY <= rect.bottom
+              ) {
+                return slot;
+              }
+            }
+          }
+        }
+      }
+
+      return null;
+    };
+  }
+
+  cleanupFreeDraggedElement(element, isBlockContainer) {
+    const workspaceContent = this.workspace.querySelector(".workspaceContent");
+    const hasAbsolutePosition = element.style.position === "absolute";
+
+    if (hasAbsolutePosition) {
+      element.style.position = "absolute";
+
+      if (element.parentElement !== workspaceContent) {
+        workspaceContent.appendChild(element);
+      }
+
+      this.updatePlaceholder();
+      this.dispatchBlockCountChanged();
+      if (this.workspaceInstance) {
+        this.workspaceInstance.checkBlocks();
+      }
+    } else {
+      const blockType = Block.getType(element);
+      element.style.position = "";
+      element.style.left = "";
+      element.style.top = "";
+
+      const parent = element.parentElement;
+      if (parent && parent.classList.contains("blockSlot")) {
+        return;
+      }
+
+      const isDirection = blockType === "block--direction";
+
+      if (isBlockContainer) {
+        this.ensureInStack(element);
+      } else if (isDirection) {
+        this.ensureInStack(element);
+      } else if (Block.hasSlot(element)) {
+        const container = document.createElement("div");
+        container.className = "blockContainer";
+
+        const typeName = blockType.replace("block--", "");
+        container.setAttribute("data-type", typeName);
+
+        const slot = document.createElement("div");
+        slot.className = "blockSlot";
+
+        const existingContainer = element.closest(".blockContainer");
+        if (existingContainer) {
+          const existingSlot = existingContainer.querySelector(".blockSlot");
+          if (existingSlot && existingSlot.children.length > 0) {
+            while (existingSlot.children.length > 0) {
+              slot.appendChild(existingSlot.children[0]);
+            }
+          }
+        }
+
+        container.appendChild(element);
+        container.appendChild(slot);
+
+        this.ensureInStack(container);
+      } else {
+        this.ensureInStack(element);
+      }
+    }
+
+    this.updatePlaceholder();
+    this.dispatchBlockCountChanged();
+    if (this.workspaceInstance) {
+      this.workspaceInstance.checkBlocks();
+    }
+  }
+
+  ensureInStack(element) {
+    let stack = this.workspace.querySelector(".blockStack");
+    if (!stack) {
+      stack = document.createElement("div");
+      stack.className = "blockStack";
+      const workspaceContent =
+        this.workspace.querySelector(".workspaceContent");
+      if (workspaceContent) {
+        workspaceContent.appendChild(stack);
+      } else {
+        this.workspace.appendChild(stack);
+      }
+    }
+    stack.appendChild(element);
   }
 
   setupPaletteListeners() {
@@ -84,7 +406,10 @@ export class DragDrop {
           canAccept = Block.canAccept(parentBlock, blockType);
         }
 
-        if (blockType === "block--move" || this.draggedBlock?.classList?.contains("block--move")) {
+        if (
+          blockType === "block--move" ||
+          this.draggedBlock?.classList?.contains("block--move")
+        ) {
           const slotContainer = slot.closest(".blockContainer");
           if (slotContainer) {
             const slotParent = slotContainer.querySelector(":scope > .block");
@@ -124,7 +449,11 @@ export class DragDrop {
 
       if (slot) {
         if (!slot.contains(e.relatedTarget)) {
-          slot.classList.remove("dragover", "dragover--valid", "dragover--invalid");
+          slot.classList.remove(
+            "dragover",
+            "dragover--valid",
+            "dragover--invalid",
+          );
         }
         return;
       }
@@ -151,7 +480,11 @@ export class DragDrop {
 
       if (slot) {
         e.stopPropagation();
-        slot.classList.remove("dragover", "dragover--valid", "dragover--invalid");
+        slot.classList.remove(
+          "dragover",
+          "dragover--valid",
+          "dragover--invalid",
+        );
 
         let blockType = e.dataTransfer.getData("text/plain");
         if (!blockType && this.draggedBlock) {
@@ -172,7 +505,10 @@ export class DragDrop {
           canAccept = Block.canAccept(parentBlock, blockType);
         }
 
-        if (blockType === "block--move" || this.draggedBlock?.classList?.contains("block--move")) {
+        if (
+          blockType === "block--move" ||
+          this.draggedBlock?.classList?.contains("block--move")
+        ) {
           const slotContainer = slot.closest(".blockContainer");
           if (slotContainer) {
             const slotParent = slotContainer.querySelector(":scope > .block");
@@ -237,7 +573,12 @@ export class DragDrop {
       }
 
       this.updatePlaceholder();
-      this.addBlockToWorkspace(blockToInsert);
+
+      const workspaceRect = this.workspace.getBoundingClientRect();
+      const dropX = e.clientX - workspaceRect.left;
+      const dropY = e.clientY - workspaceRect.top;
+
+      this.addBlockToWorkspace(blockToInsert, dropX, dropY);
       this.dispatchBlockCountChanged();
     });
 
@@ -248,13 +589,24 @@ export class DragDrop {
 
       let blockToDrag = block;
 
-      const parentContainer = block.closest(".blockContainer");
-      if (parentContainer) {
-        const containerParent = parentContainer.parentElement;
-        if (containerParent && containerParent.classList.contains("blockStack")) {
-          const parentBlock = parentContainer.querySelector(":scope > .block");
-          if (parentBlock && Block.hasSlot(parentBlock)) {
-            blockToDrag = parentContainer;
+      const blockType = Block.getType(block);
+
+      // Permite arrastar apenas o bloco direcional单独 (não o container inteiro)
+      if (blockType === "block--direction") {
+        blockToDrag = block;
+      } else {
+        const parentContainer = block.closest(".blockContainer");
+        if (parentContainer) {
+          const containerParent = parentContainer.parentElement;
+          if (
+            containerParent &&
+            containerParent.classList.contains("blockStack")
+          ) {
+            const parentBlock =
+              parentContainer.querySelector(":scope > .block");
+            if (parentBlock && Block.hasSlot(parentBlock)) {
+              blockToDrag = parentContainer;
+            }
           }
         }
       }
@@ -265,9 +617,13 @@ export class DragDrop {
       const parentContainerCheck = blockToDrag.closest(".blockContainer");
       this.wasInContainer = parentContainerCheck !== null;
 
-      const blockType = Block.getType(blockToDrag.querySelector ? blockToDrag.querySelector(".block") : blockToDrag);
-      if (blockType) {
-        e.dataTransfer.setData("text/plain", blockType);
+      const finalBlockType = Block.getType(
+        blockToDrag.querySelector
+          ? blockToDrag.querySelector(".block")
+          : blockToDrag,
+      );
+      if (finalBlockType) {
+        e.dataTransfer.setData("text/plain", finalBlockType);
       }
       e.dataTransfer.effectAllowed = "move";
       blockToDrag.classList.add("dragging");
@@ -329,20 +685,29 @@ export class DragDrop {
 
     const stacks = this.workspace.querySelectorAll(".blockStack");
     const containers = this.workspace.querySelectorAll(".blockContainer");
+    const workspaceContent = this.workspace.querySelector(".workspaceContent");
 
     let hasContent = false;
 
-    stacks.forEach(stack => {
+    stacks.forEach((stack) => {
       if (stack.children.length > 0) {
         hasContent = true;
       }
     });
 
-    containers.forEach(container => {
+    containers.forEach((container) => {
       if (container.children.length > 0) {
         hasContent = true;
       }
     });
+
+    // Verifica blocos diretos no workspaceContent (sem stack ou container)
+    if (workspaceContent) {
+      const directBlocks = workspaceContent.querySelectorAll(":scope > .block");
+      if (directBlocks.length > 0) {
+        hasContent = true;
+      }
+    }
 
     if (hasContent) {
       placeholder.classList.add("hidden");
@@ -355,14 +720,14 @@ export class DragDrop {
     const containers = this.workspace.querySelectorAll(".blockContainer");
     const stacks = this.workspace.querySelectorAll(".blockStack");
 
-    containers.forEach(container => {
+    containers.forEach((container) => {
       const hasBlocks = container.querySelector(".block") !== null;
       if (!hasBlocks) {
         container.remove();
       }
     });
 
-    stacks.forEach(stack => {
+    stacks.forEach((stack) => {
       const hasBlocks = stack.querySelector(".block, .blockContainer") !== null;
       if (!hasBlocks) {
         stack.remove();
@@ -434,23 +799,8 @@ export class DragDrop {
     return Block.createElement(config.text, config.icon, config.type);
   }
 
-  addBlockToWorkspace(block) {
-    const stacks = this.workspace.querySelectorAll(".blockStack");
-    let targetStack = null;
-
-    if (stacks.length > 0) {
-      targetStack = stacks[stacks.length - 1];
-    } else {
-      targetStack = document.createElement("div");
-      targetStack.className = "blockStack";
-
-      const workspaceContent = this.workspace.querySelector(".workspaceContent");
-      if (workspaceContent) {
-        workspaceContent.appendChild(targetStack);
-      } else {
-        this.workspace.appendChild(targetStack);
-      }
-    }
+  addBlockToWorkspace(block, dropX, dropY) {
+    const workspaceContent = this.workspace.querySelector(".workspaceContent");
 
     if (Block.hasSlot(block)) {
       const container = document.createElement("div");
@@ -465,9 +815,44 @@ export class DragDrop {
 
       container.appendChild(block);
       container.appendChild(slot);
-      targetStack.appendChild(container);
+
+      if (dropX !== undefined && dropY !== undefined) {
+        container.style.position = "absolute";
+        container.style.left = dropX + "px";
+        container.style.top = dropY + "px";
+        workspaceContent.appendChild(container);
+      } else {
+        const stacks = this.workspace.querySelectorAll(".blockStack");
+        let targetStack = null;
+
+        if (stacks.length > 0) {
+          targetStack = stacks[stacks.length - 1];
+        } else {
+          targetStack = document.createElement("div");
+          targetStack.className = "blockStack";
+          workspaceContent.appendChild(targetStack);
+        }
+        targetStack.appendChild(container);
+      }
     } else {
-      targetStack.appendChild(block);
+      if (dropX !== undefined && dropY !== undefined) {
+        block.style.position = "absolute";
+        block.style.left = dropX + "px";
+        block.style.top = dropY + "px";
+        workspaceContent.appendChild(block);
+      } else {
+        const stacks = this.workspace.querySelectorAll(".blockStack");
+        let targetStack = null;
+
+        if (stacks.length > 0) {
+          targetStack = stacks[stacks.length - 1];
+        } else {
+          targetStack = document.createElement("div");
+          targetStack.className = "blockStack";
+          workspaceContent.appendChild(targetStack);
+        }
+        targetStack.appendChild(block);
+      }
     }
 
     if (block.classList.contains("block--repeat")) {
@@ -503,6 +888,18 @@ export class DragDrop {
     stacks.forEach((stack) => stack.remove());
     const containers = this.workspace.querySelectorAll(".blockContainer");
     containers.forEach((container) => container.remove());
+
+    const workspaceContent = this.workspace.querySelector(".workspaceContent");
+    const absoluteBlocks = workspaceContent.querySelectorAll(
+      ".block[style*='position: absolute']",
+    );
+    absoluteBlocks.forEach((block) => block.remove());
+
+    const absoluteContainers = workspaceContent.querySelectorAll(
+      ".blockContainer[style*='position: absolute']",
+    );
+    absoluteContainers.forEach((container) => container.remove());
+
     this.updatePlaceholder();
     this.dispatchBlockCountChanged();
   }

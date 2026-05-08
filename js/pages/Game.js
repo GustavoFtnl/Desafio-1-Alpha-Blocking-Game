@@ -94,6 +94,30 @@ Game.prototype.setupListeners = function() {
       self.handleExecutionComplete();
     }
   });
+
+  document.addEventListener("saveWorkspace", function() {
+    self.saveWorkspaceBlocks();
+  });
+
+  document.addEventListener("loadWorkspace", function() {
+    self.loadWorkspaceBlocks();
+  });
+};
+
+Game.prototype.saveWorkspaceBlocks = function() {
+  if (this.workspace) {
+    var blocksData = this.workspace.exportBlocks();
+    gameState.saveWorkspaceBlocks(blocksData);
+  }
+};
+
+Game.prototype.loadWorkspaceBlocks = function() {
+  if (this.workspace) {
+    var blocksData = gameState.getWorkspaceBlocks();
+    if (blocksData && blocksData.length > 0) {
+      this.workspace.importBlocks(blocksData);
+    }
+  }
 };
 
 Game.prototype.runCode = function() {
@@ -245,6 +269,7 @@ Game.prototype.clearWorkspace = function() {
     this.dragDrop.clearWorkspace();
   }
   this.stage.reset();
+  gameState.clearWorkspaceBlocks();
   this.stage.disablePauseButton();
   this.setRetryButtonToRun();
 };

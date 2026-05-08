@@ -211,6 +211,39 @@ GameState.prototype.getProgressPercent = function() {
   return ((this.getCurrentLevel() - 1) / CONFIG.DEFAULTS.TOTAL_LEVELS) * 100;
 };
 
+GameState.prototype.saveWorkspaceBlocks = function(blocksData) {
+  if (this.currentUser) {
+    try {
+      localStorage.setItem(CONFIG.STORAGE_KEYS.WORKSPACE_BLOCKS + '_' + this.currentUser.name, JSON.stringify(blocksData));
+    } catch (error) {
+      console.error("Erro ao salvar blocos do workspace:", error);
+    }
+  }
+};
+
+GameState.prototype.getWorkspaceBlocks = function() {
+  if (this.currentUser) {
+    try {
+      var savedBlocks = localStorage.getItem(CONFIG.STORAGE_KEYS.WORKSPACE_BLOCKS + '_' + this.currentUser.name);
+      return savedBlocks ? JSON.parse(savedBlocks) : null;
+    } catch (error) {
+      console.error("Erro ao carregar blocos do workspace:", error);
+      return null;
+    }
+  }
+  return null;
+};
+
+GameState.prototype.clearWorkspaceBlocks = function() {
+  if (this.currentUser) {
+    try {
+      localStorage.removeItem(CONFIG.STORAGE_KEYS.WORKSPACE_BLOCKS + '_' + this.currentUser.name);
+    } catch (error) {
+      console.error("Erro ao limpar blocos do workspace:", error);
+    }
+  }
+};
+
 GameState.prototype.getTotalCompletedLevels = function() {
   var count = 0;
   for (var i = 0; i < this.users.length; i++) {
