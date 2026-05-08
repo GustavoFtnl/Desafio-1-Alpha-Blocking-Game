@@ -170,6 +170,10 @@
   background-color: var(--color-logic-if);
 }
 
+.block--start {
+  background-color: var(--color-logic-control);
+}
+
 .block--control {
   background-color: var(--color-logic-control);
 }
@@ -181,6 +185,9 @@
   gap: 2px;
   visibility: visible !important;
   opacity: 1 !important;
+  pointer-events: auto;
+  position: relative;
+  z-index: 100;
 }
 
 .blockRepeatBtn {
@@ -200,6 +207,9 @@
   justify-content: center;
   transition: background-color var(--transition-hover);
   visibility: visible !important;
+  pointer-events: auto;
+  position: relative;
+  z-index: 100;
 }
 
 .blockRepeatBtn:hover {
@@ -225,6 +235,9 @@
   cursor: pointer !important;
   visibility: visible !important;
   display: inline-block !important;
+  pointer-events: auto;
+  position: relative;
+  z-index: 100;
 }
 
 .blockRepeatInput:focus {
@@ -329,6 +342,14 @@
 
 .blockContainer block--move + .blockSlot:empty::before {
   content: "Arraste direções (→ ← ↑ ↓)";
+}
+
+.blockContainer[data-type="start"] .blockSlot {
+  border-color: #ef4444 !important;
+}
+
+.blockContainer[data-type="start"] .blockSlot:empty::before {
+  content: "Arraste blocos Mover ou Repetir" !important;
 }
 
 .blockContainer[data-type="repeat"] .blockSlot {

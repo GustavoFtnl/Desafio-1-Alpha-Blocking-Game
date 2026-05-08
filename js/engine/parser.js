@@ -19,6 +19,32 @@ export class Parser {
     const instructions = []
     const processedElements = new Set()
 
+    // Primeiro, procura o bloco Início como raiz
+    const startContainer = this.workspace.querySelector(".blockContainer[data-type='start']")
+    
+    if (startContainer) {
+      // Processa filhos diretos do Início
+      const slot = startContainer.querySelector(".blockSlot")
+      if (slot) {
+        Array.from(slot.children).forEach(element => {
+          if (processedElements.has(element)) return
+          processedElements.add(element)
+
+          const parsed = this.parseElement(element)
+          if (parsed) {
+            if (Array.isArray(parsed)) {
+              instructions.push(...parsed)
+            } else {
+              instructions.push(parsed)
+            }
+          }
+        })
+      }
+      
+      return instructions
+    }
+
+    // Fallback: comportamento original se não houver bloco Início
     // Primeiro, pega blocos dentro de .blockStack
     const blockStacks = this.workspace.querySelectorAll(".blockStack")
 
@@ -44,7 +70,7 @@ export class Parser {
     const workspaceContent = this.workspace.querySelector(".workspaceContent")
     if (workspaceContent) {
       Array.from(workspaceContent.children).forEach(element => {
-        if (element.classList.contains("blockStack")) return // já processado acima
+        if (element.classList.contains("blockStack")) return
         if (processedElements.has(element)) return
         processedElements.add(element)
 
@@ -88,6 +114,10 @@ export class Parser {
     const mainBlock = container.querySelector(":scope > .block");
     if (!mainBlock) return null;
 
+    if (mainBlock.classList.contains("block--start")) {
+      return this.parseStartBlock(mainBlock, container);
+    }
+
     if (mainBlock.classList.contains("block--repeat")) {
       return this.parseRepeatBlock(mainBlock, container);
     }
@@ -101,6 +131,31 @@ export class Parser {
     }
 
     return null;
+  }
+
+  parseStartBlock(block, container) {
+    const slot = container.querySelector(".blockSlot");
+    let childInstructions = [];
+
+    if (slot) {
+      const childElements = slot.querySelectorAll(":scope > .block, :scope > .blockContainer");
+      childElements.forEach(element => {
+        const parsed = this.parseElement(element);
+        if (parsed) {
+          if (Array.isArray(parsed)) {
+            childInstructions.push(...parsed);
+          } else {
+            childInstructions.push(parsed);
+          }
+        }
+      });
+    }
+
+    return {
+      type: "start",
+      body: childInstructions,
+      blockElement: block
+    };
   }
 
   /**
@@ -276,7 +331,7 @@ export class Parser {
    * @returns {number} Total de blocos
    */
   countBlocks() {
-    const allBlocks = this.workspace.querySelectorAll(".block--move, .block--jump, .block--direction, .block--repeat");
+    const allBlocks = this.workspace.querySelectorAll(".block--start, .block--move, .block--jump, .block--direction, .block--repeat");
     return allBlocks.length;
   }
 
