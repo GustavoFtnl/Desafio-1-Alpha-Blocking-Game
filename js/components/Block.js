@@ -177,6 +177,7 @@ export class Block {
   static getConfigs() {
     return [
       { type: "block--move", icon: "move_up", text: "Mover" },
+      { type: "block--jump", icon: "upgrade", text: "Pular" },
       { type: "block--direction", icon: "→", text: "Direita" },
       { type: "block--direction", icon: "←", text: "Esquerda" },
       { type: "block--direction", icon: "↑", text: "Cima" },
@@ -200,8 +201,9 @@ export class Block {
    */
   static getAcceptedChildTypes(parentType) {
     const accepts = {
-      "block--repeat": ["block--move"],
+      "block--repeat": ["block--move", "block--jump"],
       "block--move": ["block--direction"],
+      "block--jump": ["block--direction"],
     };
     return accepts[parentType] || [];
   }
@@ -256,7 +258,7 @@ export class Block {
       return false;
     }
     const type = Block.getType(block);
-    return type === "block--repeat" || type === "block--move";
+    return type === "block--repeat" || type === "block--move" || type === "block--jump";
   }
 
   /**

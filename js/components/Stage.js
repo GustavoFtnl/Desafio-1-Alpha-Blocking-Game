@@ -410,6 +410,64 @@ export class Stage {
   }
 
   /**
+   * Verifica se o ator pode pular para uma direção
+   * Não pode pular se houver parede na posição intermediária ou na posição final
+   * Não pode pular se houver buraco ou borda na posição final
+   * @param {string} direction - Direção do pulo (up, down, left, right)
+   * @returns {Object} {canJump: boolean, reason: string}
+   */
+  canJump(direction) {
+    let intermediateX = this.x;
+    let intermediateY = this.y;
+    let finalX = this.x;
+    let finalY = this.y;
+
+    switch (direction) {
+      case "up":
+        intermediateY = this.y - 1;
+        finalY = this.y - 2;
+        break;
+      case "down":
+        intermediateY = this.y + 1;
+        finalY = this.y + 2;
+        break;
+      case "left":
+        intermediateX = this.x - 1;
+        finalX = this.x - 2;
+        break;
+      case "right":
+        intermediateX = this.x + 1;
+        finalX = this.x + 2;
+        break;
+    }
+
+    if (intermediateX < 0 || intermediateX >= this.gridSize ||
+        intermediateY < 0 || intermediateY >= this.gridSize) {
+      return {canJump: false, reason: "border"};
+    }
+
+    if (finalX < 0 || finalX >= this.gridSize ||
+        finalY < 0 || finalY >= this.gridSize) {
+      return {canJump: false, reason: "border"};
+    }
+
+    if (this.hasWallAt(intermediateX, intermediateY)) {
+      return {canJump: false, reason: "wall"};
+    }
+
+    if (this.hasWallAt(finalX, finalY)) {
+      return {canJump: false, reason: "wall"};
+    }
+
+    const hasHoleAtFinal = this.holes.some(h => h.x === finalX && h.y === finalY);
+    if (hasHoleAtFinal) {
+      return {canJump: false, reason: "hole"};
+    }
+
+    return {canJump: true, reason: "ok"};
+  }
+
+  /**
    * Move o ator para cima (absoluto)
    * @returns {Object} {moved: boolean, reason: string}
    */
