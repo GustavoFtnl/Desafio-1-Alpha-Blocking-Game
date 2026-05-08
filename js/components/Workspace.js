@@ -409,11 +409,12 @@ export class Workspace {
   }
 
   updatePlaceholder() {
-    const placeholder = this.container.querySelector('.workspacePlaceholder')
+    const placeholder = this.container.querySelector(".workspacePlaceholder")
     if (!placeholder) return
 
-    const stacks = this.container.querySelectorAll('.blockStack')
-    const containers = this.container.querySelectorAll('.blockContainer')
+    const stacks = this.container.querySelectorAll(".blockStack")
+    const containers = this.container.querySelectorAll(".blockContainer")
+    const workspaceContent = this.container.querySelector(".workspaceContent")
 
     let hasContent = false
 
@@ -429,10 +430,17 @@ export class Workspace {
       }
     })
 
+    if (workspaceContent) {
+      const directBlocks = workspaceContent.querySelectorAll(":scope > .block")
+      if (directBlocks.length > 0) {
+        hasContent = true
+      }
+    }
+
     if (hasContent) {
-      placeholder.classList.add('hidden')
+      placeholder.classList.add("hidden")
     } else {
-      placeholder.classList.remove('hidden')
+      placeholder.classList.remove("hidden")
     }
   }
 }
