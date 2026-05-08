@@ -88,26 +88,50 @@ export class Block {
     const input = block.querySelector(".blockRepeatInput");
     const decrementBtn = block.querySelector(".blockRepeatBtn--decrement");
     const incrementBtn = block.querySelector(".blockRepeatBtn--increment");
+    const inputWrapper = block.querySelector(".blockRepeatInputWrapper");
 
     if (!input || !decrementBtn || !incrementBtn) return;
 
     if (block.dataset.listenersSetup === "true") return;
     block.dataset.listenersSetup = "true";
 
+    if (inputWrapper) {
+      inputWrapper.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+      });
+      inputWrapper.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+    }
+
+    decrementBtn.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+    });
+
     decrementBtn.addEventListener("click", (e) => {
       e.stopPropagation();
+      e.preventDefault();
       let value = parseInt(input.value, 10);
       if (value > 1) {
         input.value = value - 1;
       }
     });
 
+    incrementBtn.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+    });
+
     incrementBtn.addEventListener("click", (e) => {
       e.stopPropagation();
+      e.preventDefault();
       let value = parseInt(input.value, 10);
       if (value < 10) {
         input.value = value + 1;
       }
+    });
+
+    input.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
     });
 
     input.addEventListener("click", (e) => {
@@ -176,6 +200,7 @@ export class Block {
    */
   static getConfigs() {
     return [
+      { type: "block--start", icon: "play_arrow", text: "Início" },
       { type: "block--move", icon: "move_up", text: "Mover" },
       { type: "block--direction", icon: "→", text: "Direita" },
       { type: "block--direction", icon: "←", text: "Esquerda" },
@@ -200,6 +225,7 @@ export class Block {
    */
   static getAcceptedChildTypes(parentType) {
     const accepts = {
+      "block--start": ["block--move", "block--repeat"],
       "block--repeat": ["block--move"],
       "block--move": ["block--direction"],
     };
@@ -228,17 +254,13 @@ export class Block {
       return false;
     }
 
-    if (parentType === "block--repeat") {
-      return true;
-    }
-
     const parentContainer = parentBlock.closest(".blockContainer");
     if (parentContainer) {
       const slot = parentContainer.querySelector(".blockSlot");
       if (slot) {
         const existingBlocks = slot.querySelectorAll(".block");
         if (parentType === "block--move") {
-          return existingBlocks.length < 4; // Limite de 4 direções (cima, baixo, esquerda, direita)
+          return existingBlocks.length < 4;
         }
       }
     }
@@ -256,7 +278,7 @@ export class Block {
       return false;
     }
     const type = Block.getType(block);
-    return type === "block--repeat" || type === "block--move";
+    return type === "block--start" || type === "block--repeat" || type === "block--move";
   }
 
   /**
