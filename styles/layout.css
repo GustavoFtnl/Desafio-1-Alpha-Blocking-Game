@@ -543,8 +543,8 @@
   font-size: 24px;
 }
 
-/* Toast de chave coletada */
-.keyToast {
+/* Toast base reutilizável */
+.toast {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -552,7 +552,6 @@
   border: 2px solid var(--color-primary);
   border-radius: var(--radius-default);
   padding: var(--space-sm) var(--space-md);
-  box-shadow: var(--shadow-modal);
   z-index: 1000;
   opacity: 0;
   transform: translateX(20px);
@@ -562,11 +561,28 @@
   display: flex;
   align-items: center;
   gap: var(--space-xs);
+  max-width: 250px;
 }
 
-.keyToast.show {
+.toast.show {
   opacity: 1;
   transform: translateX(0);
+}
+
+/* Toast de chave coletada (mantém compatibilidade) */
+.keyToast {
+  border-color: var(--color-primary);
+}
+
+.toast__icon {
+  font-size: 20px;
+}
+
+.toast__text {
+  font-size: var(--font-label-size);
+  color: var(--color-on-surface);
+  word-wrap: break-word;
+  white-space: normal;
 }
 
 .stageCell.actorCell {

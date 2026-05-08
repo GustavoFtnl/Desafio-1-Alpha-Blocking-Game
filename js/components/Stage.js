@@ -683,24 +683,25 @@ export class Stage {
   }
 
   showKeyToast() {
-    const existingToast = document.querySelector(".keyToast");
+    const workspace = document.querySelector(".workspaceArea");
+    if (!workspace) return;
+
+    // Remove qualquer toast existente primeiro
+    const existingToast = workspace.querySelector(".toast");
     if (existingToast) {
       existingToast.remove();
     }
 
-    const workspace = document.querySelector(".workspaceArea");
-    if (!workspace) return;
-
     const toast = document.createElement("div");
-    toast.className = "keyToast";
-    toast.innerHTML = '<span class="keyIcon">🗝️</span>';
+    toast.className = "keyToast toast";
+    toast.innerHTML = '<span class="keyIcon">🗝️</span><span class="toast__text">Chave coletada!</span>';
     toast.setAttribute("aria-label", "Chave coletada - portas abertas");
 
     workspace.appendChild(toast);
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       toast.classList.add("show");
-    }, 10);
+    });
   }
 
   isKeyAtCurrentPosition() {
