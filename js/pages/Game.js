@@ -40,7 +40,7 @@ Game.prototype.initComponents = function() {
   this.workspace = new Workspace(workspaceContainer);
   this.stage = new Stage(stageContainer);
   this.modal = new Modal();
-  this.parser = new Parser();
+  this.parser = new Parser(this.workspace.getWorkspaceElement());
   this.runner = new Runner(this.stage);
 
   this.dragDrop = new DragDrop(

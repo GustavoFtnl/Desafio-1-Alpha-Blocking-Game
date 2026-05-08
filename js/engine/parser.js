@@ -7,8 +7,12 @@
  */
 
 export class Parser {
-  constructor() {
-    this.workspace = document.querySelector(".workspaceArea");
+  constructor(workspaceElement = null) {
+    this.workspace = workspaceElement || document.querySelector(".workspaceArea");
+  }
+
+  setWorkspace(element) {
+    this.workspace = element;
   }
 
   /**
