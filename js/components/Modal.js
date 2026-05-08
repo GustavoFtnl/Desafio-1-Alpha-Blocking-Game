@@ -183,10 +183,11 @@ export class Modal {
     return `
       <h2 class="modal_title">Nível Concluído!</h2>
       <div class="modal_stars">${starsHtml}</div>
-      <p>Você usou ${usedBlocks} blocos (limite: ${maxBlocks}).</p>
-      <button class="btn btn--run" id="${uniqueId}" aria-label="Avançar para próximo nível">
-        Próximo Nível
-      </button>
+      <div class="modal_actions">
+        <button class="btn btn--run" id="${uniqueId}" aria-label="Avançar para próximo nível">
+          Próximo Nível
+        </button>
+      </div>
     `
   }
 
