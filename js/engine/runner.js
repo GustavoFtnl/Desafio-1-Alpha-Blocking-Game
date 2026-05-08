@@ -83,9 +83,9 @@ export class Runner {
               }
             }
 
-            // Desativa bloco e continua para o delay
-            this.setBlockExecuting(instruction.blockElement, false);
+            // Delay com bloco ainda em execução (feedback visual)
             await this.delay(this.commandDelay);
+            this.setBlockExecuting(instruction.blockElement, false);
             continue;
           } else {
             // Caso normal: toggle primeiro, depois verifica colisão e executa
@@ -118,6 +118,8 @@ export class Runner {
           }
         }
 
+        await this.delay(this.commandDelay);
+
         // Só desativa se a próxima instrução for de um bloco diferente
         const shouldDeactivate = !nextInstruction || 
           nextInstruction.blockElement !== instruction.blockElement;
@@ -125,8 +127,6 @@ export class Runner {
         if (shouldDeactivate) {
           this.setBlockExecuting(instruction.blockElement, false);
         }
-
-        await this.delay(this.commandDelay);
       }
 
       if (this.isRunning && !this.isPaused) {
@@ -271,14 +271,14 @@ export class Runner {
           }
         }
 
+        await this.delay(this.commandDelay);
+
         const shouldDeactivate = !nextSubInstruction || 
           nextSubInstruction.blockElement !== subInstruction.blockElement;
         
         if (shouldDeactivate) {
           this.setBlockExecuting(subInstruction.blockElement, false);
         }
-
-        await this.delay(this.commandDelay);
       }
     }
 
@@ -314,9 +314,38 @@ export class Runner {
   setBlockExecuting(blockElement, executing) {
     if (blockElement) {
       if (executing) {
+        // Remove e força reflow ANTES de re-adicionar
+        // Impede que o navegador coalesça as mudanças no mesmo frame,
+        // garantindo que a animação CSS reinicie corretamente
+        blockElement.classList.remove("executing");
+        void blockElement.offsetWidth;
         blockElement.classList.add("executing");
+
+        // Se é um bloco de direção (→←↑↓), também pulsa o bloco pai (move/jump)
+        if (blockElement.classList.contains("block--direction")) {
+          const parentContainer = blockElement.closest(".blockContainer");
+          if (parentContainer) {
+            const parentBlock = parentContainer.querySelector(":scope > .block");
+            if (parentBlock) {
+              parentBlock.classList.remove("executing");
+              void parentBlock.offsetWidth;
+              parentBlock.classList.add("executing");
+            }
+          }
+        }
       } else {
         blockElement.classList.remove("executing");
+
+        // Se é um bloco de direção, também para o pulse do bloco pai
+        if (blockElement.classList.contains("block--direction")) {
+          const parentContainer = blockElement.closest(".blockContainer");
+          if (parentContainer) {
+            const parentBlock = parentContainer.querySelector(":scope > .block");
+            if (parentBlock) {
+              parentBlock.classList.remove("executing");
+            }
+          }
+        }
       }
     }
   }

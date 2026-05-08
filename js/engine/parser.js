@@ -166,26 +166,22 @@ export class Parser {
    */
   parseMoveBlock(block, container) {
     const slot = container.querySelector(".blockSlot");
-    let directions = [];
+    const results = [];
 
     if (slot) {
       const directionBlocks = slot.querySelectorAll(".block--direction");
       directionBlocks.forEach(directionBlock => {
         const direction = this.getDirectionFromBlock(directionBlock);
         if (direction) {
-          directions.push(direction);
+          results.push({
+            type: direction,
+            blockElement: directionBlock
+          });
         }
       });
     }
 
-    if (directions.length > 0) {
-      return directions.map(direction => ({
-        type: direction,
-        blockElement: block
-      }));
-    }
-
-    return null;
+    return results.length > 0 ? results : null;
   }
 
   /**
@@ -196,29 +192,23 @@ export class Parser {
    */
   parseJumpBlock(block, container) {
     const slot = container.querySelector(".blockSlot");
-    let directions = [];
+    const results = [];
 
     if (slot) {
       const directionBlocks = slot.querySelectorAll(".block--direction");
       directionBlocks.forEach(directionBlock => {
         const direction = this.getDirectionFromBlock(directionBlock);
         if (direction) {
-          directions.push(direction);
+          const jumpType = "jump" + direction.substring(4);
+          results.push({
+            type: jumpType,
+            blockElement: directionBlock
+          });
         }
       });
     }
 
-    if (directions.length > 0) {
-      return directions.map(direction => {
-        const jumpType = "jump" + direction.substring(4);
-        return {
-          type: jumpType,
-          blockElement: block
-        };
-      });
-    }
-
-    return null;
+    return results.length > 0 ? results : null;
   }
 
   /**
