@@ -406,7 +406,7 @@
 
 /* Célula com troféu */
 .stageCell.hasTrophy {
-  font-size: 2em;
+  font-size: 22px;
 }
 
 /* Célula com porta */
@@ -428,7 +428,7 @@
 /* Célula com chave */
 .stageCell.hasKey::before {
   content: "🗝️";
-  font-size: 2em;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -557,7 +557,7 @@
 }
 
 .actorIcon {
-  font-size: 24px;
+  font-size: 22px;
   position: relative;
   z-index: 10;
 }
