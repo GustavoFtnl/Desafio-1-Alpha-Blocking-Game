@@ -18,12 +18,19 @@ export class Stage {
     this.cellSize = 40; // será calculado baseado no tamanho
 
     // Estado inicial do ator
-    this.x = 4; // Centro do grid (5,5 em 1-indexed = 4,4 em 0-indexed)
-    this.y = 4;
-    this.direction = 0; // 0=cima
+    this.x = 0; // Canto superior esquerdo (0,0)
+    this.y = 0;
 
     this.maxBlocks = 8;
     this.currentLevel = 1;
+
+    // Elementos do nível
+    this.currentLevelConfig = null;
+    this.start = { x: 0, y: 0 };
+    this.walls = [];
+    this.holes = [];
+    this.traps = [];
+    this.trophy = { x: 0, y: 0 };
 
     this.stageGrid = null;
     this.actor = null;
@@ -73,9 +80,10 @@ export class Stage {
       cell.className = "stageCell";
       cell.setAttribute("role", "gridcell");
       
-      // Posiciona o ator no centro (4,4 = índice 44)
-      if (i === 44) {
-        cell.innerHTML = '<span style="font-size: 24px;">🤖</span>';
+      // Posiciona o ator no canto superior esquerdo (0,0)
+      if (i === 0) {
+        cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
+        cell.classList.add("actorCell");
       }
       
       this.stageGrid.appendChild(cell);
@@ -104,7 +112,8 @@ export class Stage {
     controlsRow.className = "controlsRowDual";
 
     const pauseBtn = document.createElement("button");
-    pauseBtn.className = "btn btn--pause";
+    pauseBtn.className = "btn btn--pause btn--disabled";
+    pauseBtn.disabled = true;
     pauseBtn.setAttribute("aria-label", "Pausar execução");
     pauseBtn.innerHTML = `
       <span class="material-symbols-outlined">pause</span>
@@ -165,6 +174,49 @@ export class Stage {
   }
 
   /**
+   * Desabilita o botão de pausar e reseta o texto para "Pausar"
+   */
+  disablePauseButton() {
+    const pauseButton = this.controlsArea.querySelector(".btn--pause");
+    if (pauseButton) {
+      pauseButton.disabled = true;
+      pauseButton.classList.add("btn--disabled");
+      pauseButton.innerHTML = '<span class="material-symbols-outlined">pause</span> Pausar';
+    }
+  }
+
+  /**
+   * Habilita o botão de pausar
+   */
+  enablePauseButton() {
+    const pauseButton = this.controlsArea.querySelector(".btn--pause");
+    if (pauseButton) {
+      pauseButton.disabled = false;
+      pauseButton.classList.remove("btn--disabled");
+    }
+  }
+
+  /**
+   * Altera o texto do botão de pausar para "Retomar"
+   */
+  setPauseToResume() {
+    const pauseButton = this.controlsArea.querySelector(".btn--pause");
+    if (pauseButton) {
+      pauseButton.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> Retomar';
+    }
+  }
+
+  /**
+   * Altera o texto do botão de retomar para "Pausar"
+   */
+  setResumeToPause() {
+    const pauseButton = this.controlsArea.querySelector(".btn--pause");
+    if (pauseButton) {
+      pauseButton.innerHTML = '<span class="material-symbols-outlined">pause</span> Pausar';
+    }
+  }
+
+  /**
    * Atualiza o título do stage com o nível atual
    * @param {number} level - Nível atual do jogo
    */
@@ -195,36 +247,39 @@ export class Stage {
   }
 
   /**
-   * Reseta o ator para a posição inicial (4,4) e direção padrão
+   * Reseta o ator para a posição inicial do nível
    */
   reset() {
-    this.x = 4;
-    this.y = 4;
-    this.direction = 0;
+    this.x = this.start.x;
+    this.y = this.start.y;
 
-    // Limpa células visitadas
-    this.stageCells.forEach((cell) => {
-      cell.classList.remove("visited", "current");
-    });
-
-    // Marca posição inicial
-    this.markCurrentCell();
+    // Redesenha todos os elementos do nível (limpa e renderiza ator, walls, traps, trophy)
+    this.renderLevelElements();
   }
 
   /**
    * Marca a célula atual como visitada e atual
    */
   markCurrentCell() {
+    // Remove ator de todas as células
+    this.stageCells.forEach(cell => {
+      if (cell.classList.contains("actorCell")) {
+        cell.innerHTML = "";
+        cell.classList.remove("actorCell");
+      }
+    });
+
     const cellIndex = this.y * this.gridSize + this.x;
     const cell = this.stageCells[cellIndex];
 
     if (cell) {
-      cell.classList.add("visited", "current");
+      cell.classList.add("visited", "current", "actorCell");
+      cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
     }
   }
 
   /**
-   * Remove a marcação de célula atual
+   * Remove a marcação de célula atual (mantém visitada)
    */
   clearCurrentCell() {
     const cellIndex = this.y * this.gridSize + this.x;
@@ -236,68 +291,241 @@ export class Stage {
   }
 
   /**
-   * Move o ator na direção atual
-   * @returns {boolean} true se moveu com sucesso, false se houve colisão
+   * Define a configuração do nível atual
+   * @param {Object} levelConfig - Configuração do nível (start, trophy, walls, traps)
    */
-  move() {
-    let newX = this.x;
-    let newY = this.y;
+  setLevelConfig(levelConfig) {
+    this.currentLevelConfig = levelConfig;
+    this.start = levelConfig.start || { x: 0, y: 0 };
+    this.walls = levelConfig.walls || [];
+    this.holes = levelConfig.holes || [];
+    this.traps = levelConfig.traps || [];
+    this.trophy = levelConfig.trophy || { x: 0, y: 0 };
+    this.maxBlocks = levelConfig.maxBlocks || this.maxBlocks;
 
-    switch (this.direction) {
-      case 0: // cima
-        newY--;
-        break;
-      case 1: // direita
-        newX++;
-        break;
-      case 2: // baixo
-        newY++;
-        break;
-      case 3: // esquerda
-        newX--;
-        break;
+    // Define posição inicial do ator
+    this.x = this.start.x;
+    this.y = this.start.y;
+
+    // Renderiza todos os elementos (walls, holes, traps, trophy, ator)
+    this.renderLevelElements();
+  }
+
+  /**
+   * Renderiza os elementos do nível no grid (walls, holes, traps, trophy, ator)
+   */
+  renderLevelElements() {
+    if (!this.stageCells || !this.stageGrid) return;
+
+    // Limpa células (remove ator também)
+    this.stageCells.forEach(cell => {
+      cell.innerHTML = "";
+      cell.classList.remove("hasWall", "hasHole", "hasTrap", "hasTrophy", "actorCell", "visited", "current");
+    });
+
+    // Renderiza paredes
+    this.walls.forEach(wall => {
+      const index = wall.y * this.gridSize + wall.x;
+      const cell = this.stageCells[index];
+      if (cell) {
+        cell.classList.add("hasWall");
+      }
+    });
+
+    // Renderiza buracos
+    this.holes.forEach(hole => {
+      const index = hole.y * this.gridSize + hole.x;
+      const cell = this.stageCells[index];
+      if (cell) {
+        cell.classList.add("hasHole");
+      }
+    });
+
+    // Renderiza armadilhas
+    this.traps.forEach(trap => {
+      const index = trap.y * this.gridSize + trap.x;
+      const cell = this.stageCells[index];
+      if (cell) {
+        cell.classList.add("hasTrap");
+        cell.innerHTML = '<span class="cellIcon">💣</span>';
+      }
+    });
+
+    // Renderiza troféu
+    const trophyIndex = this.trophy.y * this.gridSize + this.trophy.x;
+    const trophyCell = this.stageCells[trophyIndex];
+    if (trophyCell) {
+      trophyCell.classList.add("hasTrophy");
+      trophyCell.innerHTML = '<span class="cellIcon">🏆</span>';
     }
 
-    // Verifica colisão com as bordas do grid (0-9)
-    if (
-      newX < 0 ||
-      newX >= this.gridSize ||
-      newY < 0 ||
-      newY >= this.gridSize
-    ) {
-      return false;
+    // Renderiza ator na posição inicial
+    this.renderActor();
+  }
+
+  /**
+   * Renderiza o ator na posição atual
+   */
+  renderActor() {
+    const cellIndex = this.y * this.gridSize + this.x;
+    const cell = this.stageCells[cellIndex];
+
+    if (cell) {
+      cell.classList.add("actorCell", "visited", "current");
+      cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
+    }
+  }
+
+  /**
+   * Verifica colisão com uma posição específica
+   * @param {number} x - Coordenada X
+   * @param {number} y - Coordenada Y
+   * @returns {string} Tipo de elemento: "wall", "trap", "trophy" ou null
+   */
+  checkCollision(x, y) {
+    // Verifica parede
+    if (this.walls.some(w => w.x === x && w.y === y)) {
+      return "wall";
+    }
+    // Verifica armadilha
+    if (this.traps.some(t => t.x === x && t.y === y)) {
+      return "trap";
+    }
+    // Verifica troféu
+    if (this.trophy.x === x && this.trophy.y === y) {
+      return "trophy";
+    }
+    return null;
+  }
+
+  /**
+   * Verifica se há parede ou buraco em uma posição específica
+   * @param {number} x - Coordenada X
+   * @param {number} y - Coordenada Y
+   * @returns {boolean} true se houver parede ou buraco na posição
+   */
+  hasWallAt(x, y) {
+    const hasWall = this.walls.some(w => w.x === x && w.y === y);
+    const hasHole = this.holes.some(h => h.x === x && h.y === y);
+    return hasWall || hasHole;
+  }
+
+  /**
+   * Move o ator para cima (absoluto)
+   * @returns {Object} {moved: boolean, reason: string}
+   */
+  moveUp() {
+    const nextY = this.y - 1;
+
+    if (this.hasWallAt(this.x, nextY)) {
+      return {moved: false, reason: "wall"};
+    }
+
+    if (nextY < 0) {
+      return {moved: false, reason: "border"};
     }
 
     this.clearCurrentCell();
-    this.x = newX;
-    this.y = newY;
-
+    this.y = nextY;
     this.markCurrentCell();
 
-    return true;
+    return {moved: true};
   }
 
   /**
-   * Gira o ator 90 graus para a direita
+   * Move o ator para baixo (absoluto)
+   * @returns {Object} {moved: boolean, reason: string}
    */
-  turnRight() {
-    this.direction = (this.direction + 1) % 4;
+  moveDown() {
+    const nextY = this.y + 1;
+
+    if (this.hasWallAt(this.x, nextY)) {
+      return {moved: false, reason: "wall"};
+    }
+
+    if (nextY >= this.gridSize) {
+      return {moved: false, reason: "border"};
+    }
+
+    this.clearCurrentCell();
+    this.y = nextY;
+    this.markCurrentCell();
+
+    return {moved: true};
   }
 
   /**
-   * Gira o ator 90 graus para a esquerda
+   * Move o ator para esquerda (absoluto)
+   * @returns {Object} {moved: boolean, reason: string}
    */
-  turnLeft() {
-    this.direction = (this.direction + 3) % 4;
+  moveLeft() {
+    const nextX = this.x - 1;
+
+    if (this.hasWallAt(nextX, this.y)) {
+      return {moved: false, reason: "wall"};
+    }
+
+    if (nextX < 0) {
+      return {moved: false, reason: "border"};
+    }
+
+    this.clearCurrentCell();
+    this.x = nextX;
+    this.markCurrentCell();
+
+    return {moved: true};
   }
 
   /**
-   * Verifica se uma posição está dentro dos limites do grid
-   * @param {number} x - Coordenada X
-   * @param {number} y - Coordenada Y
-   * @returns {boolean} true se dentro dos limites
+   * Move o ator para direita (absoluto)
+   * @returns {Object} {moved: boolean, reason: string}
    */
-  isWithinBounds(x, y) {
-    return x >= 0 && x < this.gridSize && y >= 0 && y < this.gridSize;
+  moveRight() {
+    const nextX = this.x + 1;
+
+    if (this.hasWallAt(nextX, this.y)) {
+      return {moved: false, reason: "wall"};
+    }
+
+    if (nextX >= this.gridSize) {
+      return {moved: false, reason: "border"};
+    }
+
+    this.clearCurrentCell();
+    this.x = nextX;
+    this.markCurrentCell();
+
+    return {moved: true};
   }
-}
+
+  /**
+   * Verifica se há armadilha na posição atual do ator
+   * @returns {boolean} true se houver armadilha
+   */
+  isTrapAtCurrentPosition() {
+    return this.traps.some(t => t.x === this.x && t.y === this.y);
+  }
+
+  /**
+   * Verifica se há troféu na posição atual do ator
+   * @returns {boolean} true se houver troféu
+   */
+  isTrophyAtCurrentPosition() {
+    return this.trophy.x === this.x && this.trophy.y === this.y;
+  }
+
+  /**
+   * Verifica colisão na posição atual (após movimento)
+   * @returns {string|null} "trap", "trophy" ou null
+   */
+  checkCollisionAtCurrentPosition() {
+    if (this.isTrapAtCurrentPosition()) {
+      return "trap";
+    }
+    if (this.isTrophyAtCurrentPosition()) {
+      return "trophy";
+    }
+    return null;
+  }
+
+  }
