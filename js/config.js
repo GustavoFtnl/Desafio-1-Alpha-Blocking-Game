@@ -4,7 +4,7 @@
  * Comentários em português do Brasil
  */
 
-var CONFIG = {
+const CONFIG = {
   STORAGE_KEYS: {
     CURRENT_LEVEL: "alphaBlockingGame_currentLevel",
     STARS: "alphaBlockingGame_stars",

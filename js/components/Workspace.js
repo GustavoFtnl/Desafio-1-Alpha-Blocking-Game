@@ -86,7 +86,7 @@ export class Workspace {
       <div class="workspaceContent" style="transform: translate(0px, 0px);">
         <div class="workspacePlaceholder">
           <span class="material-symbols-outlined workspacePlaceholderIcon">drag_pan</span>
-          <p class="workspacePlaceholderText">Arraste blocs aqui</p>
+          <p class="workspacePlaceholderText">Arraste blocos aqui</p>
         </div>
       </div>
       <div class="trashZone" aria-label="Lixeira" role="button" tabindex="0">

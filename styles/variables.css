@@ -129,4 +129,22 @@
   --transition-actor-move: 300ms ease-in-out;
   --transition-star-reveal: 500ms ease-out;
   --transition-level-complete: 800ms ease-out;
+  --transition-button: 200ms ease-in-out;
+  --transition-fast: 100ms ease-out;
+
+  /* --- Cores de Feedback (Drag & Drop) --- */
+  --color-drag-valid: var(--color-logic-move);
+  --color-drag-invalid: var(--color-logic-control);
+  --color-drag-over: var(--color-secondary);
+
+  /* --- Cores de Overlay --- */
+  --overlay-subtle: rgba(0, 0, 0, 0.02);
+  --overlay-light: rgba(0, 0, 0, 0.05);
+  --overlay-medium: rgba(0, 0, 0, 0.08);
+  --overlay-primary: rgba(0, 29, 61, 0.5);
+  --overlay-white-50: rgba(255, 255, 255, 0.5);
+  --overlay-white-40: rgba(255, 255, 255, 0.4);
+  --overlay-white-80: rgba(255, 255, 255, 0.8);
+  --overlay-success-light: rgba(76, 175, 80, 0.1);
+  --overlay-error-light: rgba(244, 67, 54, 0.1);
 }
