@@ -7,16 +7,16 @@
 import { gameState } from "../state.js";
 import { LevelsModal } from "./LevelsModal.js";
 
-var TopBar = function (container) {
+const TopBar = function (container) {
   this.container = container;
   this.levelsModal = new LevelsModal();
   this.render();
 };
 
 TopBar.prototype.render = function () {
-  var userName = gameState.getUserName() || "";
-  var currentLevel = gameState.getCurrentLevel();
-  var currentStars = gameState.getStarsForLevel(currentLevel);
+  const userName = gameState.getUserName() || "";
+  const currentLevel = gameState.getCurrentLevel();
+  const currentStars = gameState.getStarsForLevel(currentLevel);
 
   this.container.innerHTML =
     '<div style="display: flex; align-items: center; gap: var(--space-lg);">' +
@@ -56,12 +56,12 @@ TopBar.prototype.render = function () {
 };
 
 TopBar.prototype.generateStarsHtml = function (starCount) {
-  var filledColor = "#fbbf24";
-  var emptyColor = "#d1d5db";
-  var html = "";
+  const filledColor = "#fbbf24";
+  const emptyColor = "#d1d5db";
+  let html = "";
 
-  for (var i = 0; i < 3; i++) {
-    var color = i < starCount ? filledColor : emptyColor;
+  for (let i = 0; i < 3; i++) {
+    const color = i < starCount ? filledColor : emptyColor;
     html +=
       '<svg class="starSvg" viewBox="0 0 24 24" width="16" height="16">' +
       '<path fill="' +
@@ -73,25 +73,25 @@ TopBar.prototype.generateStarsHtml = function (starCount) {
 };
 
 TopBar.prototype.setupListeners = function () {
-  var self = this;
+  const self = this;
 
-  var exitBtn = this.container.querySelector("#exitBtn");
+  const exitBtn = this.container.querySelector("#exitBtn");
   if (exitBtn) {
     exitBtn.addEventListener("click", function () {
-      var event = new CustomEvent("exitToHome", { bubbles: true });
+      const event = new CustomEvent("exitToHome", { bubbles: true });
       self.container.dispatchEvent(event);
     });
   }
 
-  var rankingBtn = this.container.querySelector("#rankingBtn");
+  const rankingBtn = this.container.querySelector("#rankingBtn");
   if (rankingBtn) {
     rankingBtn.addEventListener("click", function () {
-      var event = new CustomEvent("showRanking", { bubbles: true });
+      const event = new CustomEvent("showRanking", { bubbles: true });
       self.container.dispatchEvent(event);
     });
   }
 
-  var levelSelectBtn = this.container.querySelector("#levelSelectBtn");
+  const levelSelectBtn = this.container.querySelector("#levelSelectBtn");
   if (levelSelectBtn) {
     levelSelectBtn.addEventListener("click", function () {
       self.openLevelSelectModal();
@@ -100,14 +100,14 @@ TopBar.prototype.setupListeners = function () {
 };
 
 TopBar.prototype.escapeHtml = function (text) {
-  var div = document.createElement("div");
+  const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 };
 
 TopBar.prototype.openLevelSelectModal = function () {
-  var self = this;
-  var currentLevel = gameState.getCurrentLevel();
+  const self = this;
+  const currentLevel = gameState.getCurrentLevel();
 
   this.levelsModal
     .open(currentLevel, function (level) {
@@ -118,7 +118,7 @@ TopBar.prototype.openLevelSelectModal = function () {
         gameState.setCurrentLevel(selectedLevel);
         self.updateLevelButton(selectedLevel);
 
-        var event = new CustomEvent("levelSelected", {
+        const event = new CustomEvent("levelSelected", {
           bubbles: true,
           detail: { level: selectedLevel },
         });
@@ -128,15 +128,15 @@ TopBar.prototype.openLevelSelectModal = function () {
 };
 
 TopBar.prototype.updateLevelButton = function (level) {
-  var levelText = this.container.querySelector(".levelSelectText");
-  var starsContainer = this.container.querySelector(".levelSelectStars");
+  const levelText = this.container.querySelector(".levelSelectText");
+  const starsContainer = this.container.querySelector(".levelSelectStars");
 
   if (levelText) {
     levelText.textContent = "Nível " + level;
   }
 
   if (starsContainer) {
-    var stars = gameState.getStarsForLevel(level);
+    const stars = gameState.getStarsForLevel(level);
     starsContainer.innerHTML = this.generateStarsHtml(stars);
   }
 };
@@ -146,11 +146,11 @@ TopBar.prototype.updateLevel = function (level, total) {
 };
 
 TopBar.prototype.updateStars = function (count) {
-  var starRating = this.container.querySelector(".starRating");
+  const starRating = this.container.querySelector(".starRating");
   if (!starRating) return;
 
-  var stars = starRating.querySelectorAll(".star");
-  for (var i = 0; i < stars.length; i++) {
+  const stars = starRating.querySelectorAll(".star");
+  for (let i = 0; i < stars.length; i++) {
     if (i < count) {
       stars[i].classList.remove("star--empty");
       stars[i].classList.add("star--filled");
@@ -167,9 +167,9 @@ TopBar.prototype.updateStars = function (count) {
 };
 
 TopBar.prototype.updateProgress = function (percent) {
-  var progressFill = this.container.querySelector(".topBar_progressFill");
-  var progressPercent = this.container.querySelector(".progressPercent");
-  var progressContainer = this.container.querySelector(".topBar_progress");
+  const progressFill = this.container.querySelector(".topBar_progressFill");
+  const progressPercent = this.container.querySelector(".progressPercent");
+  const progressContainer = this.container.querySelector(".topBar_progress");
 
   if (progressContainer) {
     progressContainer.style.display = "flex";
@@ -185,14 +185,14 @@ TopBar.prototype.updateProgress = function (percent) {
 };
 
 TopBar.prototype.updateUserName = function (name) {
-  var existingName = this.container.querySelector(".topBar_userName");
+  const existingName = this.container.querySelector(".topBar_userName");
 
   if (existingName) {
     existingName.textContent = name;
   } else if (name) {
-    var h1 = this.container.querySelector(".topBar_title");
+    const h1 = this.container.querySelector(".topBar_title");
     if (h1) {
-      var nameSpan = document.createElement("span");
+      const nameSpan = document.createElement("span");
       nameSpan.className = "topBar_userName";
       nameSpan.textContent = name;
       h1.parentNode.insertBefore(nameSpan, h1.nextSibling);

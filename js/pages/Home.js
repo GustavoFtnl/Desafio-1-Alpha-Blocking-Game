@@ -6,14 +6,14 @@
 
 import { gameState } from "../state.js";
 
-var Home = function(container) {
+const Home = function(container) {
   this.container = container;
   this.render();
 };
 
 Home.prototype.render = function() {
-  var hasUsers = gameState.hasUsers();
-  var currentUser = gameState.getUserName();
+  const hasUsers = gameState.hasUsers();
+  const currentUser = gameState.getUserName();
   
   this.container.innerHTML = 
     "<div class=\"homeContainer\">" +
@@ -55,13 +55,13 @@ Home.prototype.renderCreateFirstUser = function() {
 };
 
 Home.prototype.renderUserSelection = function() {
-  var users = gameState.getUsers();
-  var currentUser = gameState.getUserName();
-  var optionsHtml = "";
+  const users = gameState.getUsers();
+  const currentUser = gameState.getUserName();
+  let optionsHtml = "";
   
-  for (var i = 0; i < users.length; i++) {
-    var user = users[i];
-    var isCurrent = user.name === currentUser;
+  for (let i = 0; i < users.length; i++) {
+    const user = users[i];
+    const isCurrent = user.name === currentUser;
     optionsHtml += "<option value=\"" + this.escapeHtml(user.name) + "\"" + 
       (isCurrent ? " selected" : "") + ">" + 
       this.escapeHtml(user.name) + " (Nível " + user.level + ")</option>";
@@ -96,15 +96,15 @@ Home.prototype.renderUserSelection = function() {
 };
 
 Home.prototype.escapeHtml = function(text) {
-  var div = document.createElement("div");
+  const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 };
 
 Home.prototype.setupListeners = function() {
-  var self = this;
+  const self = this;
   
-  var form = this.container.querySelector("#homeForm");
+  const form = this.container.querySelector("#homeForm");
   if (form) {
     form.addEventListener("submit", function(e) {
       e.preventDefault();
@@ -112,14 +112,14 @@ Home.prototype.setupListeners = function() {
     });
   }
   
-  var selectUserBtn = this.container.querySelector("#selectUserBtn");
+  const selectUserBtn = this.container.querySelector("#selectUserBtn");
   if (selectUserBtn) {
     selectUserBtn.addEventListener("click", function() {
       self.handleSelectUser();
     });
   }
   
-  var newUserForm = this.container.querySelector("#newUserForm");
+  const newUserForm = this.container.querySelector("#newUserForm");
   if (newUserForm) {
     newUserForm.addEventListener("submit", function(e) {
       e.preventDefault();
@@ -129,11 +129,11 @@ Home.prototype.setupListeners = function() {
 };
 
 Home.prototype.handleCreateUser = function() {
-  var input = this.container.querySelector("#userNameInput");
-  var name = input.value.trim();
+  const input = this.container.querySelector("#userNameInput");
+  const name = input.value.trim();
   
   if (name.length > 0) {
-    var success = gameState.createUser(name);
+    const success = gameState.createUser(name);
     if (success) {
       this.showGame();
     }
@@ -141,8 +141,8 @@ Home.prototype.handleCreateUser = function() {
 };
 
 Home.prototype.handleSelectUser = function() {
-  var select = this.container.querySelector("#userSelect");
-  var name = select.value;
+  const select = this.container.querySelector("#userSelect");
+  const name = select.value;
   
   if (name) {
     gameState.switchUser(name);
@@ -151,11 +151,11 @@ Home.prototype.handleSelectUser = function() {
 };
 
 Home.prototype.handleCreateNewUser = function() {
-  var input = this.container.querySelector("#newUserNameInput");
-  var name = input.value.trim();
+  const input = this.container.querySelector("#newUserNameInput");
+  const name = input.value.trim();
   
   if (name.length > 0) {
-    var success = gameState.createUser(name);
+    const success = gameState.createUser(name);
     if (success) {
       this.showGame();
     }
@@ -163,7 +163,7 @@ Home.prototype.handleCreateNewUser = function() {
 };
 
 Home.prototype.showGame = function() {
-  var event = new CustomEvent("showGame", { bubbles: true });
+  const event = new CustomEvent("showGame", { bubbles: true });
   this.container.dispatchEvent(event);
 };
 
