@@ -35,7 +35,10 @@ export class Runner {
     this.isPaused = false;
 
     try {
-      for (const instruction of this.instructions) {
+      for (let i = 0; i < this.instructions.length; i++) {
+        const instruction = this.instructions[i];
+        const nextInstruction = this.instructions[i + 1];
+        
         if (!this.isRunning) break;
 
         if (this.isPaused) {
@@ -52,17 +55,25 @@ export class Runner {
           const collision = this.stage.checkCollisionAtCurrentPosition();
 
           if (collision === "trap") {
+            this.setBlockExecuting(instruction.blockElement, false);
             this.handleTrapHit();
             return;
           }
 
           if (collision === "trophy") {
+            this.setBlockExecuting(instruction.blockElement, false);
             this.handleVictory();
             return;
           }
         }
 
-        this.setBlockExecuting(instruction.blockElement, false);
+        // Só desativa se a próxima instrução for de um bloco diferente
+        const shouldDeactivate = !nextInstruction || 
+          nextInstruction.blockElement !== instruction.blockElement;
+        
+        if (shouldDeactivate) {
+          this.setBlockExecuting(instruction.blockElement, false);
+        }
 
         await this.delay(this.commandDelay);
       }
@@ -126,7 +137,10 @@ export class Runner {
         await this.waitForResume();
       }
 
-      for (const subInstruction of body) {
+      for (let j = 0; j < body.length; j++) {
+        const subInstruction = body[j];
+        const nextSubInstruction = body[j + 1];
+        
         if (!this.isRunning) break;
 
         if (this.isPaused) {
@@ -143,17 +157,24 @@ export class Runner {
           const collision = this.stage.checkCollisionAtCurrentPosition();
 
           if (collision === "trap") {
+            this.setBlockExecuting(subInstruction.blockElement, false);
             this.handleTrapHit();
             return {moved: false};
           }
 
           if (collision === "trophy") {
+            this.setBlockExecuting(subInstruction.blockElement, false);
             this.handleVictory();
             return {moved: false};
           }
         }
 
-        this.setBlockExecuting(subInstruction.blockElement, false);
+        const shouldDeactivate = !nextSubInstruction || 
+          nextSubInstruction.blockElement !== subInstruction.blockElement;
+        
+        if (shouldDeactivate) {
+          this.setBlockExecuting(subInstruction.blockElement, false);
+        }
 
         await this.delay(this.commandDelay);
       }
