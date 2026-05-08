@@ -85,7 +85,7 @@ export class Stage {
       
       // Posiciona o ator no canto superior esquerdo (0,0)
       if (i === 0) {
-        cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
+        cell.innerHTML = '<span class="actorIcon">🤠</span>';
         cell.classList.add("actorCell");
       }
       
@@ -283,7 +283,7 @@ export class Stage {
 
     if (cell) {
       cell.classList.add("visited", "current", "actorCell");
-      cell.innerHTML = '<span style="font-size: 24px; position: relative; z-index: 10;">🤠</span>';
+      cell.innerHTML = '<span class="actorIcon">🤠</span>';
     }
   }
 
@@ -404,7 +404,7 @@ export class Stage {
 
     if (cell) {
       cell.classList.add("actorCell", "visited", "current");
-      cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
+      cell.innerHTML = '<span class="actorIcon">🤠</span>';
     }
   }
 
@@ -649,7 +649,7 @@ export class Stage {
 
     const toast = document.createElement("div");
     toast.className = "keyToast";
-    toast.innerHTML = '<span style="font-size: 24px;">🗝️</span>';
+    toast.innerHTML = '<span class="keyIcon">🗝️</span>';
     toast.setAttribute("aria-label", "Chave coletada - portas abertas");
 
     workspace.appendChild(toast);

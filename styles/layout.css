@@ -34,6 +34,25 @@
   color: var(--color-on-primary);
 }
 
+.topBar_leftSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.topBar_rightSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.topBar_progress {
+  display: none;
+  flex-direction: column;
+  width: 192px;
+  gap: var(--space-xs);
+}
+
 .topBar_levelInfo {
   display: flex;
   align-items: center;
@@ -73,6 +92,7 @@
 
 .topBar_progressFill {
   height: 100%;
+  width: 0%;
   background-color: var(--color-secondary-container);
   transition: width 300ms ease-out;
 }
@@ -110,6 +130,12 @@
 
 .sidebar_titleIcon {
   font-size: 24px;
+}
+
+.sidebar_titleText {
+  font-size: var(--font-h2-size);
+  font-weight: var(--font-h2-weight);
+  font-weight: 700;
 }
 
 .sidebar_subtitle {
@@ -513,7 +539,9 @@
   z-index: 1000;
   opacity: 0;
   transform: translateX(20px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
   display: flex;
   align-items: center;
   gap: var(--space-xs);
@@ -526,4 +554,14 @@
 
 .stageCell.actorCell {
   z-index: 10;
+}
+
+.actorIcon {
+  font-size: 24px;
+  position: relative;
+  z-index: 10;
+}
+
+.keyIcon {
+  font-size: 24px;
 }
