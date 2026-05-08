@@ -164,7 +164,10 @@ export class DragDrop {
 
           if (parentBlock) {
             const parentType = Block.getType(parentBlock);
-            if (parentType === "block--repeat") {
+            if (
+              parentType === "block--repeat" ||
+              parentType === "block--start"
+            ) {
               canAccept = true;
             }
           }
@@ -419,14 +422,34 @@ export class DragDrop {
           canAccept = Block.canAccept(parentBlock, blockType);
         }
 
+        if (!canAccept) {
+          if (parentBlock) {
+            const parentType = Block.getType(parentBlock);
+            if (parentType === "block--start") {
+              if (blockType === "block--move" || blockType === "block--repeat") {
+                canAccept = true;
+              }
+            } else if (blockType === "block--repeat" || blockType === "block--move") {
+              canAccept = true;
+            }
+          }
+        }
+
         if (
-          blockType === "block--move" ||
-          this.draggedBlock?.classList?.contains("block--move")
+          !canAccept &&
+          (blockType === "block--move" ||
+            blockType === "block--repeat" ||
+            this.draggedBlock?.classList?.contains("block--move") ||
+            this.draggedBlock?.classList?.contains("block--repeat"))
         ) {
           const slotContainer = slot.closest(".blockContainer");
           if (slotContainer) {
             const slotParent = slotContainer.querySelector(":scope > .block");
-            if (slotParent && slotParent.classList.contains("block--repeat")) {
+            if (
+              slotParent &&
+              (slotParent.classList.contains("block--repeat") ||
+                slotParent.classList.contains("block--start"))
+            ) {
               canAccept = true;
             }
           }
@@ -499,14 +522,34 @@ export class DragDrop {
           canAccept = Block.canAccept(parentBlock, blockType);
         }
 
+        if (!canAccept) {
+          if (parentBlock) {
+            const parentType = Block.getType(parentBlock);
+            if (parentType === "block--start") {
+              if (blockType === "block--move" || blockType === "block--repeat") {
+                canAccept = true;
+              }
+            } else if (blockType === "block--repeat" || blockType === "block--move") {
+              canAccept = true;
+            }
+          }
+        }
+
         if (
-          blockType === "block--move" ||
-          this.draggedBlock?.classList?.contains("block--move")
+          !canAccept &&
+          (blockType === "block--move" ||
+            blockType === "block--repeat" ||
+            this.draggedBlock?.classList?.contains("block--move") ||
+            this.draggedBlock?.classList?.contains("block--repeat"))
         ) {
           const slotContainer = slot.closest(".blockContainer");
           if (slotContainer) {
             const slotParent = slotContainer.querySelector(":scope > .block");
-            if (slotParent && slotParent.classList.contains("block--repeat")) {
+            if (
+              slotParent &&
+              (slotParent.classList.contains("block--repeat") ||
+                slotParent.classList.contains("block--start"))
+            ) {
               canAccept = true;
             }
           }
@@ -535,6 +578,7 @@ export class DragDrop {
         this.addBlockToSlot(slot, blockToInsert);
         this.updatePlaceholder();
         this.dispatchBlockCountChanged();
+        this.draggedBlock = null;
         return;
       }
 
