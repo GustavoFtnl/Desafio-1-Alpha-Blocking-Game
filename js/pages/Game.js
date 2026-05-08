@@ -49,6 +49,8 @@ Game.prototype.initComponents = function() {
     this.workspace
   );
 
+  this.dragDrop.setMaxBlocks(gameState.getMaxBlocks());
+
   topBarContainer.componentInstance = this.topBar;
   sidebarContainer.componentInstance = this.sidebar;
   workspaceContainer.componentInstance = this.workspace;
