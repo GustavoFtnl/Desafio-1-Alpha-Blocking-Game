@@ -6,9 +6,9 @@
 
 const LEVEL_HINTS = {
   1: "Use blocos de movimento (Mover + Direção) para levar o ator até o troféu 🏆",
-  2: "Use o bloco Repetir para executar a mesma ação múltiplas vezes",
-  3: "Desvie dos buracos ⬭! Se cair, a execução para",
-  4: "Cuidado com as armadilhas 🔴! São perigosas",
+  2: "Não da para andar por cima de buracos, mas da para pular por cima deles! Use o bloco Pular para isso!",
+  3: "Desvie dos Espinhos! Se cair, a execução para",
+  4: "Você pode pular por cima de espinhos sabia? Use o bloco Pular para isso!",
   5: "Colete a chave 🗝️ para abrir as portas 🚪",
   6: "O fogo 🔥 ativa e desativa alternadamente a cada movimento!",
   7: "Pule (bloco Pular) para desviar de buracos e armadilhas",
