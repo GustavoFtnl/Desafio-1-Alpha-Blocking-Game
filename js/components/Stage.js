@@ -412,7 +412,8 @@ export class Stage {
   /**
    * Verifica se o ator pode pular para uma direção
    * Não pode pular se houver parede na posição intermediária ou na posição final
-   * Não pode pular se houver buraco ou borda na posição final
+   * Não pode pular se houver buraco na posição final
+   * Pode pular por cima de buracos e armadilhas na posição intermediária
    * @param {string} direction - Direção do pulo (up, down, left, right)
    * @returns {Object} {canJump: boolean, reason: string}
    */
@@ -451,11 +452,13 @@ export class Stage {
       return {canJump: false, reason: "border"};
     }
 
-    if (this.hasWallAt(intermediateX, intermediateY)) {
+    const hasWallAtIntermediate = this.walls.some(w => w.x === intermediateX && w.y === intermediateY);
+    if (hasWallAtIntermediate) {
       return {canJump: false, reason: "wall"};
     }
 
-    if (this.hasWallAt(finalX, finalY)) {
+    const hasWallAtFinal = this.walls.some(w => w.x === finalX && w.y === finalY);
+    if (hasWallAtFinal) {
       return {canJump: false, reason: "wall"};
     }
 
