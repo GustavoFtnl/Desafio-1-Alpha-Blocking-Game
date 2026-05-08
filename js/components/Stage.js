@@ -341,13 +341,12 @@ export class Stage {
       }
     });
 
-    // Renderiza armadilhas
+// Renderiza armadilhas
     this.traps.forEach(trap => {
       const index = trap.y * this.gridSize + trap.x;
       const cell = this.stageCells[index];
       if (cell) {
         cell.classList.add("hasTrap");
-        cell.innerHTML = '<span class="cellIcon">💣</span>';
       }
     });
 

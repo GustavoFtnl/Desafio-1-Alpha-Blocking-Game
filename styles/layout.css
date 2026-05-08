@@ -355,6 +355,28 @@
   );
 }
 
+/* Célula com armadilha */
+.stageCell.hasTrap::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #b91c1c;
+  clip-path: polygon(
+    7% 89%,
+    17% 34%,
+    29% 87%,
+    42% 32%,
+    52% 87%,
+    60% 33%,
+    70% 89%,
+    83% 32%,
+    91% 89%
+  );
+}
+
 /* Célula com troféu */
 .stageCell.hasTrophy {
   font-size: 2em;
