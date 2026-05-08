@@ -126,15 +126,96 @@ const CONFIG_LEVELS = [
     maxBlocks: 12,
   },
 
-  // Nível 2: Primeira Parede
   {
     id: 2,
-    name: "Primeira Parede",
-    start: { x: 0, y: 0 },
-    trophy: { x: 3, y: 0 },
-    walls: [{ x: 1, y: 0 }],
+    name: "Labirinto Fragmentado",
+
+    start: { x: 7, y: 4 },
+    trophy: { x: 9, y: 4 },
+
+    holes: [
+      { x: 2, y: 0 },
+
+      { x: 0, y: 2 },
+
+      { x: 4, y: 3 },
+
+      { x: 9, y: 5 },
+
+      { x: 2, y: 6 },
+      { x: 3, y: 6 },
+      { x: 7, y: 6 },
+
+      { x: 7, y: 8 },
+
+      { x: 2, y: 9 },
+    ],
+
+    walls: [
+      // Linha 0
+      { x: 3, y: 0 },
+      { x: 4, y: 0 },
+
+      // Linha 1
+      { x: 0, y: 1 },
+      { x: 1, y: 1 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 4, y: 1 },
+      { x: 5, y: 1 },
+      { x: 6, y: 1 },
+      { x: 7, y: 1 },
+      { x: 8, y: 1 },
+      { x: 9, y: 1 },
+
+      // Linha 3
+      { x: 2, y: 3 },
+      { x: 3, y: 3 },
+      { x: 5, y: 3 },
+      { x: 6, y: 3 },
+      { x: 7, y: 3 },
+      { x: 8, y: 3 },
+
+      // Linha 4
+      { x: 1, y: 4 },
+      { x: 2, y: 4 },
+      { x: 3, y: 4 },
+      { x: 8, y: 4 },
+
+      // Linha 5
+      { x: 5, y: 5 },
+      { x: 6, y: 5 },
+      { x: 7, y: 5 },
+      { x: 8, y: 5 },
+
+      // Linha 6
+      { x: 0, y: 6 },
+      { x: 1, y: 6 },
+      { x: 5, y: 6 },
+      { x: 6, y: 6 },
+      { x: 8, y: 6 },
+      { x: 9, y: 6 },
+
+      // Linha 7
+      { x: 1, y: 7 },
+      { x: 2, y: 7 },
+      { x: 3, y: 7 },
+      { x: 7, y: 7 },
+      { x: 8, y: 7 },
+
+      // Linha 8
+      { x: 5, y: 8 },
+
+      // Linha 9
+      { x: 3, y: 9 },
+      { x: 4, y: 9 },
+      { x: 7, y: 9 },
+      { x: 9, y: 9 },
+    ],
+
     traps: [],
-    maxBlocks: 10,
+
+    maxBlocks: 18,
   },
 
   // Nível 3: Primeira Armadilha
