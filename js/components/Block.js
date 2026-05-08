@@ -239,7 +239,7 @@ export class Block {
       const slot = parentContainer.querySelector(".blockSlot");
       if (slot) {
         const existingBlocks = slot.querySelectorAll(".block");
-        if (parentType === "block--move") {
+        if (parentType === "block--move" || parentType === "block--jump") {
           return existingBlocks.length < 4; // Limite de 4 direções (cima, baixo, esquerda, direita)
         }
       }
