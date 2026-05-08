@@ -227,8 +227,7 @@ export class Block {
   static getAcceptedChildTypes(parentType) {
     const accepts = {
       "block--repeat": ["block--move", "block--jump"],
-      "block--start": ["block--move", "block--repeat"],
-      "block--repeat": ["block--move", "block--jump"],
+      "block--start": ["block--move", "block--jump", "block--repeat"],
       "block--move": ["block--direction"],
       "block--jump": ["block--direction"],
     };
