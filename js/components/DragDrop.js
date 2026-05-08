@@ -18,7 +18,10 @@ export class DragDrop {
     this.dragOffsetX = 0;
     this.dragOffsetY = 0;
     this.draggedElement = null;
+    
+    // Configurações de sensibilidade
     this.DELETION_THRESHOLD = 50;
+    this.SNAP_THRESHOLD = 40;
 
     this.handleMouseMove = this.handleMouseMove.bind(this);
     this.handleMouseUp = this.handleMouseUp.bind(this);
@@ -46,6 +49,69 @@ export class DragDrop {
     }
 
     return slot;
+  }
+
+  // Novo método para detectar se deve inserir no final ou no meio de uma pilha
+  getInsertionPoint(clientX, clientY) {
+    const workspaceContent = this.workspace.querySelector(".workspaceContent");
+    const stacks = workspaceContent.querySelectorAll(".blockStack");
+    const allBlocks = workspaceContent.querySelectorAll(".block, .blockContainer");
+
+    let nearestStack = null;
+    let minDistance = this.SNAP_THRESHOLD;
+
+    // 1. Tenta achar uma pilha que esteja muito próxima ao cursor
+    for (const stack of stacks) {
+      const rect = stack.getBoundingClientRect();
+      // Margem de tolerância horizontal e vertical para considerar "dentro" da pilha
+      if (clientX >= rect.left - 20 && clientX <= rect.right + 20) {
+        if (clientY >= rect.top - 20 && clientY <= rect.bottom + 20) {
+          nearestStack = stack;
+          break;
+        }
+        // Calcula proximidade da base da pilha (caso queira adicionar ao final)
+        const distance = Math.abs(clientY - rect.bottom);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestStack = stack;
+        }
+      }
+    }
+
+    // 2. Fallback: Procura blocos avulsos próximos
+    if (!nearestStack) {
+      for (const block of allBlocks) {
+        const rect = block.getBoundingClientRect();
+        if (clientX >= rect.left - 20 && clientX <= rect.right + 20) {
+          const distanceTop = Math.abs(clientY - rect.top);
+          const distanceBottom = Math.abs(clientY - rect.bottom);
+          const distance = Math.min(distanceTop, distanceBottom);
+
+          if (distance < minDistance) {
+            minDistance = distance;
+            const parentStack = block.closest(".blockStack");
+            if (parentStack) nearestStack = parentStack;
+          }
+        }
+      }
+    }
+
+    if (!nearestStack) return null;
+
+    // 3. Define em qual posição da pilha o bloco será inserido (referenceNode)
+    const children = nearestStack.querySelectorAll(":scope > .block, :scope > .blockContainer");
+    let referenceNode = null;
+
+    for (const child of children) {
+      const rect = child.getBoundingClientRect();
+      // Se o mouse estiver acima da metade deste bloco, insere ANTES dele
+      if (clientY < rect.top + rect.height / 2) {
+        referenceNode = child;
+        break;
+      }
+    }
+
+    return { stack: nearestStack, referenceNode };
   }
 
   findBlockSlotAtPosition(clientX, clientY, draggedElement) {
@@ -123,6 +189,7 @@ export class DragDrop {
     const finalLeft = element.offsetLeft;
     const finalTop = element.offsetTop;
 
+    // Lógica de Lixeira
     if (
       finalLeft < -this.DELETION_THRESHOLD ||
       finalTop < -this.DELETION_THRESHOLD ||
@@ -151,6 +218,7 @@ export class DragDrop {
       const canHaveChildren =
         blockType === "block--repeat" || blockType === "block--move";
 
+      // Verifica encaixe em Slots
       if (isDirection || (canHaveChildren && hasChildren)) {
         const targetSlot = this.findBlockSlotAtPosition(
           e.clientX,
@@ -167,8 +235,7 @@ export class DragDrop {
           }
 
           if (!canAccept && isDirection) {
-            canAccept =
-              parentBlock && Block.canAccept(parentBlock, blockType);
+            canAccept = parentBlock && Block.canAccept(parentBlock, blockType);
           }
 
           if (canAccept) {
@@ -177,7 +244,22 @@ export class DragDrop {
             element.style.top = "";
             element.style.zIndex = "";
 
-            targetSlot.appendChild(element);
+            // Verifica posição exata no slot para inserir no meio de blocos aninhados
+            let slotReferenceNode = null;
+            const slotChildren = targetSlot.querySelectorAll(":scope > .block, :scope > .blockContainer");
+            for (const child of slotChildren) {
+              const childRect = child.getBoundingClientRect();
+              if (e.clientY < childRect.top + childRect.height / 2) {
+                slotReferenceNode = child;
+                break;
+              }
+            }
+
+            if (slotReferenceNode) {
+              targetSlot.insertBefore(element, slotReferenceNode);
+            } else {
+              targetSlot.appendChild(element);
+            }
 
             this.updatePlaceholder();
             this.dispatchBlockCountChanged();
@@ -187,11 +269,15 @@ export class DragDrop {
 
             this.draggedElement = null;
             this.isDraggingFree = false;
+            
+            document.removeEventListener("mousemove", this.handleMouseMove);
+            document.removeEventListener("mouseup", this.handleMouseUp);
             return;
           }
         }
       }
 
+      // Se não caiu em um slot, prepara para o Root Snapping
       element.style.position = "absolute";
       element.style.left = finalLeft + "px";
       element.style.top = finalTop + "px";
@@ -200,7 +286,17 @@ export class DragDrop {
         workspaceContent.appendChild(element);
       }
 
-      this.cleanupFreeDraggedElement(element, isBlockContainer);
+      // Procura ponto de inserção no meio de outras pilhas na raiz
+      const insertionPoint = this.getInsertionPoint(e.clientX, e.clientY);
+
+      if (insertionPoint) {
+        element.style.position = "";
+        element.style.left = "";
+        element.style.top = "";
+        this.insertIntoStackWithSnapping(insertionPoint.stack, element, insertionPoint.referenceNode);
+      } else {
+        this.cleanupFreeDraggedElement(element, isBlockContainer);
+      }
     }
 
     document.removeEventListener("mousemove", this.handleMouseMove);
@@ -285,11 +381,24 @@ export class DragDrop {
     const hasAbsolutePosition = element.style.position === "absolute";
 
     if (hasAbsolutePosition) {
-      element.style.position = "absolute";
+      // Se possui posição absoluta, significa que não encontrou pilha e formará uma nova
+      const newStack = document.createElement("div");
+      newStack.className = "blockStack";
+      newStack.style.position = "absolute";
+      newStack.style.left = element.offsetLeft + "px";
+      newStack.style.top = element.offsetTop + "px";
+      
+      workspaceContent.appendChild(newStack);
+      newStack.appendChild(element);
+      
+      element.style.position = "";
+      element.style.left = "";
+      element.style.top = "";
 
-      if (element.parentElement !== workspaceContent) {
-        workspaceContent.appendChild(element);
-      }
+      element.classList.add("snapping");
+      setTimeout(() => {
+        element.classList.remove("snapping");
+      }, 200);
 
       this.updatePlaceholder();
       this.dispatchBlockCountChanged();
@@ -349,11 +458,12 @@ export class DragDrop {
     }
   }
 
-  ensureInStack(element) {
+  ensureInStack(element, dropX, dropY) {
     let stack = this.workspace.querySelector(".blockStack");
     if (!stack) {
       stack = document.createElement("div");
       stack.className = "blockStack";
+
       const workspaceContent = this.workspace.querySelector(".workspaceContent");
       if (workspaceContent) {
         workspaceContent.appendChild(stack);
@@ -361,6 +471,13 @@ export class DragDrop {
         this.workspace.appendChild(stack);
       }
     }
+
+    if (dropX !== undefined && dropY !== undefined) {
+      stack.style.position = "absolute";
+      stack.style.left = dropX + "px";
+      stack.style.top = dropY + "px";
+    }
+
     stack.appendChild(element);
   }
 
@@ -510,7 +627,8 @@ export class DragDrop {
           return;
         }
 
-        this.addBlockToSlot(slot, blockToInsert);
+        // Passa o eixo Y para calcular o ponto exato de inserção dentro do slot
+        this.addBlockToSlot(slot, blockToInsert, e.clientY);
         this.updatePlaceholder();
         this.dispatchBlockCountChanged();
         this.draggedBlock = null;
@@ -553,10 +671,12 @@ export class DragDrop {
       const dropX = e.clientX - workspaceRect.left;
       const dropY = e.clientY - workspaceRect.top;
 
-this.addBlockToWorkspace(blockToInsert, dropX, dropY);
-        this.dispatchBlockCountChanged();
-        this.clearAllDragOverClasses();
-      });
+      const insertionPoint = this.getInsertionPoint(e.clientX, e.clientY);
+      this.addBlockToWorkspace(blockToInsert, dropX, dropY, insertionPoint);
+      
+      this.dispatchBlockCountChanged();
+      this.clearAllDragOverClasses();
+    });
 
     this.workspace.addEventListener("dragstart", (e) => {
       const block = e.target.closest(".block");
@@ -710,8 +830,12 @@ this.addBlockToWorkspace(blockToInsert, dropX, dropY);
     });
   }
 
-  addBlockToSlot(slot, block) {
-    if (Block.hasSlot(block)) {
+  // Editado: Adicionado clientY para saber onde inserir (meio ou final)
+  addBlockToSlot(slot, block, clientY) {
+    let elementToInsert = block;
+
+    // Se é bloco estrutural e não está embalado, cria o container
+    if (!block.classList.contains("blockContainer") && Block.hasSlot(block)) {
       const container = document.createElement("div");
       container.className = "blockContainer";
 
@@ -724,29 +848,42 @@ this.addBlockToWorkspace(blockToInsert, dropX, dropY);
 
       container.appendChild(block);
       container.appendChild(innerSlot);
-      slot.appendChild(container);
-
-      block.classList.add("snapping");
-      setTimeout(() => {
-        block.classList.remove("snapping");
-      }, 200);
-    } else {
-      slot.appendChild(block);
-
-      block.classList.add("snapping");
-      setTimeout(() => {
-        block.classList.remove("snapping");
-      }, 200);
+      elementToInsert = container;
     }
 
-    if (block.classList.contains("block--repeat")) {
-      const input = block.querySelector(".blockRepeatInput");
+    // Calcula se insere antes ou no final baseado no mouse
+    let referenceNode = null;
+    if (clientY !== undefined) {
+      const children = slot.querySelectorAll(":scope > .block, :scope > .blockContainer");
+      for (const child of children) {
+        const rect = child.getBoundingClientRect();
+        if (clientY < rect.top + rect.height / 2) {
+          referenceNode = child;
+          break;
+        }
+      }
+    }
+
+    if (referenceNode) {
+      slot.insertBefore(elementToInsert, referenceNode);
+    } else {
+      slot.appendChild(elementToInsert);
+    }
+
+    elementToInsert.classList.add("snapping");
+    setTimeout(() => {
+      elementToInsert.classList.remove("snapping");
+    }, 200);
+
+    const realBlock = elementToInsert.classList.contains("blockContainer") ? elementToInsert.querySelector(".block") : elementToInsert;
+    if (realBlock && realBlock.classList.contains("block--repeat")) {
+      const input = realBlock.querySelector(".blockRepeatInput");
       if (input) {
         if (!input.value || input.value === "") {
           input.value = 1;
         }
       }
-      Block.setupRepeatInputListeners(block);
+      Block.setupRepeatInputListeners(realBlock);
     }
 
     this.ensureBlockContainer(slot);
@@ -774,10 +911,12 @@ this.addBlockToWorkspace(blockToInsert, dropX, dropY);
     return Block.createElement(config.text, config.icon, config.type);
   }
 
-  addBlockToWorkspace(block, dropX, dropY) {
+  addBlockToWorkspace(block, dropX, dropY, insertionPoint = null) {
     const workspaceContent = this.workspace.querySelector(".workspaceContent");
 
-    if (Block.hasSlot(block)) {
+    let elementToInsert = block;
+
+    if (!block.classList.contains("blockContainer") && Block.hasSlot(block)) {
       const container = document.createElement("div");
       container.className = "blockContainer";
 
@@ -790,62 +929,46 @@ this.addBlockToWorkspace(blockToInsert, dropX, dropY);
 
       container.appendChild(block);
       container.appendChild(slot);
-
-      if (dropX !== undefined && dropY !== undefined) {
-        container.style.position = "absolute";
-        container.style.left = dropX + "px";
-        container.style.top = dropY + "px";
-        workspaceContent.appendChild(container);
-      } else {
-        const stacks = this.workspace.querySelectorAll(".blockStack");
-        let targetStack = null;
-
-        if (stacks.length > 0) {
-          targetStack = stacks[stacks.length - 1];
-        } else {
-          targetStack = document.createElement("div");
-          targetStack.className = "blockStack";
-          workspaceContent.appendChild(targetStack);
-        }
-        targetStack.appendChild(container);
-      }
-    } else {
-      if (dropX !== undefined && dropY !== undefined) {
-        block.style.position = "absolute";
-        block.style.left = dropX + "px";
-        block.style.top = dropY + "px";
-        workspaceContent.appendChild(block);
-      } else {
-        const stacks = this.workspace.querySelectorAll(".blockStack");
-        let targetStack = null;
-
-        if (stacks.length > 0) {
-          targetStack = stacks[stacks.length - 1];
-        } else {
-          targetStack = document.createElement("div");
-          targetStack.className = "blockStack";
-          workspaceContent.appendChild(targetStack);
-        }
-        targetStack.appendChild(block);
-      }
+      elementToInsert = container;
     }
 
-    if (block.classList.contains("block--repeat")) {
-      const input = block.querySelector(".blockRepeatInput");
+    if (insertionPoint && insertionPoint.stack) {
+      this.insertIntoStackWithSnapping(insertionPoint.stack, elementToInsert, insertionPoint.referenceNode);
+    } else {
+      this.ensureInStack(elementToInsert, dropX, dropY);
+    }
+
+    const realBlock = elementToInsert.classList.contains("blockContainer") ? elementToInsert.querySelector(".block") : elementToInsert;
+    if (realBlock && realBlock.classList.contains("block--repeat")) {
+      const input = realBlock.querySelector(".blockRepeatInput");
       if (input) {
         if (!input.value || input.value === "") {
           input.value = 1;
         }
       }
-      Block.setupRepeatInputListeners(block);
+      Block.setupRepeatInputListeners(realBlock);
     }
 
-    block.classList.add("snapping");
+    elementToInsert.classList.add("snapping");
     setTimeout(() => {
-      block.classList.remove("snapping");
+      elementToInsert.classList.remove("snapping");
     }, 200);
-
+    
     this.updatePlaceholder();
+  }
+
+  // Novo método inteligente de inserção usando insertBefore
+  insertIntoStackWithSnapping(stack, element, referenceNode = null) {
+    if (referenceNode) {
+      stack.insertBefore(element, referenceNode);
+    } else {
+      stack.appendChild(element);
+    }
+
+    element.classList.add("snapping");
+    setTimeout(() => {
+      element.classList.remove("snapping");
+    }, 200);
   }
 
   dispatchBlockCountChanged() {
