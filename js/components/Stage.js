@@ -33,6 +33,8 @@ export class Stage {
     this.keys = [];
     this.doorOpen = false;
     this.traps = [];
+    this.fireTraps = [];
+    this.fireTrapActive = false;
     this.trophy = { x: 0, y: 0 };
 
     this.stageGrid = null;
@@ -256,10 +258,16 @@ export class Stage {
     this.x = this.start.x;
     this.y = this.start.y;
     this.doorOpen = false;
+    this.fireTrapActive = false;
 
     // Restaura chaves do nível original
     if (this.currentLevelConfig && this.currentLevelConfig.keys) {
       this.keys = [...this.currentLevelConfig.keys];
+    }
+
+    // Restaura fogos do nível original
+    if (this.currentLevelConfig && this.currentLevelConfig.fireTraps) {
+      this.fireTraps = [...this.currentLevelConfig.fireTraps];
     }
 
     // Redesenha todos os elementos do nível (limpa e renderiza ator, walls, traps, trophy)
@@ -312,6 +320,8 @@ export class Stage {
     this.keys = levelConfig.keys || [];
     this.doorOpen = false;
     this.traps = levelConfig.traps || [];
+    this.fireTraps = levelConfig.fireTraps || [];
+    this.fireTrapActive = false;
     this.trophy = levelConfig.trophy || { x: 0, y: 0 };
     this.maxBlocks = levelConfig.maxBlocks || this.maxBlocks;
 
@@ -332,7 +342,7 @@ export class Stage {
     // Limpa células (remove ator também)
     this.stageCells.forEach(cell => {
       cell.innerHTML = "";
-      cell.classList.remove("hasWall", "hasHole", "hasDoor", "hasKey", "hasTrap", "hasTrophy", "actorCell", "visited", "current", "open");
+      cell.classList.remove("hasWall", "hasHole", "hasDoor", "hasKey", "hasTrap", "hasFireTrap", "hasTrophy", "actorCell", "visited", "current", "open");
     });
 
     // Renderiza paredes
@@ -380,6 +390,20 @@ export class Stage {
       const cell = this.stageCells[index];
       if (cell) {
         cell.classList.add("hasTrap");
+      }
+    });
+
+    // Renderiza fogos (armadilha de fogo)
+    this.fireTraps.forEach(fire => {
+      const index = fire.y * this.gridSize + fire.x;
+      const cell = this.stageCells[index];
+      if (cell) {
+        cell.classList.add("hasFireTrap");
+        if (this.fireTrapActive) {
+          cell.classList.add("active");
+        } else {
+          cell.classList.remove("active");
+        }
       }
     });
 
@@ -611,6 +635,23 @@ export class Stage {
   }
 
   /**
+   * Verifica se há armadilha de fogo na posição atual do ator
+   * @returns {boolean} true se houver fogo
+   */
+  isFireTrapAtCurrentPosition() {
+    return this.fireTraps.some(f => f.x === this.x && f.y === this.y);
+  }
+
+  /**
+   * Alterna o estado da armadilha de fogo (ativo/inativo)
+   */
+  toggleFireTrap() {
+    if (this.fireTraps.length === 0) return;
+    this.fireTrapActive = !this.fireTrapActive;
+    this.renderLevelElements();
+  }
+
+  /**
    * Verifica se há troféu na posição atual do ator
    * @returns {boolean} true se houver troféu
    */
@@ -624,6 +665,9 @@ export class Stage {
    */
   checkCollisionAtCurrentPosition() {
     if (this.isTrapAtCurrentPosition()) {
+      return "trap";
+    }
+    if (this.isFireTrapAtCurrentPosition() && this.fireTrapActive) {
       return "trap";
     }
     if (this.isTrophyAtCurrentPosition()) {

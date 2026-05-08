@@ -350,8 +350,8 @@
 
 /* Célula com parede */
 .stageCell.hasWall {
-  background-color: #f97316;
-  border: 2px solid black;
+  background-color: var(--color-tertiary-hover);
+  border: 2px solid var(--color-tertiary-hover);
 }
 
 /* Célula com buraco */
@@ -402,6 +402,23 @@
     83% 32%,
     91% 89%
   );
+}
+
+/* Célula com armadilha de fogo (inativo = hole) */
+.stageCell.hasFireTrap::before {
+  content: "⬭";
+  font-size: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+/* Célula com armadilha de fogo (ativo = fogo) */
+.stageCell.hasFireTrap.active::before {
+  content: "🔥";
 }
 
 /* Célula com troféu */

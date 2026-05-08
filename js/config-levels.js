@@ -538,6 +538,7 @@ const CONFIG_LEVELS = [
       { x: 1, y: 2 },
     ],
     traps: [{ x: 3, y: 1 }],
+    fireTraps: [{ x: 2, y: 2 }],
     maxBlocks: 18,
   },
 
