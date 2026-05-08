@@ -4,7 +4,7 @@
  */
 
 export class PositionCalculator {
-  constructor(workspace, SNAP_THRESHOLD = 40) {
+  constructor(workspace, SNAP_THRESHOLD = 20) {
     this.workspace = workspace;
     this.SNAP_THRESHOLD = SNAP_THRESHOLD;
   }
