@@ -7,6 +7,7 @@
 import { gameState } from "../state.js";
 import DOM from "../dom.js";
 import { getLevelConfig } from "../config-levels.js";
+import LEVEL_HINTS from "../data/level-hints.js";
 
 import { TopBar } from "../components/TopBar.js";
 import { Sidebar } from "../components/Sidebar.js";
@@ -16,6 +17,7 @@ import { DragDrop } from "../components/DragDrop.js";
 import { Modal } from "../components/Modal.js";
 import { Parser } from "../engine/parser.js";
 import { Runner } from "../engine/runner.js";
+import { Toast } from "../components/Toast.js";
 
 var Game = function(container) {
   this.container = container;
@@ -254,6 +256,7 @@ Game.prototype.resetStageFromRetry = function() {
   this.stage.reset();
   this.setRetryButtonToRun();
   this.removeKeyToast();
+  Toast.hideAll();
 };
 
 Game.prototype.removeKeyToast = function() {
@@ -277,6 +280,7 @@ Game.prototype.clearWorkspace = function() {
   this.stage.disablePauseButton();
   this.setRetryButtonToRun();
   this.removeKeyToast();
+  Toast.hideAll();
 };
 
 Game.prototype.handleLevelComplete = function() {
@@ -383,5 +387,14 @@ Game.prototype.loadLevelConfig = function() {
     this.stage.setLevelConfig(levelConfig);
     this.stage.updateTitle(currentLevel);
     this.stage.updateBlockCounter(0);
+
+    // Remove qualquer toast anterior antes de exibir o novo
+    Toast.hide();
+
+    // Exibe hint do nível
+    var hint = LEVEL_HINTS[currentLevel];
+    if (hint) {
+      Toast.show(hint, 15000, null, "info");
+    }
   }
 };

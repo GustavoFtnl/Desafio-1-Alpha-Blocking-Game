@@ -393,8 +393,8 @@
 
 /* Célula com parede */
 .stageCell.hasWall {
-  background-color: #f97316;
-  border: 2px solid black;
+  background-color: var(--color-tertiary-hover);
+  border: 2px solid var(--color-tertiary-hover);
 }
 
 /* Célula com buraco */
@@ -447,9 +447,26 @@
   );
 }
 
+/* Célula com armadilha de fogo (inativo = hole) */
+.stageCell.hasFireTrap::before {
+  content: "⬭";
+  font-size: 2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+/* Célula com armadilha de fogo (ativo = fogo) */
+.stageCell.hasFireTrap.active::before {
+  content: "🔥";
+}
+
 /* Célula com troféu */
 .stageCell.hasTrophy {
-  font-size: 2em;
+  font-size: 22px;
 }
 
 /* Célula com porta */
@@ -471,7 +488,7 @@
 /* Célula com chave */
 .stageCell.hasKey::before {
   content: "🗝️";
-  font-size: 2em;
+  font-size: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -569,8 +586,8 @@
   font-size: 24px;
 }
 
-/* Toast de chave coletada */
-.keyToast {
+/* Toast base reutilizável */
+.toast {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -578,7 +595,6 @@
   border: 2px solid var(--color-primary);
   border-radius: var(--radius-default);
   padding: var(--space-sm) var(--space-md);
-  box-shadow: var(--shadow-modal);
   z-index: 1000;
   opacity: 0;
   transform: translateX(20px);
@@ -588,11 +604,28 @@
   display: flex;
   align-items: center;
   gap: var(--space-xs);
+  max-width: 250px;
 }
 
-.keyToast.show {
+.toast.show {
   opacity: 1;
   transform: translateX(0);
+}
+
+/* Toast de chave coletada (mantém compatibilidade) */
+.keyToast {
+  border-color: var(--color-primary);
+}
+
+.toast__icon {
+  font-size: 20px;
+}
+
+.toast__text {
+  font-size: var(--font-label-size);
+  color: var(--color-on-surface);
+  word-wrap: break-word;
+  white-space: normal;
 }
 
 .stageCell.actorCell {
@@ -600,7 +633,7 @@
 }
 
 .actorIcon {
-  font-size: 24px;
+  font-size: 22px;
   position: relative;
   z-index: 10;
 }

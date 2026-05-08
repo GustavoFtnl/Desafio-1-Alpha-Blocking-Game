@@ -49,6 +49,57 @@ export class Runner {
 
         this.setBlockExecuting(instruction.blockElement, true);
 
+        // Lógica do toggle do fogo
+        if (this.stage.fireTraps && this.stage.fireTraps.length > 0) {
+          const atorNoFogo = this.stage.isFireTrapAtCurrentPosition();
+          const fogoAtivoAntes = this.stage.fireTrapActive;
+
+          if (atorNoFogo && !fogoAtivoAntes) {
+            // Se ator está em fogo desativado, executa ação primeiro, depois toggle
+            const posicaoAntes = { x: this.stage.x, y: this.stage.y };
+            const result = await this.executeAction(instruction);
+            
+            if (result.moved) {
+              this.stage.toggleFireTrap();
+              
+              // Verifica se o ator SAIU da célula do fogo
+              const fogoIndex = posicaoAntes.y * this.stage.gridSize + posicaoAntes.x;
+              const atualIndex = this.stage.y * this.stage.gridSize + this.stage.x;
+              
+              // Só verifica colisão se o ator mudou de posição (saiu da célula do fogo)
+              if (atualIndex !== fogoIndex) {
+                const collision = this.stage.checkCollisionAtCurrentPosition();
+                
+                if (collision === "trap") {
+                  this.setBlockExecuting(instruction.blockElement, false);
+                  this.handleTrapHit();
+                  return;
+                }
+                if (collision === "trophy") {
+                  this.setBlockExecuting(instruction.blockElement, false);
+                  this.handleVictory();
+                  return;
+                }
+              }
+            }
+
+            // Desativa bloco e continua para o delay
+            this.setBlockExecuting(instruction.blockElement, false);
+            await this.delay(this.commandDelay);
+            continue;
+          } else {
+            // Caso normal: toggle primeiro, depois verifica colisão e executa
+            this.stage.toggleFireTrap();
+
+            // Verifica se há fogo ativo na posição atual antes do movimento
+            if (this.stage.isFireTrapAtCurrentPosition() && this.stage.fireTrapActive) {
+              this.setBlockExecuting(instruction.blockElement, false);
+              this.handleTrapHit();
+              return;
+            }
+          }
+        }
+
         const result = await this.executeAction(instruction);
 
         if (result.moved) {
