@@ -5,30 +5,31 @@
 
 /* === LAYOUT PRINCIPAL (3 Colunas Desktop) === */
 .appLayout {
-  display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr 400px;
-  grid-template-rows: 60px 1fr 60px;
-  gap: var(--space-gutter);
+  display: flex;
+  flex: 1;
+  overflow: hidden;
   height: 100vh;
-  padding: var(--space-gutter);
 }
 
 /* === TOPO DA PÁGINA (Header Gamificado) === */
 .topBar {
-  grid-column: 1 / -1;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  background-color: var(--color-primary);
-  color: var(--color-on-primary);
+  align-items: center;
+  width: 100%;
+  height: 64px;
   padding: 0 var(--space-md);
-  border-radius: var(--radius-default);
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary);
+  border-top: 4px solid var(--color-secondary);
   box-shadow: var(--shadow-sidebar);
+  z-index: 50;
 }
 
 .topBar_title {
   font-size: var(--font-h1-size);
   font-weight: var(--font-h1-weight);
+  font-weight: 700;
   line-height: var(--font-h1-line-height);
   color: var(--color-on-primary);
 }
@@ -42,72 +43,189 @@
 .topBar_levelText {
   font-size: var(--font-label-bold-size);
   font-weight: var(--font-label-bold-weight);
+  color: var(--color-secondary);
+  font-weight: 700;
+}
+
+.topBar_progress {
+  display: flex;
+  flex-direction: column;
+  width: 192px;
+  gap: var(--space-xs);
+}
+
+.topBar_progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-label-bold-size);
+  font-weight: var(--font-label-bold-weight);
   color: var(--color-on-primary);
+  opacity: 0.8;
+}
+
+.topBar_progressBar {
+  height: 8px;
+  width: 100%;
+  background-color: var(--color-surface-container-highest);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.topBar_progressFill {
+  height: 100%;
+  background-color: var(--color-secondary-container);
+  transition: width 300ms ease-out;
 }
 
 /* === SIDEBAR (Biblioteca de Blocos) === */
 .sidebar {
-  background-color: #F1F5F9;
-  border-radius: var(--radius-default);
-  padding: var(--space-md);
+  width: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface-container-low);
+  border-right: 1px solid var(--color-outline-variant);
+  z-index: 40;
   overflow-y: auto;
-  box-shadow: var(--shadow-sidebar);
-  z-index: var(--z-sidebar);
+}
+
+.sidebar_content {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  flex: 1;
+  overflow-y: auto;
 }
 
 .sidebar_title {
-  font-size: var(--font-h1-size);
-  font-weight: var(--font-h1-weight);
-  color: var(--color-on-surface);
-  margin-bottom: var(--space-md);
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  font-size: var(--font-h2-size);
+  font-weight: var(--font-h2-weight);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.sidebar_titleIcon {
+  font-size: 24px;
+}
+
+.sidebar_subtitle {
+  font-size: var(--font-label-bold-size);
+  font-weight: var(--font-label-bold-weight);
+  color: var(--color-on-surface-variant);
+  opacity: 0.7;
+  margin-bottom: var(--space-lg);
+}
+
+.sidebar_newProjectBtn {
+  margin-top: auto;
+  width: 100%;
+  background-color: var(--color-secondary);
+  color: var(--color-on-secondary);
+  font-size: var(--font-label-bold-size);
+  font-weight: var(--font-label-bold-weight);
+  padding: var(--space-md);
+  border-radius: var(--radius-xl);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.sidebar_newProjectBtn:hover {
+  background-color: var(--color-secondary-container);
 }
 
 /* === WORKSPACE (Dropzone - Área de Soltar) === */
 .workspaceArea {
+  flex: 1;
+  min-width: 400px;
+  width: 100%;
   background-color: var(--color-surface);
-  
-  /* Grade estilo Blueprint conforme Stitch */
-  background-image: 
-    linear-gradient(rgba(226, 232, 240, 0.5) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(226, 232, 240, 0.5) 1px, transparent 1px);
-  background-size: 24px 24px;
-  
-  padding: var(--workspace-padding);
-  border-radius: var(--radius-default);
-  min-height: 400px;
-  
-  /* Área de drop */
+
+  /* Grade estilo Blueprint conforme Stitch - com subgrid */
+  background-image:
+    linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+    linear-gradient(to bottom, #e2e8f0 1px, transparent 1px),
+    linear-gradient(to right, #cbd5e1 1px, transparent 1px),
+    linear-gradient(to bottom, #cbd5e1 1px, transparent 1px);
+  background-size:
+    24px 24px,
+    24px 24px,
+    96px 96px,
+    96px 96px;
+
+  position: relative;
+  display: block;
+  padding: var(--space-lg);
+  overflow: hidden;
+}
+
+.workspaceContent {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  overflow: visible;
+  transition: transform 0.05s ease-out;
+}
+
+.workspaceContent .block,
+.workspaceContent .blockContainer {
+  position: relative;
+}
+
+.workspaceContent .block[style*="position: absolute"],
+.workspaceContent .blockContainer[style*="position: absolute"] {
+  position: absolute;
+}
+
+.workspaceContent .blockStack {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--block-gap);
   align-items: center;
-  
-  overflow-y: auto;
-  position: relative;
-  z-index: var(--z-workspace);
-  
-  transition: border-color var(--transition-micro);
 }
 
 /* Estado de dragover (quando arrastando bloco sobre a área) */
 .workspaceArea.dragover {
-  border-color: var(--color-secondary);
   background-color: rgba(46, 196, 182, 0.02);
 }
 
 /* Placeholder quando workspace vazio */
 .workspacePlaceholder {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: var(--color-outline-variant);
-  font-size: var(--font-body-size);
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
   pointer-events: none;
+  opacity: 0.3;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.workspacePlaceholder.hidden {
+  display: none !important;
+}
+
+.workspacePlaceholderIcon {
+  font-size: 64px;
+  color: var(--color-on-surface);
+}
+
+.workspacePlaceholderText {
+  font-size: var(--font-h1-size);
+  font-weight: var(--font-h1-weight);
+  color: var(--color-on-surface);
 }
 
 /* Pilha de blocos no workspace (snap visual) */
@@ -119,13 +237,49 @@
   max-width: 280px;
 }
 
+.blockContainer > .block {
+  width: 100%;
+  max-width: 260px;
+  box-sizing: border-box;
+}
+
 /* === STAGE (Grid 10x10 - Mapa do Jogo) === */
 .stageContainer {
+  width: 400px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
-  z-index: var(--z-stage);
-  position: relative;
+  background-color: var(--color-surface-container);
+  border-left: 1px solid var(--color-outline-variant);
+}
+
+.stageContent {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  flex: 1;
+}
+
+.stageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stageTitle {
+  font-size: var(--font-h2-size);
+  font-weight: var(--font-h2-weight);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.stageBlockCounter {
+  font-size: var(--font-label-bold-size);
+  font-weight: var(--font-label-bold-weight);
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-surface-container-highest);
+  border-radius: var(--radius-default);
+  color: var(--color-on-surface-variant);
 }
 
 .stageGrid {
@@ -133,19 +287,17 @@
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   grid-template-rows: repeat(10, 1fr);
-  
-  width: 400px;
-  height: 400px;
+
+  aspect-ratio: 1;
   background-color: white;
-  
+
   /* Bordas das células */
-  gap: 1px;
-  background-color: var(--color-outline-variant);
   border: 2px solid var(--color-outline-variant);
-  border-radius: var(--radius-default);
-  
+  border-radius: var(--radius-xl);
   overflow: hidden;
   position: relative;
+
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Célula individual do grid */
@@ -153,6 +305,10 @@
   background-color: white;
   position: relative;
   transition: background-color var(--transition-micro);
+  border: 0.5px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Célula visitada pelo ator */
@@ -165,6 +321,45 @@
   background-color: rgba(0, 29, 61, 0.1);
 }
 
+/* Célula com parede */
+.stageCell.hasWall {
+  background-color: #f97316;
+  border: 2px solid black;
+}
+
+/* Célula com buraco */
+.stageCell.hasHole {
+}
+
+.stageCell.hasHole::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-primary-container);
+  clip-path: polygon(
+    3% 51%,
+    14% 34%,
+    5% 15%,
+    39% 5%,
+    73% 6%,
+    93% 18%,
+    95% 58%,
+    80% 71%,
+    87% 92%,
+    50% 86%,
+    18% 96%,
+    13% 72%
+  );
+}
+
+/* Célula com troféu */
+.stageCell.hasTrophy {
+  font-size: 2em;
+}
+
 /* Ator (Personagem) no Stage */
 .actor {
   position: absolute;
@@ -174,23 +369,83 @@
   align-items: center;
   justify-content: center;
   font-size: 20px;
-  
+
   /* Transição suave no movimento (300ms ease-in-out) */
-  transition: 
+  transition:
     left var(--transition-actor-move),
     top var(--transition-actor-move);
-  
+
   z-index: 10;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 }
 
 /* === CONTROLES (Botões de Execução) === */
 .controlsArea {
-  grid-column: 3;
   display: flex;
-  gap: var(--space-sm);
-  align-items: center;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.controlsRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+.controlsRowDual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+/* === LIXEIRA (Remover Blocos) === */
+.trashArea {
+  display: flex;
   justify-content: center;
-  padding: var(--space-sm);
-  z-index: var(--z-controls);
+  align-items: center;
+  padding: var(--space-md);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--transition-micro),
+    visibility var(--transition-micro);
+}
+
+.trashArea.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.trashButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface-container);
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-micro),
+    color var(--transition-micro),
+    transform var(--transition-micro);
+}
+
+.trashButton:hover {
+  background-color: var(--color-logic-control);
+  color: var(--color-on-primary);
+  transform: scale(1.1);
+}
+
+.trashButton.dragover {
+  background-color: var(--color-logic-control);
+  color: var(--color-on-primary);
+  transform: scale(1.15);
+  box-shadow: var(--shadow-block-dragging);
+}
+
+.trashIcon {
+  font-size: 24px;
 }

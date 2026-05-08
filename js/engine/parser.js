@@ -1,219 +1,309 @@
 /**
- * parser.js - Lê a árvore DOM no workspace e converte em array de instruções JS
- * Suporta blocos aninhados (repeat, conditional)
- * Mapeia classes CSS para comandos executáveis
+ * parser.js - Lê a árvore DOM no workspace e converte em array de instruções planas
+ * Traduz "Mover + Direction" → moveUp/Down/Left/Right
+ * Traduz "Mover sem Direction" → forward
+ * Expande Repeat Nx em repeat com contagem e corpo de instruções
+ * Comentários em português do Brasil conforme AGENTS.md
  */
 
 export class Parser {
   constructor() {
-    this.workspace = document.querySelector('.workspaceArea')
+    this.workspace = document.querySelector(".workspaceArea");
   }
 
   /**
-   * Parseia o workspace e retorna array de instruções
+   * Parseia o workspace e retorna array de instruções planas
    * @returns {Array} Array de instruções para o runner
    */
   parse() {
     const instructions = []
-    const processedBlocks = new Set()
+    const processedElements = new Set()
+
+    // Primeiro, procura o bloco Início como raiz
+    const startContainer = this.workspace.querySelector(".blockContainer[data-type='start']")
     
-    // Primeiro, processa blocos em blockContainers (com filhos)
-    const blockContainers = this.workspace.querySelectorAll('.blockContainer')
-    blockContainers.forEach(container => {
-      const mainBlock = container.querySelector(':scope > .block:not(.block--direction)')
-      if (!mainBlock || processedBlocks.has(mainBlock)) return
-      
-      processedBlocks.add(mainBlock)
-      const instruction = this.parseBlock(mainBlock)
-      if (!instruction) return
-      
-      // Verifica blocos de direção para Move
-      const blockSlot = container.querySelector(':scope > .blockSlot')
-      if (blockSlot) {
-        const directionBlocks = blockSlot.querySelectorAll(':scope > .block--direction')
-        if (directionBlocks.length > 0) {
-          instruction.directions = Array.from(directionBlocks).map(dirBlock => this.getDirectionType(dirBlock))
-        }
-        
-        // Verifica blocos filhos para Repeat/Se (corpo do loop/condição)
-        if (mainBlock.classList.contains('block--repeat') || mainBlock.classList.contains('block--conditional')) {
-          const childBlocks = blockSlot.querySelectorAll(':scope > .block:not(.block--direction)')
-          instruction.body = Array.from(childBlocks).map(child => this.parseBlock(child)).filter(Boolean)
-        }
+    if (startContainer) {
+      // Processa filhos diretos do Início
+      const slot = startContainer.querySelector(".blockSlot")
+      if (slot) {
+        Array.from(slot.children).forEach(element => {
+          if (processedElements.has(element)) return
+          processedElements.add(element)
+
+          const parsed = this.parseElement(element)
+          if (parsed) {
+            if (Array.isArray(parsed)) {
+              instructions.push(...parsed)
+            } else {
+              instructions.push(parsed)
+            }
+          }
+        })
       }
       
-      instructions.push(instruction)
-    })
-    
-    // Depois, processa blocos em blockStacks (sem filhos)
-    const blockStacks = this.workspace.querySelectorAll('.blockStack')
+      return instructions
+    }
+
+    // Fallback: comportamento original se não houver bloco Início
+    // Primeiro, pega blocos dentro de .blockStack
+    const blockStacks = this.workspace.querySelectorAll(".blockStack")
+
     blockStacks.forEach(stack => {
-      const blocks = stack.querySelectorAll(':scope > .block:not(.block--direction)')
-      blocks.forEach(block => {
-        if (processedBlocks.has(block)) return
-        const instruction = this.parseBlock(block)
-        if (instruction) {
-          instructions.push(instruction)
+      const directChildren = stack.children
+
+      Array.from(directChildren).forEach(element => {
+        if (processedElements.has(element)) return
+        processedElements.add(element)
+
+        const parsed = this.parseElement(element)
+        if (parsed) {
+          if (Array.isArray(parsed)) {
+            instructions.push(...parsed)
+          } else {
+            instructions.push(parsed)
+          }
         }
       })
     })
-    
+
+    // Depois, verifica blocos diretos no workspaceContent (sem stack)
+    const workspaceContent = this.workspace.querySelector(".workspaceContent")
+    if (workspaceContent) {
+      Array.from(workspaceContent.children).forEach(element => {
+        if (element.classList.contains("blockStack")) return
+        if (processedElements.has(element)) return
+        processedElements.add(element)
+
+        const parsed = this.parseElement(element)
+        if (parsed) {
+          if (Array.isArray(parsed)) {
+            instructions.push(...parsed)
+          } else {
+            instructions.push(parsed)
+          }
+        }
+      })
+    }
+
     return instructions
   }
 
   /**
-   * Parseia um bloco individual retornando a instrução correspondente
-   * @param {HTMLElement} block - Elemento do bloco
-   * @returns {Object|null} Instrução parseada
+   * Parseia um elemento (block ou blockContainer)
+   * @param {HTMLElement} element - Elemento do workspace
+   * @returns {Object|Array|null} Instrução ou array de instruções
    */
-  parseBlock(block) {
-    if (block.classList.contains('block--repeat')) {
-      const blockText = block.querySelector('.block_text')
-      const textContent = blockText ? blockText.textContent : ''
-      let repeatCount = 2
-      const match = textContent.match(/\((\d+)x\)/)
-      if (match) {
-        repeatCount = parseInt(match[1])
-      }
-      return {
-        type: 'repeat',
-        count: repeatCount,
-        body: [],
-        blockElement: block
-      }
+  parseElement(element) {
+    if (element.classList.contains("blockContainer")) {
+      return this.parseBlockContainer(element);
     }
-    
-    if (block.classList.contains('block--conditional')) {
-      return {
-        type: 'if',
-        condition: 'default',
-        body: [],
-        blockElement: block
-      }
+
+    if (element.classList.contains("block")) {
+      return this.parseBlock(element);
     }
-    
-    const instruction = {
-      type: this.getBlockType(block),
-      blockElement: block,
-      directions: []
-    }
-    
-    return instruction
+
+    return null;
   }
 
   /**
-   * Parseia um bloco de repetição e seu corpo aninhado
-   * @param {HTMLElement} repeatBlock - Bloco de repetição
-   * @param {HTMLElement} stack - Pilha contendo o bloco
-   * @returns {Object|null} Instrução de repetição com corpo
+   * Parseia um blockContainer (bloco com slot para filhos)
+   * @param {HTMLElement} container - Elemento .blockContainer
+   * @returns {Object|Array|null} Instrução ou null
    */
-  parseRepeatBlock(repeatBlock, stack) {
-    const blockText = repeatBlock.querySelector('.block_text')
-    const textContent = blockText ? blockText.textContent : ''
-    
-    // Extrai o número de repetições (formato: "Repetir (Nx)")
-    let repeatCount = 2 // Padrão
-    const match = textContent.match(/\((\d+)x\)/)
-    if (match) {
-      repeatCount = parseInt(match[1])
+  parseBlockContainer(container) {
+    const mainBlock = container.querySelector(":scope > .block");
+    if (!mainBlock) return null;
+
+    if (mainBlock.classList.contains("block--start")) {
+      return this.parseStartBlock(mainBlock, container);
     }
-    
-    // Coleta blocos no corpo (próximos blocos na pilha até outro controle)
-    const body = this.getBlockBody(repeatBlock, stack)
-    
+
+    if (mainBlock.classList.contains("block--repeat")) {
+      return this.parseRepeatBlock(mainBlock, container);
+    }
+
+    if (mainBlock.classList.contains("block--move")) {
+      return this.parseMoveBlock(mainBlock, container);
+    }
+
+    return null;
+  }
+
+  parseStartBlock(block, container) {
+    const slot = container.querySelector(".blockSlot");
+    let childInstructions = [];
+
+    if (slot) {
+      const childElements = slot.querySelectorAll(":scope > .block, :scope > .blockContainer");
+      childElements.forEach(element => {
+        const parsed = this.parseElement(element);
+        if (parsed) {
+          if (Array.isArray(parsed)) {
+            childInstructions.push(...parsed);
+          } else {
+            childInstructions.push(parsed);
+          }
+        }
+      });
+    }
+
     return {
-      type: 'repeat',
+      type: "start",
+      body: childInstructions,
+      blockElement: block
+    };
+  }
+
+  /**
+   * Parseia um bloco Mover com direção opcional
+   * @param {HTMLElement} block - Bloco .block--move
+   * @param {HTMLElement} container - Container do bloco
+   * @returns {Object} Instrução: moveUp/Down/Left/Right ou forward
+   */
+  parseMoveBlock(block, container) {
+    const slot = container.querySelector(".blockSlot");
+    let directions = [];
+
+    if (slot) {
+      const directionBlocks = slot.querySelectorAll(".block--direction");
+      directionBlocks.forEach(directionBlock => {
+        const direction = this.getDirectionFromBlock(directionBlock);
+        if (direction) {
+          directions.push(direction);
+        }
+      });
+    }
+
+    if (directions.length > 0) {
+      return directions.map(direction => ({
+        type: direction,
+        blockElement: block
+      }));
+    }
+
+    return null;
+  }
+
+  /**
+   * Extrai a direção de um bloco direction
+   * @param {HTMLElement} directionBlock - Bloco .block--direction
+   * @returns {string} Direction: up, down, left, right
+   */
+  getDirectionFromBlock(directionBlock) {
+    const content = directionBlock.textContent.trim()
+
+    if (content.includes("→") || content.includes("Direita")) {
+      return "moveRight"
+    } else if (content.includes("←") || content.includes("Esquerda")) {
+      return "moveLeft"
+    } else if (content.includes("↑") || content.includes("Cima")) {
+      return "moveUp"
+    } else if (content.includes("↓") || content.includes("Baixo")) {
+      return "moveDown"
+    }
+
+    return "moveRight"
+  }
+
+  /**
+   * Parseia um bloco Repeat com seu corpo
+   * @param {HTMLElement} block - Bloco .block--repeat
+   * @param {HTMLElement} container - Container do bloco
+   * @returns {Object} Instrução repeat com corpo
+   */
+  parseRepeatBlock(block, container) {
+    const inputElement = block.querySelector(".blockRepeatInput");
+    let repeatCount = 1;
+
+    if (inputElement && inputElement.value) {
+      repeatCount = parseInt(inputElement.value, 10);
+      if (isNaN(repeatCount) || repeatCount < 1) {
+        repeatCount = 1;
+      } else if (repeatCount > 10) {
+        repeatCount = 10;
+      }
+    }
+
+    if (inputElement && !inputElement.value) {
+      inputElement.value = 1;
+    }
+
+    const bodyInstructions = this.parseRepeatBody(container);
+
+    return {
+      type: "repeat",
       count: repeatCount,
-      body: body,
-      blockElement: repeatBlock
-    }
+      body: bodyInstructions,
+      blockElement: block
+    };
   }
 
   /**
-   * Parseia um bloco condicional e seu corpo aninhado
-   * @param {HTMLElement} conditionalBlock - Bloco condicional
-   * @param {HTMLElement} stack - Pilha contendo o bloco
-   * @returns {Object|null} Instrução condicional com corpo
-   */
-  parseConditionalBlock(conditionalBlock, stack) {
-    // Coleta blocos no corpo (próximos blocos na pilha)
-    const body = this.getBlockBody(conditionalBlock, stack)
-    
-    return {
-      type: 'if',
-      condition: 'default', // Simplificado para MVP
-      body: body,
-      blockElement: conditionalBlock
-    }
-  }
-
-  /**
-   * Obtém o corpo de um bloco aninhado (blocos seguintes até próximo controle)
-   * @param {HTMLElement} controlBlock - Bloco de controle (repeat/conditional)
-   * @param {HTMLElement} stack - Pilha contendo o bloco
+   * Parseia o corpo de um bloco Repeat (blocos dentro do slot)
+   * @param {HTMLElement} container - Container do repeat
    * @returns {Array} Array de instruções do corpo
    */
-  getBlockBody(controlBlock, stack) {
-    const body = []
-    let currentElement = controlBlock.nextElementSibling
+  parseRepeatBody(container) {
+    const body = [];
+    const slot = container.querySelector(":scope > .blockSlot");
+
+    if (!slot) return body;
+
+    const childElements = slot.querySelectorAll(":scope > .block, :scope > .blockContainer");
     
-    while (currentElement) {
-      // Para se encontrar outro bloco de controle
-      if (currentElement.classList && 
-          (currentElement.classList.contains('block--repeat') || 
-           currentElement.classList.contains('block--conditional'))) {
-        break
-      }
-      
-      // Adiciona bloco simples ao corpo
-      if (currentElement.classList && currentElement.classList.contains('block')) {
-        const instruction = this.parseBlock(currentElement)
-        if (instruction) {
-          body.push(instruction)
+    childElements.forEach(element => {
+      const parsed = this.parseElement(element);
+      if (parsed) {
+        if (Array.isArray(parsed)) {
+          body.push(...parsed);
+        } else {
+          body.push(parsed);
         }
       }
-      
-      currentElement = currentElement.nextElementSibling
-    }
-    
-    return body
+    });
+
+    return body;
   }
 
   /**
-   * Extrai o tipo de bloco baseado nas classes CSS
+   * Parseia um bloco solto (sem container)
    * @param {HTMLElement} block - Elemento do bloco
-   * @returns {string} Tipo do bloco para execução
+   * @returns {Object|null} Instrução ou null
    */
-  getBlockType(block) {
-    if (block.classList.contains('block--move')) {
-      return 'move'
-    } else if (block.classList.contains('block--direction')) {
-      return this.getDirectionType(block)
-    } else if (block.classList.contains('block--repeat')) {
-      return 'repeat'
-    } else if (block.classList.contains('block--conditional')) {
-      return 'if'
-    } else if (block.classList.contains('block--action')) {
-      return 'action'
+  parseBlock(block) {
+    if (block.classList.contains("block--move")) {
+      return this.parseBlockAsMove(block);
     }
-    
-    return 'unknown'
-  }
-  
-  getDirectionType(block) {
-    const text = block.querySelector('.block_text')?.textContent || ''
-    if (text.includes('Direita')) return 'turnRight'
-    if (text.includes('Esquerda')) return 'turnLeft'
-    if (text.includes('Cima')) return 'moveUp'
-    if (text.includes('Baixo')) return 'moveDown'
-    return 'move'
+
+    return null;
   }
 
   /**
-   * Conta o número total de blocos no workspace (para cálculo de estrelas)
+   * Parseia um bloco Mover solto (sem container)
+   * Blocos Mover sem direção são ignorados
+   * @param {HTMLElement} block - Bloco .block--move
+   * @returns {null} null (sem direção não gera instrução)
+   */
+  parseBlockAsMove(block) {
+    return null;
+  }
+
+  /**
+   * Conta o número total de blocos no workspace
+   * Considera Repeat como 1 bloco + blocos do corpo
    * @returns {number} Total de blocos
    */
   countBlocks() {
-    return this.workspace.querySelectorAll('.block').length
+    const allBlocks = this.workspace.querySelectorAll(".block--start, .block--move, .block--direction, .block--repeat");
+    return allBlocks.length;
+  }
+
+  /**
+   * Conta instruções executáveis (inclui expansão de repeat)
+   * @returns {number} Total de instruções após expansão
+   */
+  countExecutableInstructions() {
+    const instructions = this.parse();
+    return instructions.length;
   }
 }

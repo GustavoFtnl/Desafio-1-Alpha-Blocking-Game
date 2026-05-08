@@ -4,6 +4,8 @@
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
+import { Block } from "./Block.js";
+
 export class Sidebar {
   /**
    * Construtor do Sidebar
@@ -12,18 +14,6 @@ export class Sidebar {
   constructor(container) {
     this.container = container;
 
-    // Configuração dos tipos de blocos disponíveis
-    this.blockTypes = [
-      { type: "block--move", icon: "↕", text: "Mover" },
-      { type: "block--direction", icon: "→", text: "Direita" },
-      { type: "block--direction", icon: "←", text: "Esquerda" },
-      { type: "block--direction", icon: "↑", text: "Cima" },
-      { type: "block--direction", icon: "↓", text: "Baixo" },
-      { type: "block--repeat", icon: "⟳", text: "Repetir" },
-      { type: "block--conditional", icon: "?", text: "Se" },
-      { type: "block--action", icon: "!", text: "Ação" },
-    ];
-
     this.render();
   }
 
@@ -31,24 +21,33 @@ export class Sidebar {
    * Renderiza a sidebar com título e paleta de blocos
    */
   render() {
+    const blockConfigs = Block.getConfigs();
+
+    const blocksHtml = blockConfigs
+      .map((config) => {
+        const blockElement = Block.createElement(
+          config.text,
+          config.icon,
+          config.type,
+        );
+        return blockElement.outerHTML;
+      })
+      .join("");
+
     this.container.innerHTML = `
-       <h2 class="sidebar_title">Ações</h2>
-       <div class="blockPalette">
-         ${this.blockTypes
-           .map(
-             (block) => `
-           <div class="block ${block.type}" draggable="true" 
-                aria-label="Bloco de comando: ${block.text}" 
-                aria-grabbed="false">
-             <span class="block_text" style="text-align: center; width: 100%;">${block.text}</span>
-           </div>
-         `,
-           )
-           .join("")}
-       </div>
+      <div class="sidebar_content">
+        <div class="sidebar_title">
+          <span class="material-symbols-outlined sidebar_titleIcon">psychology</span>
+          <h2 style="font-size: var(--font-h2-size); font-weight: var(--font-h2-weight); font-weight: 700;">Biblioteca</h2>
+        </div>
+        <p class="sidebar_subtitle">Arraste os blocos</p>
+        <div class="blockPalette">
+          ${blocksHtml}
+        </div>
+        <button class="sidebar_newProjectBtn">Novo Projeto</button>
+      </div>
     `;
 
-    // Armazena referência ao palette para o DragDrop usar
     this.paletteElement = this.container.querySelector(".blockPalette");
   }
 

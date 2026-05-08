@@ -2,20 +2,21 @@
  * runner.js - Executa o array de instruções sequencialmente
  * Usa async/await e delays para cadenciar a execução
  * Controla estados: play, pause, stop
+ * Detecta colisão com armadilhas (falha) e troféu (vitória)
+ * Comentários em português do Brasil conforme AGENTS.md
  */
 
 export class Runner {
   constructor(stage) {
-    this.stage = stage
-    this.instructions = []
-    this.currentIndex = 0
-    this.isRunning = false
-    this.isPaused = false
-    this.pausePromise = null
-    this.pauseResolve = null
-    
-    // Delay entre comandos (compatível com CSS --transition-actor-move: 300ms)
-    this.commandDelay = 300
+    this.stage = stage;
+    this.instructions = [];
+    this.currentIndex = 0;
+    this.isRunning = false;
+    this.isPaused = false;
+    this.pausePromise = null;
+    this.pauseResolve = null;
+
+    this.commandDelay = 300;
   }
 
   /**
@@ -25,204 +26,195 @@ export class Runner {
    */
   async run(instructions) {
     if (this.isRunning) {
-      return // Já está executando
+      return;
     }
-    
-    this.instructions = instructions
-    this.currentIndex = 0
-    this.isRunning = true
-    this.isPaused = false
-    
+
+    this.instructions = instructions;
+    this.currentIndex = 0;
+    this.isRunning = true;
+    this.isPaused = false;
+
     try {
-      for (const instruction of this.instructions) {
-        if (!this.isRunning) break
+      for (let i = 0; i < this.instructions.length; i++) {
+        const instruction = this.instructions[i];
+        const nextInstruction = this.instructions[i + 1];
         
-        // Verifica se está pausado
+        if (!this.isRunning) break;
+
         if (this.isPaused) {
-          await this.waitForResume()
+          await this.waitForResume();
         }
+
+        if (!this.isRunning) break;
+
+        this.setBlockExecuting(instruction.blockElement, true);
+
+        const result = await this.executeAction(instruction);
+
+        if (result.moved) {
+          const collision = this.stage.checkCollisionAtCurrentPosition();
+
+          if (collision === "trap") {
+            this.setBlockExecuting(instruction.blockElement, false);
+            this.handleTrapHit();
+            return;
+          }
+
+          if (collision === "trophy") {
+            this.setBlockExecuting(instruction.blockElement, false);
+            this.handleVictory();
+            return;
+          }
+        }
+
+        // Só desativa se a próxima instrução for de um bloco diferente
+        const shouldDeactivate = !nextInstruction || 
+          nextInstruction.blockElement !== instruction.blockElement;
         
-        if (!this.isRunning) break // Foi parado
-        
-        // Adiciona classe de execução no bloco principal
-        this.setBlockExecuting(instruction, true)
-        
-        // Executa a instrução (pode ser aninhada)
-        await this.executeInstruction(instruction)
-        
-        // Remove classe de execução
-        this.setBlockExecuting(instruction, false)
-        
-        // Delay entre comandos principais
-        await this.delay(this.commandDelay)
+        if (shouldDeactivate) {
+          this.setBlockExecuting(instruction.blockElement, false);
+        }
+
+        await this.delay(this.commandDelay);
+      }
+
+      if (this.isRunning && !this.isPaused) {
+        this.dispatchExecutionCompleteEvent();
       }
     } catch (error) {
-      console.error('Erro durante execução:', error)
+      console.error("Erro durante execução:", error);
     } finally {
-      this.isRunning = false
-      this.isPaused = false
-      
-      // Dispara evento de conclusão
-      this.dispatchCompleteEvent()
+      this.isRunning = false;
+      this.isPaused = false;
     }
   }
 
   /**
-   * Executa uma única instrução
+   * Executa uma ação baseada no tipo de instrução
    * @param {Object} instruction - Instrução a ser executada
+   * @returns {Promise<{moved: boolean}>} Resultado do movimento
    */
-  async executeInstruction(instruction) {
+  async executeAction(instruction) {
     switch (instruction.type) {
-      case 'move':
-        this.stage.move()
-        // Executa direções aninhadas se houver
-        if (instruction.directions && instruction.directions.length > 0) {
-          for (const dir of instruction.directions) {
-            await this.executeDirection(dir)
-          }
-        }
-        break
-        
-      case 'turnRight':
-        this.stage.turnRight()
-        break
-        
-      case 'turnLeft':
-        this.stage.turnLeft()
-        break
-        
-      case 'moveUp':
-        // Temporariamente vira para cima e move
-        const savedDir = this.stage.direction
-        this.stage.direction = 0 // cima
-        this.stage.updateActorRotation()
-        this.stage.move()
-        this.stage.direction = savedDir
-        this.stage.updateActorRotation()
-        break
-        
-      case 'moveDown':
-        // Temporariamente vira para baixo e move
-        const savedDir2 = this.stage.direction
-        this.stage.direction = 2 // baixo
-        this.stage.updateActorRotation()
-        this.stage.move()
-        this.stage.direction = savedDir2
-        this.stage.updateActorRotation()
-        break
-        
-      case 'action':
-        await this.delay(this.commandDelay)
-        break
-        
-      case 'repeat':
-        await this.executeRepeat(instruction)
-        break
-        
-      case 'if':
-        await this.executeConditional(instruction)
-        break
-        
+      case "moveUp":
+        return this.stage.moveUp();
+
+      case "moveDown":
+        return this.stage.moveDown();
+
+      case "moveLeft":
+        return this.stage.moveLeft();
+
+      case "moveRight":
+        return this.stage.moveRight();
+
+      case "repeat":
+        return await this.handleRepeat(instruction.count, instruction.body);
+
       default:
-        console.warn(`Tipo de instrução desconhecido: ${instruction.type}`)
+        console.warn(`Tipo de instrução desconhecido: ${instruction.type}`);
+        return {moved: false};
     }
-  }
-  
-  async executeDirection(dirType) {
-    switch (dirType) {
-      case 'turnRight':
-        this.stage.turnRight()
-        break
-      case 'turnLeft':
-        this.stage.turnLeft()
-        break
-      case 'moveUp':
-        const savedDir = this.stage.direction
-        this.stage.direction = 0
-        this.stage.updateActorRotation()
-        this.stage.move()
-        this.stage.direction = savedDir
-        this.stage.updateActorRotation()
-        break
-      case 'moveDown':
-        const savedDir2 = this.stage.direction
-        this.stage.direction = 2
-        this.stage.updateActorRotation()
-        this.stage.move()
-        this.stage.direction = savedDir2
-        this.stage.updateActorRotation()
-        break
-    }
-    await this.delay(this.commandDelay)
   }
 
   /**
    * Executa um bloco de repetição
-   * @param {Object} instruction - Instrução de repetição
+   * @param {number} count - Número de repetições
+   * @param {Array} body - Array de instruções do corpo
+   * @returns {Promise<{moved: boolean}>} Resultado
    */
-  async executeRepeat(instruction) {
-    const count = instruction.count || 2
-    const body = instruction.body || []
-    
+  async handleRepeat(count, body) {
+    if (!body || body.length === 0) {
+      return {moved: false};
+    }
+
+    let anyMoved = false;
+
     for (let i = 0; i < count; i++) {
-      if (!this.isRunning) break
-      
-      // Verifica pause
+      if (!this.isRunning) break;
+
       if (this.isPaused) {
-        await this.waitForResume()
+        await this.waitForResume();
       }
-      
-      // Executa corpo da repetição
-      for (const subInstruction of body) {
-        if (!this.isRunning) break
+
+      for (let j = 0; j < body.length; j++) {
+        const subInstruction = body[j];
+        const nextSubInstruction = body[j + 1];
         
+        if (!this.isRunning) break;
+
         if (this.isPaused) {
-          await this.waitForResume()
+          await this.waitForResume();
         }
+
+        this.setBlockExecuting(subInstruction.blockElement, true);
+
+        const result = await this.executeAction(subInstruction);
+
+        if (result.moved) {
+          anyMoved = true;
+
+          const collision = this.stage.checkCollisionAtCurrentPosition();
+
+          if (collision === "trap") {
+            this.setBlockExecuting(subInstruction.blockElement, false);
+            this.handleTrapHit();
+            return {moved: false};
+          }
+
+          if (collision === "trophy") {
+            this.setBlockExecuting(subInstruction.blockElement, false);
+            this.handleVictory();
+            return {moved: false};
+          }
+        }
+
+        const shouldDeactivate = !nextSubInstruction || 
+          nextSubInstruction.blockElement !== subInstruction.blockElement;
         
-        this.setBlockExecuting(subInstruction, true)
-        await this.executeInstruction(subInstruction)
-        this.setBlockExecuting(subInstruction, false)
-        
-        await this.delay(this.commandDelay)
+        if (shouldDeactivate) {
+          this.setBlockExecuting(subInstruction.blockElement, false);
+        }
+
+        await this.delay(this.commandDelay);
       }
     }
+
+    return {moved: anyMoved};
   }
 
   /**
-   * Executa um bloco condicional
-   * @param {Object} instruction - Instrução condicional
+   * Trata hit em armadilha - falha do nível
    */
-  async executeConditional(instruction) {
-    // Simplificado para MVP: sempre executa o corpo
-    const body = instruction.body || []
-    
-    for (const subInstruction of body) {
-      if (!this.isRunning) break
-      
-      if (this.isPaused) {
-        await this.waitForResume()
-      }
-      
-      this.setBlockExecuting(subInstruction, true)
-      await this.executeInstruction(subInstruction)
-      this.setBlockExecuting(subInstruction, false)
-      
-      await this.delay(this.commandDelay)
-    }
+  handleTrapHit() {
+    this.isRunning = false;
+    this.isPaused = false;
+
+    this.instructions.forEach(instruction => {
+      this.setBlockExecuting(instruction.blockElement, false);
+    });
+
+    this.dispatchFailedEvent("trap");
+  }
+
+  /**
+   * Trata vitória - atingiu o troféu
+   */
+  handleVictory() {
+    this.dispatchCompleteEvent();
   }
 
   /**
    * Define se um bloco está em estado de execução (classe CSS)
-   * @param {Object} instruction - Instrução com blockElement
+   * @param {HTMLElement} blockElement - Elemento do bloco
    * @param {boolean} executing - Se está executando ou não
    */
-  setBlockExecuting(instruction, executing) {
-    if (instruction && instruction.blockElement) {
+  setBlockExecuting(blockElement, executing) {
+    if (blockElement) {
       if (executing) {
-        instruction.blockElement.classList.add('executing')
+        blockElement.classList.add("executing");
       } else {
-        instruction.blockElement.classList.remove('executing')
+        blockElement.classList.remove("executing");
       }
     }
   }
@@ -232,7 +224,7 @@ export class Runner {
    */
   pause() {
     if (this.isRunning && !this.isPaused) {
-      this.isPaused = true
+      this.isPaused = true;
     }
   }
 
@@ -241,10 +233,10 @@ export class Runner {
    */
   resume() {
     if (this.isRunning && this.isPaused) {
-      this.isPaused = false
+      this.isPaused = false;
       if (this.pauseResolve) {
-        this.pauseResolve()
-        this.pauseResolve = null
+        this.pauseResolve();
+        this.pauseResolve = null;
       }
     }
   }
@@ -253,17 +245,16 @@ export class Runner {
    * Para completamente a execução
    */
   stop() {
-    this.isRunning = false
-    this.isPaused = false
-    
-    // Limpa classes de execução de todas as instruções
+    this.isRunning = false;
+    this.isPaused = false;
+
     this.instructions.forEach(instruction => {
-      this.setBlockExecuting(instruction, false)
-    })
-    
+      this.setBlockExecuting(instruction.blockElement, false);
+    });
+
     if (this.pauseResolve) {
-      this.pauseResolve()
-      this.pauseResolve = null
+      this.pauseResolve();
+      this.pauseResolve = null;
     }
   }
 
@@ -273,8 +264,8 @@ export class Runner {
    */
   waitForResume() {
     return new Promise(resolve => {
-      this.pauseResolve = resolve
-    })
+      this.pauseResolve = resolve;
+    });
   }
 
   /**
@@ -283,20 +274,62 @@ export class Runner {
    * @returns {Promise} Resolve após o delay
    */
   delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
-   * Dispara evento customizado de conclusão de nível
+   * Dispara evento customizado de conclusão de nível (vitória)
    */
   dispatchCompleteEvent() {
-    const event = new CustomEvent('levelComplete', {
+    const event = new CustomEvent("levelComplete", {
       bubbles: true,
       detail: {
         success: true
       }
-    })
-    document.dispatchEvent(event)
+    });
+    document.dispatchEvent(event);
+  }
+
+  /**
+   * Dispara evento de falha do nível (armadilha)
+   * @param {string} reason - Razão da falha
+   */
+  dispatchFailedEvent(reason) {
+    const event = new CustomEvent("levelFailed", {
+      bubbles: true,
+      detail: {
+        success: false,
+        reason: reason
+      }
+    });
+    document.dispatchEvent(event);
+  }
+
+  /**
+   * Dispara evento de nível incompleto (não alcançou o troféu)
+   */
+  dispatchIncompleteEvent() {
+    const event = new CustomEvent("levelIncomplete", {
+      bubbles: true,
+      detail: {
+        success: false,
+        reason: "incomplete"
+      }
+    });
+    document.dispatchEvent(event);
+  }
+
+  /**
+   * Dispara evento de execução concluída (sem vitória, sem armadilha)
+   */
+  dispatchExecutionCompleteEvent() {
+    const event = new CustomEvent("executionComplete", {
+      bubbles: true,
+      detail: {
+        reachedEnd: true
+      }
+    });
+    document.dispatchEvent(event);
   }
 
   /**
@@ -304,7 +337,7 @@ export class Runner {
    * @returns {boolean} Estado de execução
    */
   get running() {
-    return this.isRunning
+    return this.isRunning;
   }
 
   /**
@@ -312,6 +345,6 @@ export class Runner {
    * @returns {boolean} Estado de pausa
    */
   get paused() {
-    return this.isPaused
+    return this.isPaused;
   }
 }

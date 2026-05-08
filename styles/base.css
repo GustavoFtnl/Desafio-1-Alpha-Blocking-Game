@@ -10,5 +10,8 @@ body {
   line-height: var(--font-body-line-height);
   color: var(--color-on-surface);
   background-color: var(--color-background);
-  overflow-x: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
