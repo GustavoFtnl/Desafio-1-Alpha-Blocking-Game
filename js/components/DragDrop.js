@@ -393,6 +393,7 @@ export class DragDrop {
     const finalLeft = element.offsetLeft;
     const finalTop = element.offsetTop;
 
+    // 1. Verifica se soltou na lixeira
     if (this.trashZoneManager.isOver(e.clientX, e.clientY)) {
       element.remove();
       domHelpers.notifyBlockChanged(this.workspace, this.workspaceInstance);
@@ -405,6 +406,50 @@ export class DragDrop {
       return;
     }
 
+    // --- INÍCIO DA CORREÇÃO: Verifica se soltou dentro de um blockSlot ---
+    
+    // Escondemos o elemento arrastado temporariamente para que o document.elementFromPoint 
+    // consiga "enxergar" o slot que está embaixo do mouse
+    const currentVisibility = element.style.visibility;
+    element.style.visibility = "hidden";
+    const targetUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
+    element.style.visibility = currentVisibility; // Restaura imediatamente
+
+    let slot = targetUnderMouse ? this.positionCalculator.findTargetSlot(targetUnderMouse) : null;
+
+    if (slot) {
+      // Pega o tipo do bloco arrastado para checar compatibilidade
+      const blockInside = element.classList.contains("block") ? element : element.querySelector(".block");
+      const blockType = blockInside ? Block.getType(blockInside) : null;
+
+      let parentBlock = slot.previousElementSibling;
+      if (!parentBlock) {
+        const slotContainer = slot.closest(".blockContainer");
+        if (slotContainer) {
+          parentBlock = slotContainer.querySelector(":scope > .block");
+        }
+      }
+
+      let canAccept = false;
+      if (parentBlock && blockType) {
+        canAccept = this.blockFactory.canAccept(parentBlock, blockType);
+      }
+
+      if (canAccept) {
+        element.style.position = "";
+        element.style.left = "";
+        element.style.top = "";
+        
+        // Insere no slot, mesma lógica usada no 'drop' nativo
+        this.containerManager.addBlockToSlot(slot, element, e.clientY);
+        
+        this.cleanupDrag();
+        return;
+      }
+    }
+    // --- FIM DA CORREÇÃO ---
+
+    // 2. Prepara para reinserir no workspace normalmente (Free Drag ou Snap em Stack)
     element.style.position = "absolute";
     element.style.left = finalLeft + "px";
     element.style.top = finalTop + "px";
