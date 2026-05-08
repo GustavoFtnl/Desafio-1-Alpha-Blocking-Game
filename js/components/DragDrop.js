@@ -18,9 +18,9 @@ export class DragDrop {
     this.dragOffsetX = 0;
     this.dragOffsetY = 0;
     this.draggedElement = null;
+    this.trashZone = null;
     
-    // Configurações de sensibilidade
-    this.DELETION_THRESHOLD = 50;
+    // Configuração de sensibilidade para snap
     this.SNAP_THRESHOLD = 40;
 
     this.handleMouseMove = this.handleMouseMove.bind(this);
@@ -30,9 +30,61 @@ export class DragDrop {
   }
 
   init() {
+    this.trashZone = this.workspace.querySelector(".trashZone");
     this.setupPaletteListeners();
     this.setupWorkspaceListeners();
     this.setupFreeDragListeners();
+  }
+
+  /**
+   * Ativa a lixeira (mostra quando começa arrastar)
+   */
+  activateTrashZone() {
+    if (this.trashZone) {
+      this.trashZone.classList.add("active");
+    }
+  }
+
+  /**
+   * Desativa a lixeira
+   */
+  deactivateTrashZone() {
+    if (this.trashZone) {
+      this.trashZone.classList.remove("active");
+      this.trashZone.classList.remove("dragover");
+    }
+  }
+
+  /**
+   * Verifica se o cursor está sobre a lixeira
+   * @param {number} clientX - Posição X do cursor
+   * @param {number} clientY - Posição Y do cursor
+   * @returns {boolean} True se está sobre a lixeira
+   */
+  isOverTrashZone(clientX, clientY) {
+    if (!this.trashZone) return false;
+    
+    const rect = this.trashZone.getBoundingClientRect();
+    return (
+      clientX >= rect.left &&
+      clientX <= rect.right &&
+      clientY >= rect.top &&
+      clientY <= rect.bottom
+    );
+  }
+
+  /**
+   * Atualiza o estado de dragover na lixeira
+   * @param {boolean} isOver - Se o cursor está sobre a lixeira
+   */
+  updateTrashZoneDragOver(isOver) {
+    if (!this.trashZone) return;
+    
+    if (isOver) {
+      this.trashZone.classList.add("dragover");
+    } else {
+      this.trashZone.classList.remove("dragover");
+    }
   }
 
   findTargetSlot(target) {
@@ -169,6 +221,10 @@ export class DragDrop {
 
     this.draggedElement.style.left = newX + "px";
     this.draggedElement.style.top = newY + "px";
+
+    // Verifica se está sobre a lixeira
+    const overTrash = this.isOverTrashZone(e.clientX, e.clientY);
+    this.updateTrashZoneDragOver(overTrash);
   }
 
   handleMouseUp(e) {
@@ -177,6 +233,9 @@ export class DragDrop {
     const element = this.draggedElement;
     const workspaceContent = this.workspace.querySelector(".workspaceContent");
     const contentRect = workspaceContent.getBoundingClientRect();
+
+    // Desativa a lixeira
+    this.deactivateTrashZone();
 
     element.classList.remove("dragging");
     element.classList.remove("freeDragging");
@@ -189,20 +248,42 @@ export class DragDrop {
     const finalLeft = element.offsetLeft;
     const finalTop = element.offsetTop;
 
-    // Lógica de Lixeira
-    if (
-      finalLeft < -this.DELETION_THRESHOLD ||
-      finalTop < -this.DELETION_THRESHOLD ||
-      finalLeft > contentRect.width + this.DELETION_THRESHOLD ||
-      finalTop > contentRect.height + this.DELETION_THRESHOLD
-    ) {
+    // Verifica se foi solto sobre a lixeira
+    if (this.isOverTrashZone(e.clientX, e.clientY)) {
       element.remove();
       this.updatePlaceholder();
       this.dispatchBlockCountChanged();
       if (this.workspaceInstance) {
         this.workspaceInstance.checkBlocks();
       }
+      
+      document.removeEventListener("mousemove", this.handleMouseMove);
+      document.removeEventListener("mouseup", this.handleMouseUp);
+
+      this.draggedElement = null;
+      this.isDraggingFree = false;
+      return;
+    }
+
+// Se não caiu em um slot, prepara para o Root Snapping
+    element.style.position = "absolute";
+    element.style.left = finalLeft + "px";
+    element.style.top = finalTop + "px";
+
+    if (element.parentElement !== workspaceContent) {
+      workspaceContent.appendChild(element);
+    }
+
+    // Procura ponto de inserção no meio de outras pilhas na raiz
+    const insertionPoint = this.getInsertionPoint(e.clientX, e.clientY);
+
+    if (insertionPoint) {
+      element.style.position = "";
+      element.style.left = "";
+      element.style.top = "";
+      this.insertIntoStackWithSnapping(insertionPoint.stack, element, insertionPoint.referenceNode);
     } else {
+      this.cleanupFreeDraggedElement(element, isBlockContainer);
       let hasChildren = false;
       let blockType = Block.getType(element);
 
@@ -370,6 +451,9 @@ export class DragDrop {
 
       elementToDrag.classList.add("dragging");
       elementToDrag.classList.add("freeDragging");
+
+      // Ativa a lixeira quando começa a arrastar
+      this.activateTrashZone();
 
       document.addEventListener("mousemove", this.handleMouseMove);
       document.addEventListener("mouseup", this.handleMouseUp);
@@ -733,32 +817,11 @@ export class DragDrop {
       block.setAttribute("aria-grabbed", "false");
 
       if (this.draggedBlock && this.workspace.contains(this.draggedBlock)) {
-        const workspaceRect = this.workspace.getBoundingClientRect();
-        const isOutsideWorkspace =
-          e.clientX < workspaceRect.left ||
-          e.clientX > workspaceRect.right ||
-          e.clientY < workspaceRect.top ||
-          e.clientY > workspaceRect.bottom;
-
-        if (isOutsideWorkspace) {
-          const container = this.draggedBlock.closest(".blockContainer");
-          if (container) {
-            container.remove();
-          } else {
-            this.draggedBlock.remove();
-          }
-          this.updatePlaceholder();
-          this.dispatchBlockCountChanged();
-          if (this.workspaceInstance) {
-            this.workspaceInstance.checkBlocks();
-          }
-        } else {
-          this.cleanupEmptyContainers();
-          this.updatePlaceholder();
-          this.dispatchBlockCountChanged();
-          if (this.workspaceInstance) {
-            this.workspaceInstance.checkBlocks();
-          }
+        this.cleanupEmptyContainers();
+        this.updatePlaceholder();
+        this.dispatchBlockCountChanged();
+        if (this.workspaceInstance) {
+          this.workspaceInstance.checkBlocks();
         }
       }
 
