@@ -29,6 +29,9 @@ export class Stage {
     this.start = { x: 0, y: 0 };
     this.walls = [];
     this.holes = [];
+    this.doors = [];
+    this.keys = [];
+    this.doorOpen = false;
     this.traps = [];
     this.trophy = { x: 0, y: 0 };
 
@@ -252,6 +255,12 @@ export class Stage {
   reset() {
     this.x = this.start.x;
     this.y = this.start.y;
+    this.doorOpen = false;
+
+    // Restaura chaves do nível original
+    if (this.currentLevelConfig && this.currentLevelConfig.keys) {
+      this.keys = [...this.currentLevelConfig.keys];
+    }
 
     // Redesenha todos os elementos do nível (limpa e renderiza ator, walls, traps, trophy)
     this.renderLevelElements();
@@ -274,7 +283,7 @@ export class Stage {
 
     if (cell) {
       cell.classList.add("visited", "current", "actorCell");
-      cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
+      cell.innerHTML = '<span style="font-size: 24px; position: relative; z-index: 10;">🤠</span>';
     }
   }
 
@@ -299,6 +308,9 @@ export class Stage {
     this.start = levelConfig.start || { x: 0, y: 0 };
     this.walls = levelConfig.walls || [];
     this.holes = levelConfig.holes || [];
+    this.doors = levelConfig.doors || [];
+    this.keys = levelConfig.keys || [];
+    this.doorOpen = false;
     this.traps = levelConfig.traps || [];
     this.trophy = levelConfig.trophy || { x: 0, y: 0 };
     this.maxBlocks = levelConfig.maxBlocks || this.maxBlocks;
@@ -320,7 +332,7 @@ export class Stage {
     // Limpa células (remove ator também)
     this.stageCells.forEach(cell => {
       cell.innerHTML = "";
-      cell.classList.remove("hasWall", "hasHole", "hasTrap", "hasTrophy", "actorCell", "visited", "current");
+      cell.classList.remove("hasWall", "hasHole", "hasDoor", "hasKey", "hasTrap", "hasTrophy", "actorCell", "visited", "current", "open");
     });
 
     // Renderiza paredes
@@ -338,6 +350,27 @@ export class Stage {
       const cell = this.stageCells[index];
       if (cell) {
         cell.classList.add("hasHole");
+      }
+    });
+
+    // Renderiza portas
+    this.doors.forEach(door => {
+      const index = door.y * this.gridSize + door.x;
+      const cell = this.stageCells[index];
+      if (cell) {
+        cell.classList.add("hasDoor");
+        if (this.doorOpen) {
+          cell.classList.add("open");
+        }
+      }
+    });
+
+    // Renderiza chaves
+    this.keys.forEach(key => {
+      const index = key.y * this.gridSize + key.x;
+      const cell = this.stageCells[index];
+      if (cell) {
+        cell.classList.add("hasKey");
       }
     });
 
@@ -406,7 +439,8 @@ export class Stage {
   hasWallAt(x, y) {
     const hasWall = this.walls.some(w => w.x === x && w.y === y);
     const hasHole = this.holes.some(h => h.x === x && h.y === y);
-    return hasWall || hasHole;
+    const hasDoor = !this.doorOpen && this.doors.some(d => d.x === x && d.y === y);
+    return hasWall || hasHole || hasDoor;
   }
 
   /**
@@ -465,6 +499,16 @@ export class Stage {
     const hasHoleAtFinal = this.holes.some(h => h.x === finalX && h.y === finalY);
     if (hasHoleAtFinal) {
       return {canJump: false, reason: "hole"};
+    }
+
+    const hasDoorAtIntermediate = this.doors.some(d => d.x === intermediateX && d.y === intermediateY);
+    if (hasDoorAtIntermediate && !this.doorOpen) {
+      return {canJump: false, reason: "door"};
+    }
+
+    const hasDoorAtFinal = this.doors.some(d => d.x === finalX && d.y === finalY);
+    if (hasDoorAtFinal && !this.doorOpen) {
+      return {canJump: false, reason: "door"};
     }
 
     return {canJump: true, reason: "ok"};
@@ -585,7 +629,38 @@ export class Stage {
     if (this.isTrophyAtCurrentPosition()) {
       return "trophy";
     }
+    if (this.isKeyAtCurrentPosition()) {
+      this.doorOpen = true;
+      this.keys = this.keys.filter(k => !(k.x === this.x && k.y === this.y));
+      this.renderLevelElements();
+      this.showKeyToast();
+    }
     return null;
+  }
+
+  showKeyToast() {
+    const existingToast = document.querySelector(".keyToast");
+    if (existingToast) {
+      existingToast.remove();
+    }
+
+    const workspace = document.querySelector(".workspaceArea");
+    if (!workspace) return;
+
+    const toast = document.createElement("div");
+    toast.className = "keyToast";
+    toast.innerHTML = '<span style="font-size: 24px;">🗝️</span>';
+    toast.setAttribute("aria-label", "Chave coletada - portas abertas");
+
+    workspace.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add("show");
+    }, 10);
+  }
+
+  isKeyAtCurrentPosition() {
+    return this.keys.some(k => k.x === this.x && k.y === this.y);
   }
 
   }

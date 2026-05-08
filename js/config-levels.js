@@ -432,21 +432,17 @@ const CONFIG_LEVELS = [
     maxBlocks: 30,
   },
 
-  // Nível 5: Armadilha e Parede
+  // Nível 5: Porta e Chave
   {
     id: 5,
-    name: "Armadilha e Parede",
+    name: "Porta e Chave",
     start: { x: 0, y: 0 },
-    trophy: { x: 4, y: 1 },
-    walls: [
-      { x: 1, y: 0 },
-      { x: 2, y: 0 },
-    ],
-    traps: [
-      { x: 2, y: 1 },
-      { x: 3, y: 1 },
-    ],
-    maxBlocks: 16,
+    trophy: { x: 5, y: 1 },
+    keys: [{ x: 2, y: 0 }],
+    doors: [{ x: 4, y: 1 }],
+    walls: [{ x: 3, y: 0 }],
+    traps: [],
+    maxBlocks: 18,
   },
 
   // Nível 6: Labirinto Simples

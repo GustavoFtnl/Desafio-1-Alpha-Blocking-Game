@@ -253,6 +253,14 @@ Game.prototype.setRetryButtonToRun = function() {
 Game.prototype.resetStageFromRetry = function() {
   this.stage.reset();
   this.setRetryButtonToRun();
+  this.removeKeyToast();
+};
+
+Game.prototype.removeKeyToast = function() {
+  const existingToast = document.querySelector(".keyToast");
+  if (existingToast) {
+    existingToast.remove();
+  }
 };
 
 Game.prototype.clearWorkspace = function() {
@@ -268,6 +276,7 @@ Game.prototype.clearWorkspace = function() {
   gameState.clearWorkspaceBlocks();
   this.stage.disablePauseButton();
   this.setRetryButtonToRun();
+  this.removeKeyToast();
 };
 
 Game.prototype.handleLevelComplete = function() {
