@@ -108,6 +108,18 @@ export class Runner {
       case "moveRight":
         return this.stage.moveRight();
 
+      case "jumpUp":
+        return this.executeJump("up");
+
+      case "jumpDown":
+        return this.executeJump("down");
+
+      case "jumpLeft":
+        return this.executeJump("left");
+
+      case "jumpRight":
+        return this.executeJump("right");
+
       case "repeat":
         return await this.handleRepeat(instruction.count, instruction.body);
 
@@ -115,6 +127,45 @@ export class Runner {
         console.warn(`Tipo de instrução desconhecido: ${instruction.type}`);
         return {moved: false};
     }
+  }
+
+  /**
+   * Executa um pulo do ator
+   * O pulo ignora armadilhas e buracos na posição intermediária
+   * Apenas verifica colisão na posição final
+   * @param {string} direction - Direção do pulo (up, down, left, right)
+   * @returns {Promise<{moved: boolean}>} Resultado do pulo
+   */
+  async executeJump(direction) {
+    const canJumpResult = this.stage.canJump(direction);
+
+    if (!canJumpResult.canJump) {
+      return {moved: false, reason: canJumpResult.reason};
+    }
+
+    switch (direction) {
+      case "up":
+        this.stage.y -= 2;
+        break;
+      case "down":
+        this.stage.y += 2;
+        break;
+      case "left":
+        this.stage.x -= 2;
+        break;
+      case "right":
+        this.stage.x += 2;
+        break;
+    }
+
+    this.stage.markCurrentCell();
+
+    const finalCollision = this.stage.checkCollisionAtCurrentPosition();
+    if (finalCollision === "trap") {
+      return {moved: true};
+    }
+
+    return {moved: true};
   }
 
   /**

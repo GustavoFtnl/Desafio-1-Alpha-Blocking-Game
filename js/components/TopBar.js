@@ -19,22 +19,22 @@ TopBar.prototype.render = function () {
   var currentStars = gameState.getStarsForLevel(currentLevel);
 
   this.container.innerHTML =
-    '<div style="display: flex; align-items: center; gap: var(--space-lg);">' +
+    '<div class="topBar_leftSection">' +
     '<h1 class="topBar_title">Code Blocks Game</h1>' +
     (userName
       ? '<span class="topBar_userName">' + this.escapeHtml(userName) + "</span>"
       : "") +
-    '<div class="topBar_progress" style="display: none;">' +
+    '<div class="topBar_progress">' +
     '<div class="topBar_progressLabel">' +
     "<span>Progresso</span>" +
     '<span class="progressPercent">0%</span>' +
     "</div>" +
     '<div class="topBar_progressBar">' +
-    '<div class="topBar_progressFill" style="width: 0%"></div>' +
+    '<div class="topBar_progressFill"></div>' +
     "</div>" +
     "</div>" +
     "</div>" +
-    '<div style="display: flex; align-items: center; gap: var(--space-md);">' +
+    '<div class="topBar_rightSection">' +
     '<button class="btn btn--levelSelect" id="levelSelectBtn" aria-label="Selecionar nível">' +
     '<span class="levelSelectText">Nível ' +
     currentLevel +

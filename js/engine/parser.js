@@ -126,6 +126,10 @@ export class Parser {
       return this.parseMoveBlock(mainBlock, container);
     }
 
+    if (mainBlock.classList.contains("block--jump")) {
+      return this.parseJumpBlock(mainBlock, container);
+    }
+
     return null;
   }
 
@@ -179,6 +183,39 @@ export class Parser {
         type: direction,
         blockElement: block
       }));
+    }
+
+    return null;
+  }
+
+  /**
+   * Parseia um bloco Pular com direção
+   * @param {HTMLElement} block - Bloco .block--jump
+   * @param {HTMLElement} container - Container do bloco
+   * @returns {Object|Array|null} Instrução jumpUp/Down/Left/Right ou array de instruções
+   */
+  parseJumpBlock(block, container) {
+    const slot = container.querySelector(".blockSlot");
+    let directions = [];
+
+    if (slot) {
+      const directionBlocks = slot.querySelectorAll(".block--direction");
+      directionBlocks.forEach(directionBlock => {
+        const direction = this.getDirectionFromBlock(directionBlock);
+        if (direction) {
+          directions.push(direction);
+        }
+      });
+    }
+
+    if (directions.length > 0) {
+      return directions.map(direction => {
+        const jumpType = "jump" + direction.substring(4);
+        return {
+          type: jumpType,
+          blockElement: block
+        };
+      });
     }
 
     return null;
@@ -294,7 +331,7 @@ export class Parser {
    * @returns {number} Total de blocos
    */
   countBlocks() {
-    const allBlocks = this.workspace.querySelectorAll(".block--start, .block--move, .block--direction, .block--repeat");
+    const allBlocks = this.workspace.querySelectorAll(".block--start, .block--move, .block--jump, .block--direction, .block--repeat");
     return allBlocks.length;
   }
 

@@ -138,6 +138,10 @@
   background-color: var(--color-logic-move);
 }
 
+.block--jump {
+  background-color: var(--color-logic-rotate);
+}
+
 .block--direction {
   background-color: var(--color-logic-direction);
 }

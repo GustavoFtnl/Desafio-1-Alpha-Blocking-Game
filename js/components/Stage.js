@@ -29,6 +29,9 @@ export class Stage {
     this.start = { x: 0, y: 0 };
     this.walls = [];
     this.holes = [];
+    this.doors = [];
+    this.keys = [];
+    this.doorOpen = false;
     this.traps = [];
     this.trophy = { x: 0, y: 0 };
 
@@ -82,7 +85,7 @@ export class Stage {
       
       // Posiciona o ator no canto superior esquerdo (0,0)
       if (i === 0) {
-        cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
+        cell.innerHTML = '<span class="actorIcon">🤠</span>';
         cell.classList.add("actorCell");
       }
       
@@ -252,6 +255,12 @@ export class Stage {
   reset() {
     this.x = this.start.x;
     this.y = this.start.y;
+    this.doorOpen = false;
+
+    // Restaura chaves do nível original
+    if (this.currentLevelConfig && this.currentLevelConfig.keys) {
+      this.keys = [...this.currentLevelConfig.keys];
+    }
 
     // Redesenha todos os elementos do nível (limpa e renderiza ator, walls, traps, trophy)
     this.renderLevelElements();
@@ -274,7 +283,7 @@ export class Stage {
 
     if (cell) {
       cell.classList.add("visited", "current", "actorCell");
-      cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
+      cell.innerHTML = '<span class="actorIcon">🤠</span>';
     }
   }
 
@@ -299,6 +308,9 @@ export class Stage {
     this.start = levelConfig.start || { x: 0, y: 0 };
     this.walls = levelConfig.walls || [];
     this.holes = levelConfig.holes || [];
+    this.doors = levelConfig.doors || [];
+    this.keys = levelConfig.keys || [];
+    this.doorOpen = false;
     this.traps = levelConfig.traps || [];
     this.trophy = levelConfig.trophy || { x: 0, y: 0 };
     this.maxBlocks = levelConfig.maxBlocks || this.maxBlocks;
@@ -320,7 +332,7 @@ export class Stage {
     // Limpa células (remove ator também)
     this.stageCells.forEach(cell => {
       cell.innerHTML = "";
-      cell.classList.remove("hasWall", "hasHole", "hasTrap", "hasTrophy", "actorCell", "visited", "current");
+      cell.classList.remove("hasWall", "hasHole", "hasDoor", "hasKey", "hasTrap", "hasTrophy", "actorCell", "visited", "current", "open");
     });
 
     // Renderiza paredes
@@ -341,13 +353,33 @@ export class Stage {
       }
     });
 
-    // Renderiza armadilhas
+    // Renderiza portas
+    this.doors.forEach(door => {
+      const index = door.y * this.gridSize + door.x;
+      const cell = this.stageCells[index];
+      if (cell) {
+        cell.classList.add("hasDoor");
+        if (this.doorOpen) {
+          cell.classList.add("open");
+        }
+      }
+    });
+
+    // Renderiza chaves
+    this.keys.forEach(key => {
+      const index = key.y * this.gridSize + key.x;
+      const cell = this.stageCells[index];
+      if (cell) {
+        cell.classList.add("hasKey");
+      }
+    });
+
+// Renderiza armadilhas
     this.traps.forEach(trap => {
       const index = trap.y * this.gridSize + trap.x;
       const cell = this.stageCells[index];
       if (cell) {
         cell.classList.add("hasTrap");
-        cell.innerHTML = '<span class="cellIcon">💣</span>';
       }
     });
 
@@ -372,7 +404,7 @@ export class Stage {
 
     if (cell) {
       cell.classList.add("actorCell", "visited", "current");
-      cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
+      cell.innerHTML = '<span class="actorIcon">🤠</span>';
     }
   }
 
@@ -407,7 +439,79 @@ export class Stage {
   hasWallAt(x, y) {
     const hasWall = this.walls.some(w => w.x === x && w.y === y);
     const hasHole = this.holes.some(h => h.x === x && h.y === y);
-    return hasWall || hasHole;
+    const hasDoor = !this.doorOpen && this.doors.some(d => d.x === x && d.y === y);
+    return hasWall || hasHole || hasDoor;
+  }
+
+  /**
+   * Verifica se o ator pode pular para uma direção
+   * Não pode pular se houver parede na posição intermediária ou na posição final
+   * Não pode pular se houver buraco na posição final
+   * Pode pular por cima de buracos e armadilhas na posição intermediária
+   * @param {string} direction - Direção do pulo (up, down, left, right)
+   * @returns {Object} {canJump: boolean, reason: string}
+   */
+  canJump(direction) {
+    let intermediateX = this.x;
+    let intermediateY = this.y;
+    let finalX = this.x;
+    let finalY = this.y;
+
+    switch (direction) {
+      case "up":
+        intermediateY = this.y - 1;
+        finalY = this.y - 2;
+        break;
+      case "down":
+        intermediateY = this.y + 1;
+        finalY = this.y + 2;
+        break;
+      case "left":
+        intermediateX = this.x - 1;
+        finalX = this.x - 2;
+        break;
+      case "right":
+        intermediateX = this.x + 1;
+        finalX = this.x + 2;
+        break;
+    }
+
+    if (intermediateX < 0 || intermediateX >= this.gridSize ||
+        intermediateY < 0 || intermediateY >= this.gridSize) {
+      return {canJump: false, reason: "border"};
+    }
+
+    if (finalX < 0 || finalX >= this.gridSize ||
+        finalY < 0 || finalY >= this.gridSize) {
+      return {canJump: false, reason: "border"};
+    }
+
+    const hasWallAtIntermediate = this.walls.some(w => w.x === intermediateX && w.y === intermediateY);
+    if (hasWallAtIntermediate) {
+      return {canJump: false, reason: "wall"};
+    }
+
+    const hasWallAtFinal = this.walls.some(w => w.x === finalX && w.y === finalY);
+    if (hasWallAtFinal) {
+      return {canJump: false, reason: "wall"};
+    }
+
+    const hasHoleAtFinal = this.holes.some(h => h.x === finalX && h.y === finalY);
+    if (hasHoleAtFinal) {
+      return {canJump: false, reason: "hole"};
+    }
+
+    const hasDoorAtIntermediate = this.doors.some(d => d.x === intermediateX && d.y === intermediateY);
+    if (hasDoorAtIntermediate && !this.doorOpen) {
+      return {canJump: false, reason: "door"};
+    }
+
+    const hasDoorAtFinal = this.doors.some(d => d.x === finalX && d.y === finalY);
+    if (hasDoorAtFinal && !this.doorOpen) {
+      return {canJump: false, reason: "door"};
+    }
+
+    return {canJump: true, reason: "ok"};
   }
 
   /**
@@ -525,7 +629,38 @@ export class Stage {
     if (this.isTrophyAtCurrentPosition()) {
       return "trophy";
     }
+    if (this.isKeyAtCurrentPosition()) {
+      this.doorOpen = true;
+      this.keys = this.keys.filter(k => !(k.x === this.x && k.y === this.y));
+      this.renderLevelElements();
+      this.showKeyToast();
+    }
     return null;
+  }
+
+  showKeyToast() {
+    const existingToast = document.querySelector(".keyToast");
+    if (existingToast) {
+      existingToast.remove();
+    }
+
+    const workspace = document.querySelector(".workspaceArea");
+    if (!workspace) return;
+
+    const toast = document.createElement("div");
+    toast.className = "keyToast";
+    toast.innerHTML = '<span class="keyIcon">🗝️</span>';
+    toast.setAttribute("aria-label", "Chave coletada - portas abertas");
+
+    workspace.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add("show");
+    }, 10);
+  }
+
+  isKeyAtCurrentPosition() {
+    return this.keys.some(k => k.x === this.x && k.y === this.y);
   }
 
   }
