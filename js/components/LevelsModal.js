@@ -10,7 +10,9 @@ import CONFIG from "../config.js";
 export class LevelsModal {
   constructor() {
     this.modalElement = null;
+    this.overlayElement = null;
     this.resolvePromise = null;
+    this.boundKeyHandler = null;
   }
 
   /**
@@ -32,15 +34,24 @@ export class LevelsModal {
    * @param {function} getStarsForLevelFn - Função para obter estrelas
    */
   render(currentLevel, getStarsForLevelFn) {
+    this.overlayElement = document.createElement("div");
+    this.overlayElement.className = "modalOverlay";
+    this.overlayElement.setAttribute("role", "presentation");
+    this.overlayElement.setAttribute("aria-hidden", "true");
+
     this.modalElement = document.createElement("div");
     this.modalElement.className = "modal";
     this.modalElement.setAttribute("role", "dialog");
+    this.modalElement.setAttribute("aria-modal", "true");
     this.modalElement.setAttribute("aria-label", "Seleção de nível");
-    this.modalElement.setAttribute("aria-hidden", "false");
+    this.modalElement.setAttribute("tabindex", "-1");
 
     const levelsList = this.generateLevelsList(currentLevel, getStarsForLevelFn);
 
     this.modalElement.innerHTML = `
+      <button class="modal_close" aria-label="Fechar modal">
+        <span class="material-symbols-outlined">close</span>
+      </button>
       <div class="modal_content levelsModal_content">
         <h2 class="modal_title">Selecionar Nível</h2>
         <div class="levelsGrid" role="listbox" aria-label="Lista de níveis">
@@ -52,8 +63,12 @@ export class LevelsModal {
       </div>
     `;
 
-    document.body.appendChild(this.modalElement);
-    this.modalElement.focus();
+    this.overlayElement.appendChild(this.modalElement);
+    document.body.appendChild(this.overlayElement);
+
+    setTimeout(() => {
+      this.modalElement.focus();
+    }, 10);
 
     this.setupListeners(currentLevel, getStarsForLevelFn);
   }
@@ -70,18 +85,15 @@ export class LevelsModal {
 
     for (let level = 1; level <= totalLevels; level++) {
       const stars = getStarsForLevelFn ? getStarsForLevelFn(level) : 0;
-      const isCompleted = stars >= 1;
-      const isLocked = !isCompleted && level > 1;
 
       const starsHtml = this.generateStarsSvg(stars);
 
       html += `
         <button 
-          class="levelItem ${isLocked ? "levelItem--locked" : ""}" 
+          class="levelItem" 
           data-level="${level}"
           role="option"
           aria-label="Nível ${level}, ${stars} estrela${stars !== 1 ? "s" : ""}"
-          ${isLocked ? "disabled" : ""}
         >
           <span class="levelItem_number">Nível ${level}</span>
           <div class="levelItem_stars">${starsHtml}</div>
@@ -119,38 +131,73 @@ export class LevelsModal {
    * @param {function} getStarsForLevelFn - Função para obter estrelas
    */
   setupListeners(currentLevel, getStarsForLevelFn) {
-    const closeBtn = this.modalElement.querySelector("#levelsModalCloseBtn");
+    const self = this;
+
+    this.boundKeyHandler = (event) => {
+      if (event.key === "Escape") {
+        self.close();
+      }
+    };
+    document.addEventListener("keydown", this.boundKeyHandler);
+
+    const closeBtn = this.modalElement.querySelector(".modal_close");
     if (closeBtn) {
-      closeBtn.addEventListener("click", () => {
-        this.close();
-      });
+      closeBtn.addEventListener("click", () => self.close());
     }
 
-    const levelItems = this.modalElement.querySelectorAll(".levelItem:not([disabled])");
+    const cancelBtn = this.modalElement.querySelector("#levelsModalCloseBtn");
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", () => self.close());
+    }
+
+    this.overlayElement.addEventListener("click", (e) => {
+      if (e.target === this.overlayElement) {
+        self.close();
+      }
+    });
+
+    const levelItems = this.modalElement.querySelectorAll(".levelItem");
     levelItems.forEach((item) => {
       item.addEventListener("click", () => {
         const level = parseInt(item.dataset.level, 10);
-        this.close();
-        if (this.resolvePromise) {
-          this.resolvePromise(level);
-          this.resolvePromise = null;
+        if (self.resolvePromise) {
+          self.resolvePromise(level);
+          self.resolvePromise = null;
         }
+        self.close();
       });
     });
+  }
+
+  /**
+   * Remove os event listeners
+   */
+  removeEventListeners() {
+    if (this.boundKeyHandler) {
+      document.removeEventListener("keydown", this.boundKeyHandler);
+      this.boundKeyHandler = null;
+    }
   }
 
   /**
    * Fecha o modal
    */
   close() {
+    this.removeEventListeners();
+
     if (this.modalElement) {
       this.modalElement.remove();
       this.modalElement = null;
+    }
 
-      if (this.resolvePromise) {
-        this.resolvePromise(null);
-        this.resolvePromise = null;
-      }
+    if (this.overlayElement) {
+      this.overlayElement.remove();
+      this.overlayElement = null;
+    }
+
+    if (this.resolvePromise) {
+      this.resolvePromise(null);
+      this.resolvePromise = null;
     }
   }
 }

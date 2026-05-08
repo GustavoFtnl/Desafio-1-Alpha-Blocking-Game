@@ -445,6 +445,13 @@
   background-color: var(--color-error-container);
 }
 
+/* Botões desabilitados durante execução */
+.btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* === CONTADOR DE BLOCOS (Gamificação) === */
 .blockCounter {
   font-size: var(--font-label-bold-size);
@@ -467,7 +474,7 @@
 }
 
 /* === MODAL DE NÍVEL CONCLUÍDO === */
-.modal {
+.modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -479,10 +486,11 @@
   align-items: center;
   justify-content: center;
   z-index: var(--z-modal);
-  animation: levelComplete var(--transition-level-complete);
+  animation: fadeIn var(--transition-fast);
 }
 
-.modal_content {
+.modal {
+  position: relative;
   background-color: white;
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
@@ -490,6 +498,34 @@
   width: 90%;
   text-align: center;
   box-shadow: var(--shadow-modal);
+  animation: levelComplete var(--transition-level-complete);
+}
+
+.modal_close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+  color: var(--color-on-surface);
+  opacity: 0.6;
+  transition: opacity var(--transition-fast), background-color var(--transition-fast);
+}
+
+.modal_close:hover {
+  opacity: 1;
+  background-color: var(--color-surface-variant);
+}
+
+.modal_close .material-symbols-outlined {
+  font-size: 24px;
+}
+
+.modal_content {
+  margin-top: var(--space-sm);
 }
 
 .modal_title {
@@ -500,14 +536,33 @@
   margin-bottom: var(--space-md);
 }
 
+.modal_title--danger {
+  color: var(--color-error);
+}
+
+.modal_actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-lg);
+}
+
 .modal_stars {
   font-size: 48px;
   margin: var(--space-lg) 0;
-  font-variation-settings:
-    "FILL" 0,
-    "wght" 400,
-    "GRAD" 0,
-    "opsz" 24;
+}
+
+.modal_stars .star {
+  font-size: 48px;
+}
+
+/* Animação de fade in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* === ESTADOS DE ARRASTE (Acessibilidade) === */

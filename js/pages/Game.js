@@ -6,6 +6,7 @@
 
 import { gameState } from "../state.js";
 import DOM from "../dom.js";
+import { getLevelConfig } from "../config-levels.js";
 
 import { TopBar } from "../components/TopBar.js";
 import { Sidebar } from "../components/Sidebar.js";
@@ -52,11 +53,19 @@ Game.prototype.initComponents = function() {
   sidebarContainer.componentInstance = this.sidebar;
   workspaceContainer.componentInstance = this.workspace;
   stageContainer.componentInstance = this.stage;
+
+  // Carrega configuração do nível atual
+  this.loadLevelConfig();
 };
 
 Game.prototype.setupListeners = function() {
   var self = this;
   var workspaceContainer = DOM.getWorkspaceContainer();
+
+  // Listener para mudança de nível
+  document.addEventListener("levelSelected", function(e) {
+    self.handleLevelSelected(e.detail.level);
+  });
 
   workspaceContainer.addEventListener("blockCountChanged", function(e) {
     var maxBlocks = gameState.getMaxBlocks();
@@ -74,8 +83,16 @@ Game.prototype.setupListeners = function() {
     }
   });
 
-  document.addEventListener("levelSelected", function(e) {
-    self.handleLevelSelected(e.detail.level);
+  document.addEventListener("levelFailed", function(e) {
+    if (e.detail.reason === "trap") {
+      self.handleLevelFailed();
+    }
+  });
+
+  document.addEventListener("executionComplete", function(e) {
+    if (e.detail.reachedEnd) {
+      self.handleExecutionComplete();
+    }
   });
 
   document.addEventListener("saveWorkspace", function() {
@@ -105,6 +122,14 @@ Game.prototype.loadWorkspaceBlocks = function() {
 
 Game.prototype.runCode = function() {
   var self = this;
+  var stageContainer = DOM.getStageContainer();
+  var runButton = stageContainer.querySelector(".btn--run");
+
+  if (runButton && runButton.dataset.retryMode === "true") {
+    this.resetStageFromRetry();
+    return;
+  }
+
   var totalBlocks = this.parser.countBlocks();
   var maxBlocks = gameState.getMaxBlocks();
 
@@ -130,16 +155,108 @@ Game.prototype.executeInstructions = function() {
     return;
   }
 
+  this.disableExecutionButtons();
+  this.stage.enablePauseButton();
+  this.stage.setResumeToPause();
   this.stage.reset();
   this.runner.run(instructions);
+};
+
+Game.prototype.disableExecutionButtons = function() {
+  var stageContainer = DOM.getStageContainer();
+  var runButton = stageContainer.querySelector(".btn--run");
+  var clearButton = stageContainer.querySelector(".btn--clear");
+
+  if (runButton) {
+    runButton.classList.add("btn--disabled");
+    runButton.disabled = true;
+  }
+
+  if (clearButton) {
+    clearButton.classList.add("btn--disabled");
+    clearButton.disabled = true;
+  }
+};
+
+Game.prototype.enableExecutionButtons = function() {
+  var stageContainer = DOM.getStageContainer();
+  var runButton = stageContainer.querySelector(".btn--run");
+  var clearButton = stageContainer.querySelector(".btn--clear");
+
+  if (runButton) {
+    runButton.classList.remove("btn--disabled");
+    runButton.disabled = false;
+  }
+
+  if (clearButton) {
+    clearButton.classList.remove("btn--disabled");
+    clearButton.disabled = false;
+  }
 };
 
 Game.prototype.togglePause = function() {
   if (this.runner.paused) {
     this.runner.resume();
+    this.stage.setResumeToPause();
+    this.disableExecutionButtons();
   } else {
     this.runner.pause();
+    this.stage.setPauseToResume();
+    this.enableExecutionButtons();
   }
+};
+
+Game.prototype.handleLevelFailed = function() {
+  this.clearExecutingBlocks();
+  this.enableExecutionButtons();
+  this.stage.disablePauseButton();
+
+  var self = this;
+  var contentHtml = Modal.createLevelFailedHtml();
+
+  var modalOpened = this.modal.open(contentHtml);
+
+  var retryBtn = this.modal.modalElement.querySelector(".btn");
+  if (retryBtn) {
+    retryBtn.addEventListener("click", function() {
+      self.modal.close();
+      self.stage.reset();
+      self.setRetryButtonToRun();
+    });
+  }
+
+  this.setRunButtonToRetry();
+};
+
+Game.prototype.handleExecutionComplete = function() {
+  this.enableExecutionButtons();
+  this.stage.disablePauseButton();
+  this.setRunButtonToRetry();
+};
+
+Game.prototype.setRunButtonToRetry = function() {
+  var stageContainer = DOM.getStageContainer();
+  var runButton = stageContainer.querySelector(".btn--run");
+
+  if (runButton) {
+    runButton.innerHTML = '<span class="material-symbols-outlined">replay</span> Tentar Novamente';
+    runButton.dataset.retryMode = "true";
+  }
+};
+
+Game.prototype.setRetryButtonToRun = function() {
+  var stageContainer = DOM.getStageContainer();
+  var runButton = stageContainer.querySelector(".btn--run");
+
+  if (runButton) {
+    runButton.innerHTML = '<span class="material-symbols-outlined">play_circle</span> EXECUTAR';
+    runButton.dataset.retryMode = "false";
+  }
+};
+
+Game.prototype.resetStageFromRetry = function() {
+  this.stage.reset();
+  this.setRetryButtonToRun();
 };
 
 Game.prototype.clearWorkspace = function() {
@@ -153,9 +270,20 @@ Game.prototype.clearWorkspace = function() {
   }
   this.stage.reset();
   gameState.clearWorkspaceBlocks();
+  this.stage.disablePauseButton();
+  this.setRetryButtonToRun();
 };
 
 Game.prototype.handleLevelComplete = function() {
+  this.clearExecutingBlocks();
+
+  if (this.runner.running) {
+    this.runner.stop();
+  }
+
+  this.enableExecutionButtons();
+  this.stage.disablePauseButton();
+
   var totalBlocks = this.parser.countBlocks();
   var maxBlocks = gameState.getMaxBlocks();
 
@@ -168,47 +296,63 @@ Game.prototype.handleLevelComplete = function() {
   }
 };
 
+Game.prototype.clearExecutingBlocks = function() {
+  var workspaceContainer = DOM.getWorkspaceContainer();
+  var executingBlocks = workspaceContainer.querySelectorAll(".executing");
+  executingBlocks.forEach(function(block) {
+    block.classList.remove("executing");
+  });
+};
+
 Game.prototype.showLevelCompleteModal = function(stars, maxBlocks, usedBlocks) {
   var self = this;
   var contentHtml = Modal.createLevelCompleteHtml(stars, maxBlocks, usedBlocks);
 
-  this.modal.open(contentHtml).then(function() {
-    var nextLevelBtn = self.modal.modalElement.querySelector("#nextLevelBtn");
-    if (nextLevelBtn) {
-      nextLevelBtn.addEventListener("click", function() {
-        self.modal.close();
-        gameState.advanceLevel();
-        self.clearWorkspace();
-      });
-    }
-  });
+  this.modal.open(contentHtml);
+
+  var nextLevelBtn = this.modal.modalElement.querySelector(".btn");
+  if (nextLevelBtn) {
+    nextLevelBtn.addEventListener("click", function() {
+      self.modal.close();
+      gameState.advanceLevel();
+      self.clearWorkspace();
+      self.loadLevelConfig();
+      self.updateUI();
+    });
+  }
+
+  this.setRunButtonToRetry();
 };
 
 Game.prototype.showGameCompleteModal = function(finalStars) {
   var self = this;
   var contentHtml = Modal.createGameCompleteHtml(finalStars);
 
-  this.modal.open(contentHtml).then(function() {
-    var restartBtn = self.modal.modalElement.querySelector("#restartCareerBtn");
-    if (restartBtn) {
-      restartBtn.addEventListener("click", function() {
-        self.modal.close();
-        self.restartCareer();
-      });
-    }
-  });
+  this.modal.open(contentHtml);
+
+  var restartBtn = this.modal.modalElement.querySelector(".btn");
+  if (restartBtn) {
+    restartBtn.addEventListener("click", function() {
+      self.modal.close();
+      self.restartCareer();
+    });
+  }
+
+  this.setRunButtonToRetry();
 };
 
 Game.prototype.restartCareer = function() {
   gameState.resetCareer();
   DOM.clearWorkspaceVisual();
   this.clearWorkspace();
+  this.loadLevelConfig();
+  this.updateUI();
 };
 
 Game.prototype.handleLevelSelected = function(level) {
+  gameState.setCurrentLevel(level);
   this.clearWorkspace();
-  this.stage.setMaxBlocks(gameState.getMaxBlocks());
-  this.stage.updateTitle(level);
+  this.loadLevelConfig();
   this.updateUI();
 };
 
@@ -216,9 +360,23 @@ Game.prototype.updateUI = function() {
   this.topBar.updateLevel(gameState.getCurrentLevel(), gameState.getTotalLevels());
   this.topBar.updateStars(gameState.getStarsForLevel(gameState.getCurrentLevel()));
   this.topBar.updateProgress(gameState.getProgressPercent());
-  this.stage.setMaxBlocks(gameState.getMaxBlocks());
   this.stage.updateTitle(gameState.getCurrentLevel());
+  this.loadLevelConfig();
 };
 
 export default Game;
 export { Game };
+
+/**
+ * Carrega a configuração do nível atual e aplica no Stage
+ */
+Game.prototype.loadLevelConfig = function() {
+  var currentLevel = gameState.getCurrentLevel();
+  var levelConfig = getLevelConfig(currentLevel);
+  
+  if (levelConfig) {
+    this.stage.setLevelConfig(levelConfig);
+    this.stage.updateTitle(currentLevel);
+    this.stage.updateBlockCounter(0);
+  }
+};
