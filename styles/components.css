@@ -7,7 +7,7 @@
 .starRating {
   display: flex;
   gap: var(--space-xs);
-  font-size: 24px;
+  font-size: var(--font-h1-size);
   line-height: 1;
 }
 
@@ -57,7 +57,7 @@
   cursor: grab;
   user-select: none;
   position: relative;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(var(--shadow-block-resting));
   transition: all var(--transition-hover);
 }
 
@@ -125,7 +125,7 @@
 
 /* Ícone do bloco */
 .blockIcon {
-  font-size: 20px;
+  font-size: var(--font-h2-size);
   font-variation-settings:
     "FILL" 0,
     "wght" 400,
@@ -178,7 +178,7 @@
   display: inline-flex !important;
   align-items: center;
   margin-left: var(--space-sm);
-  gap: 2px;
+  gap: var(--block-gap);
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto;
@@ -192,10 +192,10 @@
   padding: 0;
   border: none;
   border-radius: var(--radius-sm);
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: var(--overlay-white-50);
   color: var(--color-block-text);
   font-family: var(--font-family);
-  font-size: 14px;
+  font-size: var(--font-body-size);
   font-weight: 700;
   cursor: pointer;
   display: inline-flex !important;
@@ -209,7 +209,7 @@
 }
 
 .blockRepeatBtn:hover {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--overlay-white-80);
 }
 
 .blockRepeatBtn:active {
@@ -222,10 +222,10 @@
   padding: 2px !important;
   border: none !important;
   border-radius: var(--radius-sm) !important;
-  background-color: rgba(255, 255, 255, 0.4) !important;
+  background-color: var(--overlay-white-40) !important;
   color: var(--color-block-text) !important;
   font-family: var(--font-family) !important;
-  font-size: var(--font-label-size) !important;
+  font-size: var(--font-label-bold-size) !important;
   font-weight: var(--font-label-bold-weight) !important;
   text-align: center !important;
   cursor: pointer !important;
@@ -247,17 +247,13 @@
   margin: 0;
 }
 
-.blockRepeatInput {
-  -moz-appearance: textfield;
-}
-
 /* === BLOCK CONTAINER (Blocos com filhos) === */
 .blockContainer {
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
   position: relative;
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: var(--overlay-subtle);
   border-radius: var(--radius-lg);
   padding: var(--space-xs);
 }
@@ -289,10 +285,10 @@
   padding: var(--space-sm);
   margin-left: var(--space-lg);
   margin-top: var(--space-xs);
-  border: 2px dashed rgba(100, 100, 100, 0.4);
+  border: 2px dashed var(--color-outline);
   border-radius: var(--radius-md);
   transition: all var(--transition-hover);
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--overlay-light);
   position: relative;
   z-index: 10;
 }
@@ -304,8 +300,8 @@
 .blockSlot:empty::before {
   content: "Arraste blocos aqui";
   display: block;
-  color: #666;
-  font-size: 12px;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-label-bold-size);
   opacity: 0.7;
   text-align: center;
   padding: var(--space-sm);
@@ -325,7 +321,7 @@
 }
 
 .blockContainer block--repeat + .blockSlot {
-  border-color: #ff9800;
+  border-color: var(--color-logic-rotate);
 }
 
 .blockContainer block--repeat + .blockSlot:empty::before {
@@ -333,7 +329,7 @@
 }
 
 .blockContainer block--move + .blockSlot {
-  border-color: #4caf50;
+  border-color: var(--color-logic-move);
 }
 
 .blockContainer block--move + .blockSlot:empty::before {
@@ -341,7 +337,7 @@
 }
 
 .blockContainer[data-type="start"] .blockSlot {
-  border-color: #ef4444 !important;
+  border-color: var(--color-logic-control) !important;
 }
 
 .blockContainer[data-type="start"] .blockSlot:empty::before {
@@ -349,7 +345,7 @@
 }
 
 .blockContainer[data-type="repeat"] .blockSlot {
-  border-color: #ff9800 !important;
+  border-color: var(--color-logic-repeat) !important;
 }
 
 .blockContainer[data-type="repeat"] .blockSlot:empty::before {
@@ -357,7 +353,7 @@
 }
 
 .blockContainer[data-type="move"] .blockSlot {
-  border-color: #4caf50 !important;
+  border-color: var(--color-logic-move) !important;
 }
 
 .blockContainer[data-type="move"] .blockSlot:empty::before {
@@ -387,19 +383,19 @@
 }
 
 .blockSlot.dragover {
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: var(--overlay-medium);
   border-style: solid;
-  border-color: #2196f3 !important;
+  border-color: var(--color-drag-over) !important;
 }
 
 .blockSlot.dragover--valid {
-  border-color: #4caf50 !important;
-  background-color: rgba(76, 175, 80, 0.1);
+  border-color: var(--color-drag-valid) !important;
+  background-color: var(--overlay-success-light);
 }
 
 .blockSlot.dragover--invalid {
-  border-color: #f44336 !important;
-  background-color: rgba(244, 67, 54, 0.1);
+  border-color: var(--color-drag-invalid) !important;
+  background-color: var(--overlay-error-light);
 }
 
 .blockSlot .block.dragging {
@@ -501,7 +497,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 29, 61, 0.5);
+  background-color: var(--overlay-primary);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -512,7 +508,7 @@
 
 .modal {
   position: relative;
-  background-color: white;
+  background-color: var(--color-surface-container-lowest);
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
   max-width: 400px;
@@ -542,7 +538,7 @@
 }
 
 .modal_close .material-symbols-outlined {
-  font-size: 24px;
+  font-size: var(--font-h1-size);
 }
 
 .modal_content {
@@ -568,12 +564,12 @@
 }
 
 .modal_stars {
-  font-size: 48px;
+  font-size: var(--font-display-size);
   margin: var(--space-lg) 0;
 }
 
 .modal_stars .star {
-  font-size: 48px;
+  font-size: var(--font-display-size);
 }
 
 /* Animação de fade in */
@@ -615,10 +611,10 @@
 @keyframes blockPulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(0, 29, 61, 0.4);
+    box-shadow: 0 0 0 0 var(--overlay-primary);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(0, 29, 61, 0);
+    box-shadow: 0 0 0 8px transparent;
   }
 }
 
@@ -689,7 +685,7 @@
 }
 
 .homeTitle {
-  font-size: 36px;
+  font-size: var(--font-display-size);
   font-weight: var(--font-display-weight);
   color: var(--color-primary);
   margin-bottom: var(--space-sm);
@@ -773,7 +769,7 @@
 }
 
 .homeFeatureIcon {
-  font-size: 28px;
+  font-size: var(--font-h1-size);
   color: var(--color-secondary);
 }
 
@@ -901,7 +897,7 @@
 }
 
 .rankingTitle .material-symbols-outlined {
-  font-size: 36px;
+  font-size: var(--font-display-size);
 }
 
 .rankingTable {
@@ -1018,12 +1014,12 @@
 
 .levelItem_stars {
   display: flex;
-  gap: 2px;
+  gap: var(--block-gap);
 }
 
 .levelItem_stars .starSvg {
-  width: 16px;
-  height: 16px;
+  width: var(--space-sm);
+  height: var(--space-sm);
 }
 
 /* === BOTÃO DE SELEÇÃO DE NÍVEL NA TOPBAR === */
@@ -1058,7 +1054,7 @@
 
 .levelSelectStars {
   display: flex;
-  gap: 2px;
+  gap: var(--space-xs);
 }
 
 .levelSelectStars svg {
