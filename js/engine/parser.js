@@ -19,6 +19,7 @@ export class Parser {
     const instructions = []
     const processedElements = new Set()
 
+    // Primeiro, pega blocos dentro de .blockStack
     const blockStacks = this.workspace.querySelectorAll(".blockStack")
 
     blockStacks.forEach(stack => {
@@ -38,6 +39,25 @@ export class Parser {
         }
       })
     })
+
+    // Depois, verifica blocos diretos no workspaceContent (sem stack)
+    const workspaceContent = this.workspace.querySelector(".workspaceContent")
+    if (workspaceContent) {
+      Array.from(workspaceContent.children).forEach(element => {
+        if (element.classList.contains("blockStack")) return // já processado acima
+        if (processedElements.has(element)) return
+        processedElements.add(element)
+
+        const parsed = this.parseElement(element)
+        if (parsed) {
+          if (Array.isArray(parsed)) {
+            instructions.push(...parsed)
+          } else {
+            instructions.push(parsed)
+          }
+        }
+      })
+    }
 
     return instructions
   }
@@ -87,20 +107,23 @@ export class Parser {
    */
   parseMoveBlock(block, container) {
     const slot = container.querySelector(".blockSlot");
-    let direction = null;
+    let directions = [];
 
     if (slot) {
       const directionBlocks = slot.querySelectorAll(".block--direction");
-      if (directionBlocks.length > 0) {
-        direction = this.getDirectionFromBlock(directionBlocks[0]);
-      }
+      directionBlocks.forEach(directionBlock => {
+        const direction = this.getDirectionFromBlock(directionBlock);
+        if (direction) {
+          directions.push(direction);
+        }
+      });
     }
 
-    if (direction) {
-      return {
+    if (directions.length > 0) {
+      return directions.map(direction => ({
         type: direction,
         blockElement: block
-      };
+      }));
     }
 
     return null;
