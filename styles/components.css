@@ -178,6 +178,104 @@
   background-color: var(--color-logic-control);
 }
 
+/* === TOOLTIP DOS BLOCOS (Botão ? com informações) === */
+.blockTooltipTrigger {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-block-text);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 0;
+  line-height: 1;
+  transition: all var(--transition-hover);
+}
+
+.blockPalette .blockTooltipTrigger {
+  display: flex;
+}
+
+.blockTooltipTrigger:hover {
+  background: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.blockTooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary-container);
+  color: var(--color-on-primary);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-body-size);
+  font-weight: var(--font-body-weight);
+  line-height: var(--font-body-line-height);
+  width: 240px;
+  max-width: 280px;
+  z-index: 200;
+  box-shadow: var(--shadow-md);
+  text-align: left;
+  pointer-events: none;
+  white-space: normal;
+}
+
+.blockTooltipTrigger:hover + .blockTooltip,
+.blockTooltipTrigger:focus-visible + .blockTooltip {
+  display: block;
+}
+
+/* Seta do tooltip apontando para baixo */
+.blockTooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--color-primary-container);
+}
+
+/**
+ * Tooltips de "start" e "mover" — posicionados mais abaixo no eixo Y
+ * para evitar que sejam cortados no topo da paleta.
+ */
+.block--start > .blockTooltip {
+  bottom: -150px;
+}
+
+.block--move > .blockTooltip {
+  bottom: -110px;
+}
+
+.block--start > .blockTooltip::after,
+.block--move > .blockTooltip::after {
+  display: none;
+}
+
+/* Eleva o stacking context do bloco inteiro quando o tooltip está visível,
+   para que o tooltip não seja coberto pelo próximo bloco da paleta */
+.blockPalette .block:has(.blockTooltipTrigger:hover) {
+  z-index: 3;
+}
+
 .blockRepeatInputWrapper {
   display: inline-flex !important;
   align-items: center;
