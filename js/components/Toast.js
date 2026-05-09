@@ -11,7 +11,7 @@ export class Toast {
   /**
    * Exibe uma mensagem toast
    * @param {string} message - Mensagem a ser exibida
-   * @param {number} duration - Tempo em ms para o toast desaparecer (padrão: 15000)
+   * @param {number} duration - Tempo em ms para o toast desaparecer (padrão: 15000). Use 0 para manter infinito
    * @param {string} icon - Emoji ou class de ícone opcional
    * @param {string} type - Tipo de toast: "info" (padrão), "success", "warning", "key"
    */
@@ -22,7 +22,11 @@ export class Toast {
     if (!workspace) return;
 
     const toast = document.createElement("div");
-    toast.className = `toast toast--${type}`;
+    let className = `toast toast--${type}`;
+    if (type === "key") {
+      className += " keyToast";
+    }
+    toast.className = className;
 
     if (icon) {
       if (icon.startsWith(".") || icon.includes(" ")) {
@@ -43,9 +47,12 @@ export class Toast {
       toast.classList.add("show");
     });
 
-    Toast.currentTimeout = setTimeout(() => {
-      Toast.hide();
-    }, duration);
+    // Só define timeout se duration > 0
+    if (duration > 0) {
+      Toast.currentTimeout = setTimeout(() => {
+        Toast.hide();
+      }, duration);
+    }
   }
 
   /**
@@ -61,35 +68,20 @@ export class Toast {
   }
 
   /**
-   * Oculta o toast atual (apenas hints, não remove toasts de chave)
+   * Oculta toasts
+   * @param {boolean} includeKey - Se true, remove também toasts de chave (padrão: false)
    */
-  static hide() {
+  static hide(includeKey = false) {
     if (Toast.currentTimeout) {
       clearTimeout(Toast.currentTimeout);
       Toast.currentTimeout = null;
     }
 
-    // Remove todos os toasts imediatamente, exceto toasts de chave (.keyToast)
     const toasts = document.querySelectorAll(".toast");
     toasts.forEach(toast => {
-      if (!toast.classList.contains("keyToast")) {
+      if (includeKey || !toast.classList.contains("keyToast")) {
         toast.remove();
       }
-    });
-  }
-
-  /**
-   * Remove todos os toasts incluindo o de chave
-   */
-  static hideAll() {
-    if (Toast.currentTimeout) {
-      clearTimeout(Toast.currentTimeout);
-      Toast.currentTimeout = null;
-    }
-
-    const toasts = document.querySelectorAll(".toast");
-    toasts.forEach(toast => {
-      toast.remove();
     });
   }
 }

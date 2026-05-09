@@ -257,15 +257,7 @@ Game.prototype.setRetryButtonToRun = function() {
 Game.prototype.resetStageFromRetry = function() {
   this.stage.reset();
   this.setRetryButtonToRun();
-  this.removeKeyToast();
-  Toast.hideAll();
-};
-
-Game.prototype.removeKeyToast = function() {
-  const existingToast = document.querySelector(".keyToast");
-  if (existingToast) {
-    existingToast.remove();
-  }
+  Toast.hide(true);
 };
 
 Game.prototype.clearWorkspace = function() {
@@ -281,8 +273,7 @@ Game.prototype.clearWorkspace = function() {
   gameState.clearWorkspaceBlocks();
   this.stage.disablePauseButton();
   this.setRetryButtonToRun();
-  this.removeKeyToast();
-  Toast.hideAll();
+  Toast.hide(true);
 };
 
 Game.prototype.handleLevelComplete = function() {
@@ -372,7 +363,6 @@ Game.prototype.updateUI = function() {
   this.topBar.updateStars(gameState.getStarsForLevel(gameState.getCurrentLevel()));
   this.topBar.updateProgress(gameState.getProgressPercent());
   this.stage.updateTitle(gameState.getCurrentLevel());
-  this.loadLevelConfig();
 };
 
 export default Game;
