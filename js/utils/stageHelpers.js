@@ -129,6 +129,24 @@ export function renderTrophy(cells, trophy, gridSize) {
 }
 
 /**
+ * Renderiza portas no grid (com estado aberto/fechado)
+ * @param {Array} cells - Array de elementos de células
+ * @param {Array} doors - Array de portas {x, y}
+ * @param {number} gridSize - Tamanho do grid
+ * @param {boolean} isOpen - Se as portas estão abertas
+ */
+export function renderDoors(cells, doors, gridSize, isOpen) {
+  doors.forEach(door => {
+    const index = getCellIndex(door.x, door.y, gridSize);
+    const cell = cells[index];
+    if (cell) {
+      cell.classList.add("hasDoor");
+      if (isOpen) cell.classList.add("open");
+    }
+  });
+}
+
+/**
  * Classes CSS para limpar o grid
  */
 export const GRID_CLEAR_CLASSES = [

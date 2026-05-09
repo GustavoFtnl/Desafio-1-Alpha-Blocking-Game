@@ -182,47 +182,40 @@ export class Stage {
   }
 
   /**
-   * Desabilita o botão de pausar e reseta o texto para "Pausar"
+   * Atualiza o estado do botão de pausa
+   * @param {string} state - Estado: "disabled", "enabled", "resume", "pause"
    */
-  disablePauseButton() {
+  updatePauseButton(state) {
     const pauseButton = this.controlsArea.querySelector(".btn--pause");
-    if (pauseButton) {
-      pauseButton.disabled = true;
-      pauseButton.classList.add("btn--disabled");
-      pauseButton.innerHTML = '<span class="material-symbols-outlined">pause</span> Pausar';
+    if (!pauseButton) return;
+
+    const icons = { pause: "pause", resume: "play_arrow" };
+    const texts = { pause: "Pausar", resume: "Retomar" };
+
+    switch (state) {
+      case "disabled":
+        pauseButton.disabled = true;
+        pauseButton.classList.add("btn--disabled");
+        pauseButton.innerHTML = `<span class="material-symbols-outlined">${icons.pause}</span> ${texts.pause}`;
+        break;
+      case "enabled":
+        pauseButton.disabled = false;
+        pauseButton.classList.remove("btn--disabled");
+        break;
+      case "resume":
+        pauseButton.innerHTML = `<span class="material-symbols-outlined">${icons.resume}</span> ${texts.resume}`;
+        break;
+      case "pause":
+        pauseButton.innerHTML = `<span class="material-symbols-outlined">${icons.pause}</span> ${texts.pause}`;
+        break;
     }
   }
 
-  /**
-   * Habilita o botão de pausar
-   */
-  enablePauseButton() {
-    const pauseButton = this.controlsArea.querySelector(".btn--pause");
-    if (pauseButton) {
-      pauseButton.disabled = false;
-      pauseButton.classList.remove("btn--disabled");
-    }
-  }
-
-  /**
-   * Altera o texto do botão de pausar para "Retomar"
-   */
-  setPauseToResume() {
-    const pauseButton = this.controlsArea.querySelector(".btn--pause");
-    if (pauseButton) {
-      pauseButton.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> Retomar';
-    }
-  }
-
-  /**
-   * Altera o texto do botão de retomar para "Pausar"
-   */
-  setResumeToPause() {
-    const pauseButton = this.controlsArea.querySelector(".btn--pause");
-    if (pauseButton) {
-      pauseButton.innerHTML = '<span class="material-symbols-outlined">pause</span> Pausar';
-    }
-  }
+  // Aliases para compatibilidade
+  disablePauseButton() { this.updatePauseButton("disabled"); }
+  enablePauseButton() { this.updatePauseButton("enabled"); }
+  setPauseToResume() { this.updatePauseButton("resume"); }
+  setResumeToPause() { this.updatePauseButton("pause"); }
 
   /**
    * Atualiza o título do stage com o nível atual
@@ -334,14 +327,7 @@ export class Stage {
     stageHelpers.renderElementsToGrid(this.stageCells, this.traps, "hasTrap", this.gridSize);
 
     // Renderiza portas (com estado)
-    this.doors.forEach(door => {
-      const index = stageHelpers.getCellIndex(door.x, door.y, this.gridSize);
-      const cell = this.stageCells[index];
-      if (cell) {
-        cell.classList.add("hasDoor");
-        if (this.doorOpen) cell.classList.add("open");
-      }
-    });
+    stageHelpers.renderDoors(this.stageCells, this.doors, this.gridSize, this.doorOpen);
 
     // Renderiza fogos (com estado ativo/inativo)
     stageHelpers.renderElementWithState(
@@ -369,18 +355,14 @@ export class Stage {
    * @returns {string} Tipo de elemento: "wall", "trap", "trophy" ou null
    */
   checkCollision(x, y) {
-    // Verifica parede
-    if (this.walls.some(w => w.x === x && w.y === y)) {
-      return "wall";
+    const checkers = [
+      { elements: this.walls, type: "wall" },
+      { elements: this.traps, type: "trap" }
+    ];
+    for (const { elements, type } of checkers) {
+      if (elements.some(el => el.x === x && el.y === y)) return type;
     }
-    // Verifica armadilha
-    if (this.traps.some(t => t.x === x && t.y === y)) {
-      return "trap";
-    }
-    // Verifica troféu
-    if (this.trophy.x === x && this.trophy.y === y) {
-      return "trophy";
-    }
+    if (this.trophy.x === x && this.trophy.y === y) return "trophy";
     return null;
   }
 
@@ -391,10 +373,15 @@ export class Stage {
    * @returns {boolean} true se houver parede ou buraco na posição
    */
   hasWallAt(x, y) {
-    const hasWall = this.walls.some(w => w.x === x && w.y === y);
-    const hasHole = this.holes.some(h => h.x === x && h.y === y);
-    const hasDoor = !this.doorOpen && this.doors.some(d => d.x === x && d.y === y);
-    return hasWall || hasHole || hasDoor;
+    const checkers = [
+      { elements: this.walls },
+      { elements: this.holes }
+    ];
+    for (const { elements } of checkers) {
+      if (elements.some(el => el.x === x && el.y === y)) return true;
+    }
+    if (!this.doorOpen && this.doors.some(d => d.x === x && d.y === y)) return true;
+    return false;
   }
 
   /**
@@ -524,15 +511,19 @@ export class Stage {
    * @returns {string|null} "trap", "trophy" ou null
    */
   checkCollisionAtCurrentPosition() {
-    if (this.isTrapAtCurrentPosition()) {
-      return "trap";
+    // Verifica armadilhas (inclui fogo ativo)
+    const traps = [
+      { check: () => this.isTrapAtCurrentPosition(), type: "trap" },
+      { check: () => this.isFireTrapAtCurrentPosition() && this.fireTrapActive, type: "trap" }
+    ];
+    for (const { check, type } of traps) {
+      if (check()) return type;
     }
-    if (this.isFireTrapAtCurrentPosition() && this.fireTrapActive) {
-      return "trap";
-    }
-    if (this.isTrophyAtCurrentPosition()) {
-      return "trophy";
-    }
+
+    // Verifica troféu
+    if (this.isTrophyAtCurrentPosition()) return "trophy";
+
+    // Verifica chave (ação especial)
     if (this.isKeyAtCurrentPosition()) {
       this.doorOpen = true;
       this.keys = this.keys.filter(k => !(k.x === this.x && k.y === this.y));
