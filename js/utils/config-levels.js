@@ -14,87 +14,6 @@ const CONFIG_LEVELS = [
     start: { x: 0, y: 4 },
     trophy: { x: 9, y: 4 },
 
-    holes: [
-      // Parte superior
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-      { x: 2, y: 0 },
-      { x: 3, y: 0 },
-      { x: 4, y: 0 },
-      { x: 5, y: 0 },
-      { x: 6, y: 0 },
-      { x: 7, y: 0 },
-      { x: 8, y: 0 },
-      { x: 9, y: 0 },
-
-      { x: 0, y: 1 },
-      { x: 1, y: 1 },
-      { x: 2, y: 1 },
-      { x: 3, y: 1 },
-      { x: 4, y: 1 },
-      { x: 5, y: 1 },
-      { x: 6, y: 1 },
-      { x: 7, y: 1 },
-      { x: 8, y: 1 },
-      { x: 9, y: 1 },
-
-      { x: 0, y: 2 },
-      { x: 1, y: 2 },
-      { x: 2, y: 2 },
-      { x: 3, y: 2 },
-      { x: 4, y: 2 },
-      { x: 5, y: 2 },
-      { x: 6, y: 2 },
-      { x: 7, y: 2 },
-      { x: 8, y: 2 },
-      { x: 9, y: 2 },
-
-      // Parte inferior
-      { x: 0, y: 6 },
-      { x: 1, y: 6 },
-      { x: 2, y: 6 },
-      { x: 3, y: 6 },
-      { x: 4, y: 6 },
-      { x: 5, y: 6 },
-      { x: 6, y: 6 },
-      { x: 7, y: 6 },
-      { x: 8, y: 6 },
-      { x: 9, y: 6 },
-
-      { x: 0, y: 7 },
-      { x: 1, y: 7 },
-      { x: 2, y: 7 },
-      { x: 3, y: 7 },
-      { x: 4, y: 7 },
-      { x: 5, y: 7 },
-      { x: 6, y: 7 },
-      { x: 7, y: 7 },
-      { x: 8, y: 7 },
-      { x: 9, y: 7 },
-
-      { x: 0, y: 8 },
-      { x: 1, y: 8 },
-      { x: 2, y: 8 },
-      { x: 3, y: 8 },
-      { x: 4, y: 8 },
-      { x: 5, y: 8 },
-      { x: 6, y: 8 },
-      { x: 7, y: 8 },
-      { x: 8, y: 8 },
-      { x: 9, y: 8 },
-
-      { x: 0, y: 9 },
-      { x: 1, y: 9 },
-      { x: 2, y: 9 },
-      { x: 3, y: 9 },
-      { x: 4, y: 9 },
-      { x: 5, y: 9 },
-      { x: 6, y: 9 },
-      { x: 7, y: 9 },
-      { x: 8, y: 9 },
-      { x: 9, y: 9 },
-    ],
-
     walls: [
       // Linha superior do corredor
       { x: 0, y: 3 },
@@ -121,42 +40,21 @@ const CONFIG_LEVELS = [
       { x: 9, y: 5 },
     ],
 
-    traps: [],
-
     maxBlocks: 12,
   },
 
   {
     id: 2,
-    name: "Labirinto Fragmentado",
-
+    name: "Caminho Tortuoso",
     start: { x: 7, y: 4 },
-    trophy: { x: 9, y: 4 },
-
+    trophy: { x: 9, y: 6 },
     holes: [
-      { x: 2, y: 0 },
-
-      { x: 0, y: 2 },
-
-      { x: 4, y: 3 },
-
-      { x: 9, y: 5 },
-
-      { x: 2, y: 6 },
-      { x: 3, y: 6 },
-      { x: 7, y: 6 },
-
-      { x: 7, y: 8 },
-
-      { x: 2, y: 9 },
+      { x: 4, y: 3 }, // O círculo preto solitário no meio do caminho
     ],
-
+    traps: [],
+    maxBlocks: 25,
     walls: [
-      // Linha 0
-      { x: 3, y: 0 },
-      { x: 4, y: 0 },
-
-      // Linha 1
+      // Linha 1: Barreira superior completa
       { x: 0, y: 1 },
       { x: 1, y: 1 },
       { x: 2, y: 1 },
@@ -168,7 +66,8 @@ const CONFIG_LEVELS = [
       { x: 8, y: 1 },
       { x: 9, y: 1 },
 
-      // Linha 3
+      // Linha 3: Paredes que ladeiam o buraco
+      { x: 1, y: 3 },
       { x: 2, y: 3 },
       { x: 3, y: 3 },
       { x: 5, y: 3 },
@@ -176,72 +75,64 @@ const CONFIG_LEVELS = [
       { x: 7, y: 3 },
       { x: 8, y: 3 },
 
-      // Linha 4
+      // Linha 4: Paredes à esquerda e uma à direita do personagem
       { x: 1, y: 4 },
       { x: 2, y: 4 },
       { x: 3, y: 4 },
       { x: 8, y: 4 },
 
-      // Linha 5
+      // Linha 5: Pequeno bloqueio central-direito
       { x: 5, y: 5 },
       { x: 6, y: 5 },
       { x: 7, y: 5 },
       { x: 8, y: 5 },
 
-      // Linha 6
+      // Linha 6: O longo corredor que leva ao troféu
       { x: 0, y: 6 },
       { x: 1, y: 6 },
+      { x: 2, y: 6 },
+      { x: 3, y: 6 },
+      { x: 4, y: 6 },
       { x: 5, y: 6 },
       { x: 6, y: 6 },
+      { x: 7, y: 6 },
       { x: 8, y: 6 },
-      { x: 9, y: 6 },
 
-      // Linha 7
+      // Linha 7: Barreira inferior de contenção
+      { x: 0, y: 7 },
       { x: 1, y: 7 },
       { x: 2, y: 7 },
       { x: 3, y: 7 },
+      { x: 4, y: 7 },
+      { x: 5, y: 7 },
+      { x: 6, y: 7 },
       { x: 7, y: 7 },
       { x: 8, y: 7 },
-
-      // Linha 8
-      { x: 5, y: 8 },
-
-      // Linha 9
-      { x: 3, y: 9 },
-      { x: 4, y: 9 },
-      { x: 7, y: 9 },
-      { x: 9, y: 9 },
+      { x: 9, y: 7 },
     ],
-
-    traps: [],
-
-    maxBlocks: 18,
   },
 
   // Nível 3: Primeira Armadilha
   {
     id: 3,
-    name: "Campo Explosivo",
-
-    start: { x: 7, y: 0 },
-    trophy: { x: 5, y: 7 },
-
+    name: "Descida Perigosa",
+    start: { x: 8, y: 0 },
+    trophy: { x: 6, y: 7 },
     holes: [
-      { x: 1, y: 0 },
-      { x: 2, y: 0 },
-
-      { x: 9, y: 3 },
-      { x: 9, y: 4 },
-      { x: 9, y: 5 },
-      { x: 9, y: 6 },
-
-      { x: 3, y: 6 },
-
-      { x: 2, y: 8 },
+      { x: 4, y: 6 }, // O buraco negro central que bloqueia a passagem direta
     ],
-
+    traps: [
+      // Campo de bombas superior
+      { x: 2, y: 0 },
+      { x: 3, y: 0 },
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 5, y: 1 },
+      { x: 5, y: 2 },
+    ],
+    maxBlocks: 35,
     walls: [
-      // Coluna esquerda
+      // Coluna 0 (Paredão lateral esquerdo completo)
       { x: 0, y: 0 },
       { x: 0, y: 1 },
       { x: 0, y: 2 },
@@ -253,67 +144,46 @@ const CONFIG_LEVELS = [
       { x: 0, y: 8 },
       { x: 0, y: 9 },
 
-      // Parte superior
-      { x: 6, y: 0 },
-      { x: 8, y: 0 },
+      // Coluna 9 (Paredão lateral direito completo)
+      { x: 9, y: 0 },
+      { x: 9, y: 1 },
+      { x: 9, y: 2 },
+      { x: 9, y: 3 },
+      { x: 9, y: 4 },
+      { x: 9, y: 5 },
+      { x: 9, y: 6 },
+      { x: 9, y: 7 },
+      { x: 9, y: 8 },
+      { x: 9, y: 9 },
 
-      // Linha 1
-      { x: 6, y: 1 },
-      { x: 8, y: 1 },
+      // Estrutura central e barreiras
+      { x: 7, y: 0 },
+      { x: 7, y: 1 },
 
-      // Linha 2
-      { x: 8, y: 2 },
-
-      // Linha 3
-      { x: 3, y: 3 },
+      // Barreira horizontal superior (Y=3)
       { x: 4, y: 3 },
       { x: 5, y: 3 },
       { x: 6, y: 3 },
       { x: 7, y: 3 },
       { x: 8, y: 3 },
 
-      // Linha 4
-      { x: 3, y: 4 },
-      { x: 5, y: 4 },
+      // Blocos isolados e nicho do troféu
+      { x: 4, y: 4 },
       { x: 6, y: 4 },
       { x: 7, y: 4 },
       { x: 8, y: 4 },
-
-      // Linha 5
-      { x: 3, y: 5 },
-      { x: 8, y: 5 },
-
-      // Linha 6
-      { x: 5, y: 6 },
+      { x: 4, y: 5 },
       { x: 6, y: 6 },
-      { x: 8, y: 6 },
+      { x: 7, y: 6 },
+      { x: 4, y: 7 },
+      { x: 7, y: 7 },
 
-      // Linha 7
-      { x: 3, y: 7 },
-      { x: 6, y: 7 },
-      { x: 8, y: 7 },
-
-      // Linha 8
-      { x: 3, y: 8 },
+      // Base de sustentação do labirinto (Y=8)
       { x: 4, y: 8 },
       { x: 5, y: 8 },
       { x: 6, y: 8 },
-      { x: 8, y: 8 },
-
-      // Linha 9
-      { x: 9, y: 9 },
+      { x: 7, y: 8 },
     ],
-
-    traps: [
-      { x: 2, y: 1 },
-      { x: 4, y: 1 },
-
-      { x: 4, y: 2 },
-
-      { x: 4, y: 4 },
-    ],
-
-    maxBlocks: 24,
   },
 
   // Nível 4: Desvio Simples
