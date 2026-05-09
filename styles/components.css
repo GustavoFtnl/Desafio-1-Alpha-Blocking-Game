@@ -172,6 +172,8 @@
 
 .block--start {
   background-color: var(--color-logic-control);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .block--control {
@@ -269,6 +271,7 @@
   display: flex;
   visibility: visible;
   min-height: 48px;
+  padding: var(--space-md);
 }
 
 .blockContainer > .block {
@@ -283,9 +286,8 @@
   display: flex;
   flex-direction: column;
   min-height: 48px;
-  padding: var(--space-sm);
+  padding: var(--space-md) !important;
   margin-left: var(--space-lg);
-  margin-top: var(--space-xs);
   border-radius: var(--radius-md);
   transition: all var(--transition-hover);
   position: relative;
@@ -379,7 +381,7 @@
 .blockContainer > .block + .blockSlot {
   margin-left: var(--space-md);
   margin-top: var(--space-xs);
-  padding: var(--space-sm);
+  padding: var(--space-md);
 }
 
 .blockSlot > .block .blockSlot:empty,
