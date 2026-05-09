@@ -6,8 +6,8 @@
 
 import { gameState } from "../state.js";
 import DOM from "../dom.js";
-import { getLevelConfig } from "../config-levels.js";
-import LEVEL_HINTS from "../data/level-hints.js";
+import { getLevelConfig } from "../utils/config-levels.js";
+import LEVEL_HINTS from "../utils/level-hints.js";
 
 import { TopBar } from "../components/TopBar.js";
 import { Sidebar } from "../components/Sidebar.js";
