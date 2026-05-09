@@ -179,13 +179,13 @@ GameState.prototype.calculateStars = function(usedBlocks) {
   const maxBlocks = this.getMaxBlocks();
 
   if (usedBlocks <= maxBlocks) {
-    const percentage = usedBlocks / maxBlocks;
-    if (percentage <= 0.7) {
-      return 3;
-    } else if (percentage <= 1.0) {
-      return 2;
-    }
+    return 3;
   }
+
+  if (usedBlocks <= maxBlocks * 1.5) {
+    return 2;
+  }
+
   return 1;
 };
 

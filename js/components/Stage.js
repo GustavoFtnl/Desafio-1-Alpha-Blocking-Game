@@ -257,14 +257,19 @@ export class Stage {
     this.doorOpen = false;
     this.fireTrapActive = false;
 
-    // Restaura chaves do nível original
-    if (this.currentLevelConfig && this.currentLevelConfig.keys) {
-      this.keys = [...this.currentLevelConfig.keys];
-    }
-
-    // Restaura fogos do nível original
-    if (this.currentLevelConfig && this.currentLevelConfig.fireTraps) {
-      this.fireTraps = [...this.currentLevelConfig.fireTraps];
+    // Restaura elementos do nível original a partir do grid
+    if (this.currentLevelConfig && this.currentLevelConfig.grid) {
+      const elements = this.parseGridToElements(this.currentLevelConfig.grid);
+      this.keys = elements.keys;
+      this.fireTraps = elements.fireTraps;
+    } else {
+      // Compatibilidade com formato original
+      if (this.currentLevelConfig && this.currentLevelConfig.keys) {
+        this.keys = [...this.currentLevelConfig.keys];
+      }
+      if (this.currentLevelConfig && this.currentLevelConfig.fireTraps) {
+        this.fireTraps = [...this.currentLevelConfig.fireTraps];
+      }
     }
 
     // Redesenha todos os elementos do nível (limpa e renderiza ator, walls, traps, trophy)
