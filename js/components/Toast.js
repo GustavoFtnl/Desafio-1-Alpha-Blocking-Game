@@ -56,18 +56,6 @@ export class Toast {
   }
 
   /**
-   * Exibe hint de nível
-   * @param {number} levelId - ID do nível
-   * @param {object} hints - Objeto com hints por nível
-   */
-  static showLevelHint(levelId, hints) {
-    const hint = hints[levelId];
-    if (hint) {
-      Toast.show(hint, 15000, null, "info");
-    }
-  }
-
-  /**
    * Oculta toasts
    * @param {boolean} includeKey - Se true, remove também toasts de chave (padrão: false)
    */

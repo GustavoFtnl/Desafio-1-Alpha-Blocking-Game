@@ -928,13 +928,5 @@ function getLevelConfig(levelId) {
   return CONFIG_LEVELS.find((level) => level.id === levelId) || null;
 }
 
-/**
- * Obtém todos os níveis disponíveis
- * @returns {Array} Array com todas as configurações de nível
- */
-function getAllLevels() {
-  return CONFIG_LEVELS;
-}
-
 export default CONFIG_LEVELS;
-export { getLevelConfig, getAllLevels };
+export { getLevelConfig };
