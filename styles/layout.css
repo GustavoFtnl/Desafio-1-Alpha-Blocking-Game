@@ -270,6 +270,10 @@
   box-sizing: border-box;
 }
 
+.blockContainer > .block.block--start {
+  max-width: none;
+}
+
 /* === ZONA DE LIXEIRA (Delete Zone) === */
 .trashZone {
   position: fixed;
