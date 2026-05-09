@@ -68,7 +68,7 @@ export class Stage {
 
     const blockCounter = document.createElement("span");
     blockCounter.className = "stageBlockCounter";
-    blockCounter.textContent = `0/${this.maxBlocks} blocos`;
+    blockCounter.textContent = `0 blocos`;
     this.blockCounterElement = blockCounter;
 
     stageHeader.appendChild(stageTitle);
@@ -234,7 +234,7 @@ export class Stage {
    */
   updateBlockCounter(used) {
     if (this.blockCounterElement) {
-      this.blockCounterElement.textContent = `${used}/${this.maxBlocks} blocos`;
+      this.blockCounterElement.textContent = `${used} blocos`;
     }
   }
 
