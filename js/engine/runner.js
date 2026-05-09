@@ -85,6 +85,11 @@ export class Runner {
 
             // Delay com bloco ainda em execução (feedback visual)
             await this.delay(this.commandDelay);
+            if (!this.isRunning) break;
+            if (this.isPaused) {
+              await this.waitForResume();
+            }
+            if (!this.isRunning) break;
             this.setBlockExecuting(instruction.blockElement, false);
             continue;
           } else {
@@ -119,6 +124,11 @@ export class Runner {
         }
 
         await this.delay(this.commandDelay);
+        if (!this.isRunning) break;
+        if (this.isPaused) {
+          await this.waitForResume();
+        }
+        if (!this.isRunning) break;
 
         // Só desativa se a próxima instrução for de um bloco diferente
         const shouldDeactivate = !nextInstruction || 
@@ -129,7 +139,7 @@ export class Runner {
         }
       }
 
-      if (this.isRunning && !this.isPaused) {
+      if (this.isRunning) {
         this.dispatchExecutionCompleteEvent();
       }
     } catch (error) {
@@ -272,6 +282,11 @@ export class Runner {
         }
 
         await this.delay(this.commandDelay);
+        if (!this.isRunning) break;
+        if (this.isPaused) {
+          await this.waitForResume();
+        }
+        if (!this.isRunning) break;
 
         const shouldDeactivate = !nextSubInstruction || 
           nextSubInstruction.blockElement !== subInstruction.blockElement;

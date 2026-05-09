@@ -134,8 +134,13 @@ Game.prototype.runCode = function() {
     return;
   }
 
-  const totalBlocks = this.parser.countBlocks();
-  const maxBlocks = gameState.getMaxBlocks();
+  // Se está pausado, apenas retoma a execução sem resetar o stage
+  if (this.runner.paused) {
+    this.runner.resume();
+    this.stage.setResumeToPause();
+    this.disableExecutionButtons();
+    return;
+  }
 
   if (this.runner.running) {
     this.runner.stop();
