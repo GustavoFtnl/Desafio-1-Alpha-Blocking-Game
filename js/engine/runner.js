@@ -6,6 +6,8 @@
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
+import { SoundManager } from "../utils/SoundManager.js";
+
 export class Runner {
   constructor(stage) {
     this.stage = stage;
@@ -311,6 +313,12 @@ export class Runner {
       this.setBlockExecuting(instruction.blockElement, false);
     });
 
+    if (this.stage.isFireTrapAtCurrentPosition()) {
+      SoundManager.playFireTrap();
+    } else {
+      SoundManager.playSpikeTrap();
+    }
+
     this.dispatchFailedEvent("trap");
   }
 
@@ -318,6 +326,7 @@ export class Runner {
    * Trata vitória - atingiu o troféu
    */
   handleVictory() {
+    SoundManager.playTrophy();
     this.dispatchCompleteEvent();
   }
 
