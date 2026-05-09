@@ -4,7 +4,7 @@
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
-import { BLOCK_TOOLTIPS } from "../data/block-tooltips.js";
+import { BLOCK_TOOLTIPS } from "../utils/block-tooltips.js";
 
 export class Block {
   /**
