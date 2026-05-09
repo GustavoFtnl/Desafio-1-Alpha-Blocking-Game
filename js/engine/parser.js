@@ -221,7 +221,14 @@ export class Parser {
    * @returns {string} Direction: up, down, left, right
    */
   getDirectionFromBlock(directionBlock) {
-    const content = directionBlock.textContent.trim()
+    const blockText = directionBlock.querySelector(".block_text");
+    let content;
+
+    if (blockText) {
+      content = blockText.textContent.trim();
+    } else {
+      content = directionBlock.firstChild?.textContent?.trim() || "";
+    }
 
     if (content.includes("→") || content.includes("Direita")) {
       return "moveRight"
