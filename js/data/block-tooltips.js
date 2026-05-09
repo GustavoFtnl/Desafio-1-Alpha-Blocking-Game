@@ -1,7 +1,7 @@
 /**
  * block-tooltips.js - Descrições dos blocos para exibição em tooltips
  * Cada bloco tem uma mensagem explicativa sobre sua funcionalidade
- * Comentários em português do Brasil conforme AGENTS.md
+ * descrições genéricas da i.a, passível de mudança.
  */
 
 const BLOCK_TOOLTIPS = {
@@ -14,7 +14,7 @@ const BLOCK_TOOLTIPS = {
   "block--direction":
     "Define a direção do movimento ou pulo. Pode ser: Direita (→), Esquerda (←), Cima (↑) ou Baixo (↓).",
   "block--repeat":
-    "Repete os blocos internos várias vezes seguidas. Economiza blocos e simplifica o código. Ajuste a quantidade com os botões + e -.",
+    "Repete os blocos internos várias vezes seguidas. Adicione 'Move' seguido de uma ou mais direções para repetir movimentos. Ajuste a quantidade com +/-.",
 };
 
 export default BLOCK_TOOLTIPS;
