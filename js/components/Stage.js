@@ -7,6 +7,7 @@
 
 import { Toast } from "./Toast.js";
 import * as stageHelpers from "../utils/stageHelpers.js";
+import { ELEMENT_TYPES, GRID_LENGTH } from "../utils/elementTypes.js";
 
 export class Stage {
   /**
@@ -287,21 +288,36 @@ export class Stage {
 
   /**
    * Define a configuração do nível atual
-   * @param {Object} levelConfig - Configuração do nível (start, trophy, walls, traps)
+   * @param {Object} levelConfig - Configuração do nível (grid array numérico ou formato original)
    */
   setLevelConfig(levelConfig) {
     this.currentLevelConfig = levelConfig;
-    this.start = levelConfig.start || { x: 0, y: 0 };
-    this.walls = levelConfig.walls || [];
-    this.holes = levelConfig.holes || [];
-    this.doors = levelConfig.doors || [];
-    this.keys = levelConfig.keys || [];
-    this.doorOpen = false;
-    this.traps = levelConfig.traps || [];
-    this.fireTraps = levelConfig.fireTraps || [];
-    this.fireTrapActive = false;
-    this.trophy = levelConfig.trophy || { x: 0, y: 0 };
     this.maxBlocks = levelConfig.maxBlocks || this.maxBlocks;
+    this.doorOpen = false;
+    this.fireTrapActive = false;
+
+    // Verifica se o nível tem o novo formato de grid numérico
+    if (levelConfig.grid && Array.isArray(levelConfig.grid)) {
+      const elements = this.parseGridToElements(levelConfig.grid);
+      this.start = elements.start;
+      this.trophy = elements.trophy;
+      this.walls = elements.walls;
+      this.holes = elements.holes;
+      this.traps = elements.traps;
+      this.keys = elements.keys;
+      this.doors = elements.doors;
+      this.fireTraps = elements.fireTraps;
+    } else {
+      // Compatibilidade com formato original (arrays de coordenadas)
+      this.start = levelConfig.start || { x: 0, y: 0 };
+      this.walls = levelConfig.walls || [];
+      this.holes = levelConfig.holes || [];
+      this.doors = levelConfig.doors || [];
+      this.keys = levelConfig.keys || [];
+      this.traps = levelConfig.traps || [];
+      this.fireTraps = levelConfig.fireTraps || [];
+      this.trophy = levelConfig.trophy || { x: 0, y: 0 };
+    }
 
     // Define posição inicial do ator
     this.x = this.start.x;
@@ -309,6 +325,59 @@ export class Stage {
 
     // Renderiza todos os elementos (walls, holes, traps, trophy, ator)
     this.renderLevelElements();
+  }
+
+  /**
+   * Converte o grid numérico para objetos de elementos
+   * @param {number[]} grid - Array numérico do nível (100 elementos)
+   * @returns {Object} Objeto com arrays de coordenadas
+   */
+  parseGridToElements(grid) {
+    const elements = {
+      start: { x: 0, y: 0 },
+      trophy: { x: 0, y: 0 },
+      walls: [],
+      holes: [],
+      traps: [],
+      keys: [],
+      doors: [],
+      fireTraps: [],
+    };
+
+    for (let i = 0; i < GRID_LENGTH; i++) {
+      const x = i % this.gridSize;
+      const y = Math.floor(i / this.gridSize);
+      const cellType = grid[i];
+
+      switch (cellType) {
+        case ELEMENT_TYPES.START:
+          elements.start = { x, y };
+          break;
+        case ELEMENT_TYPES.TROPHY:
+          elements.trophy = { x, y };
+          break;
+        case ELEMENT_TYPES.WALL:
+          elements.walls.push({ x, y });
+          break;
+        case ELEMENT_TYPES.HOLE:
+          elements.holes.push({ x, y });
+          break;
+        case ELEMENT_TYPES.TRAP:
+          elements.traps.push({ x, y });
+          break;
+        case ELEMENT_TYPES.KEY:
+          elements.keys.push({ x, y });
+          break;
+        case ELEMENT_TYPES.DOOR:
+          elements.doors.push({ x, y });
+          break;
+        case ELEMENT_TYPES.FIRE:
+          elements.fireTraps.push({ x, y });
+          break;
+      }
+    }
+
+    return elements;
   }
 
 /**
