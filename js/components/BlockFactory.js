@@ -29,10 +29,6 @@ export class BlockFactory {
     return rootBlocks.length;
   }
 
-  getBlockType(element) {
-    return Block.getType(element);
-  }
-
   hasSlot(element) {
     return Block.hasSlot(element);
   }

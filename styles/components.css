@@ -631,7 +631,9 @@
   border-radius: var(--radius-md);
   color: var(--color-on-surface);
   opacity: 0.6;
-  transition: opacity var(--transition-fast), background-color var(--transition-fast);
+  transition:
+    opacity var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
 .modal_close:hover {
@@ -641,10 +643,6 @@
 
 .modal_close .material-symbols-outlined {
   font-size: var(--font-h1-size);
-}
-
-.modal_content {
-  margin-top: var(--space-sm);
 }
 
 .modal_title {
@@ -1070,6 +1068,9 @@
 .levelsModal_content {
   max-width: 520px;
   width: 95%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .levelsGrid {
@@ -1116,12 +1117,11 @@
 
 .levelItem_stars {
   display: flex;
-  gap: var(--block-gap);
 }
 
 .levelItem_stars .starSvg {
-  width: var(--space-sm);
-  height: var(--space-sm);
+  width: 20px;
+  height: 20px;
 }
 
 /* === BOTÃO DE SELEÇÃO DE NÍVEL NA TOPBAR === */
