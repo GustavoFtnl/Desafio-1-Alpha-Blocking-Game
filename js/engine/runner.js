@@ -222,6 +222,7 @@ export class Runner {
     }
 
     this.stage.markCurrentCell();
+    SoundManager.playJump();
 
     const finalCollision = this.stage.checkCollisionAtCurrentPosition();
     if (finalCollision === "trap") {

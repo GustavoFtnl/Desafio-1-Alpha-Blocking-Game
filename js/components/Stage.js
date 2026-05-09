@@ -102,6 +102,12 @@ export class Stage {
 
     stageContent.appendChild(this.stageGrid);
 
+    this.stageGrid.addEventListener("click", (e) => {
+      if (e.target.closest(".actorCell")) {
+        SoundManager.playActorClick();
+      }
+    });
+
     // Controles de Execução
     this.controlsArea = document.createElement("div");
     this.controlsArea.className = "controlsArea";
@@ -605,6 +611,8 @@ export class Stage {
       this.doorOpen = true;
       this.keys = this.keys.filter(k => !(k.x === this.x && k.y === this.y));
       this.renderLevelElements();
+      SoundManager.playKeyCollect();
+      SoundManager.playDoorOpen();
       this.showKeyToast();
     }
     return null;

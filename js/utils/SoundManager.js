@@ -188,4 +188,128 @@ export class SoundManager {
       // Falha silenciosa
     }
   }
+
+  static playJump() {
+    try {
+      const ctx = this.ensureResumed();
+      const t = ctx.currentTime;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(300, t);
+      osc.frequency.exponentialRampToValueAtTime(600, t + 0.15);
+
+      gain.gain.setValueAtTime(0.15, t);
+      gain.gain.linearRampToValueAtTime(0.12, t + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.2);
+    } catch (e) {
+      // Falha silenciosa
+    }
+  }
+
+  static playKeyCollect() {
+    try {
+      const ctx = this.ensureResumed();
+      const t = ctx.currentTime;
+
+      [880, 1320].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const start = t + i * 0.06;
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, start);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.2, start + 0.1);
+
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(0.15, start + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.25);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(start);
+        osc.stop(start + 0.25);
+      });
+    } catch (e) {
+      // Falha silenciosa
+    }
+  }
+
+  static playDoorOpen() {
+    try {
+      const ctx = this.ensureResumed();
+      const t = ctx.currentTime;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(200, t);
+      osc.frequency.linearRampToValueAtTime(100, t + 0.1);
+      osc.frequency.linearRampToValueAtTime(250, t + 0.2);
+      osc.frequency.linearRampToValueAtTime(120, t + 0.35);
+
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.linearRampToValueAtTime(0.12, t + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.4);
+    } catch (e) {
+      // Falha silenciosa
+    }
+  }
+
+  static playActorClick() {
+    try {
+      const ctx = this.ensureResumed();
+      const t = ctx.currentTime;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(600, t);
+      osc.frequency.exponentialRampToValueAtTime(1200, t + 0.08);
+      osc.frequency.exponentialRampToValueAtTime(800, t + 0.15);
+
+      gain.gain.setValueAtTime(0.12, t);
+      gain.gain.linearRampToValueAtTime(0.18, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+
+      osc2.type = "sine";
+      osc2.frequency.setValueAtTime(400, t);
+      osc2.frequency.exponentialRampToValueAtTime(600, t + 0.1);
+
+      gain2.gain.setValueAtTime(0.06, t);
+      gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+
+      osc.connect(gain);
+      osc2.connect(gain2);
+      gain.connect(ctx.destination);
+      gain2.connect(ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + 0.18);
+      osc2.start(t);
+      osc2.stop(t + 0.15);
+    } catch (e) {
+      // Falha silenciosa
+    }
+  }
 }
