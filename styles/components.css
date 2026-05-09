@@ -319,19 +319,19 @@
   background-color: var(--color-surface-container);
 }
 
-.blockContainer block--repeat + .blockSlot {
+.blockContainer .block--repeat + .blockSlot {
   border-color: var(--color-logic-jump);
 }
 
-.blockContainer block--repeat + .blockSlot:empty::before {
+.blockContainer .block--repeat + .blockSlot:empty::before {
   content: "Arraste blocos Mover";
 }
 
-.blockContainer block--move + .blockSlot {
+.blockContainer .block--move + .blockSlot {
   border-color: var(--color-logic-move);
 }
 
-.blockContainer block--move + .blockSlot:empty::before {
+.blockContainer .block--move + .blockSlot:empty::before {
   content: "Arraste direções (→ ← ↑ ↓)";
 }
 

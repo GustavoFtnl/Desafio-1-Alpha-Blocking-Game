@@ -372,6 +372,62 @@ export class DragDrop {
 
     const overTrash = this.trashZoneManager.isOver(e.clientX, e.clientY);
     this.trashZoneManager.updateDragOver(overTrash);
+
+    // Limpa classes de dragover anteriores
+    domHelpers.clearAllDragOverClasses(this.workspace);
+
+    // Verifica se está sobre um slot válido (feedback visual)
+    const element = this.state.getDraggedElement();
+    const blockInside = element.classList.contains("block") ? element : element.querySelector(".block");
+    const blockType = blockInside ? Block.getType(blockInside) : null;
+
+    this.state.getDraggedElement().style.visibility = "hidden";
+    const allElements = document.elementsFromPoint(e.clientX, e.clientY);
+    this.state.getDraggedElement().style.visibility = "";
+
+    let targetSlot = null;
+    for (const el of allElements) {
+      if (el === element) continue;
+      if (element.contains && element.contains(el)) continue;
+      if (el.classList && el.classList.contains("blockSlot")) {
+        targetSlot = el;
+        break;
+      }
+      if (el.classList && el.classList.contains("block")) {
+        const container = el.closest(".blockContainer");
+        if (container && container !== element) {
+          const slot = container.querySelector(".blockSlot");
+          if (slot) {
+            targetSlot = slot;
+            break;
+          }
+        }
+      }
+    }
+
+    if (targetSlot) {
+      let parentBlock = targetSlot.previousElementSibling;
+      if (!parentBlock) {
+        const slotContainer = targetSlot.closest(".blockContainer");
+        if (slotContainer) {
+          parentBlock = slotContainer.querySelector(":scope > .block");
+        }
+      }
+
+      let canAccept = false;
+      if (parentBlock && blockType) {
+        canAccept = this.blockFactory.canAccept(parentBlock, blockType);
+      }
+
+      if (parentBlock && blockType) {
+        targetSlot.classList.add("dragover");
+        if (canAccept) {
+          targetSlot.classList.add("dragover--valid");
+        } else {
+          targetSlot.classList.add("dragover--invalid");
+        }
+      }
+    }
   }
 
   handleMouseUp(e) {
@@ -475,6 +531,9 @@ export class DragDrop {
   cleanupDrag() {
     document.removeEventListener("mousemove", this.handleMouseMove);
     document.removeEventListener("mouseup", this.handleMouseUp);
+
+    domHelpers.clearAllDragOverClasses(this.workspace);
+    this.trashZoneManager.deactivate();
 
     this.state.setDraggedElement(null);
     this.state.setIsDraggingFree(false);
