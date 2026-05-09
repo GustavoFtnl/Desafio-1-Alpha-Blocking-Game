@@ -10,20 +10,20 @@ const CONFIG = {
     STARS: "alphaBlockingGame_stars",
     USER_NAME: "alphaBlockingGame_userName",
     USERS: "alphaBlockingGame_users",
-    WORKSPACE_BLOCKS: "alphaBlockingGame_workspaceBlocks"
+    WORKSPACE_BLOCKS: "alphaBlockingGame_workspaceBlocks",
   },
 
-LEVEL_CONFIG: {
-    1: { maxBlocks: 10 },
-    2: { maxBlocks: 25 },
-    3: { maxBlocks: 35 },
-    4: { maxBlocks: 30 },
-    5: { maxBlocks: 40 },
+  LEVEL_CONFIG: {
+    1: { maxBlocks: 3 },
+    2: { maxBlocks: 10 },
+    3: { maxBlocks: 3 },
+    4: { maxBlocks: 5 },
+    5: { maxBlocks: 16 },
     6: { maxBlocks: 18 },
     7: { maxBlocks: 20 },
     8: { maxBlocks: 22 },
     9: { maxBlocks: 24 },
-    10: { maxBlocks: 26 }
+    10: { maxBlocks: 26 },
   },
 
   DEFAULTS: {
@@ -33,7 +33,7 @@ LEVEL_CONFIG: {
     COMMAND_DELAY: 300,
     ACTOR_START_X: 4,
     ACTOR_START_Y: 4,
-    ACTOR_START_DIRECTION: 0
+    ACTOR_START_DIRECTION: 0,
   },
 
   DOM_IDS: {
@@ -41,15 +41,15 @@ LEVEL_CONFIG: {
     TOP_BAR: "topBar",
     SIDEBAR: "sidebar",
     WORKSPACE: "workspaceArea",
-    STAGE: "stageContainer"
+    STAGE: "stageContainer",
   },
 
   DOM_CLASSES: {
     APP_LAYOUT: "appLayout",
     BLOCK_PALETTE: "blockPalette",
     BLOCK_STACK: "blockStack",
-    WORKSPACE_PLACEHOLDER: "workspacePlaceholder"
-  }
+    WORKSPACE_PLACEHOLDER: "workspacePlaceholder",
+  },
 };
 
 export default CONFIG;
