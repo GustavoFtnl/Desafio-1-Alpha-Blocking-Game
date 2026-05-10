@@ -5,9 +5,9 @@
  */
 
 const LEVEL_HINTS = {
-  1: "Use blocos de movimento (Mover + Direção) para levar o ator até o troféu 🏆",
-  2: "Não da para andar por cima de buracos, mas da para pular por cima deles! Use o bloco Pular para isso!",
-  3: "Desvie dos Espinhos! Se cair, a execução para",
+  1: "Coloque blocos dentro de um bloco Inicio para começar o jogo. Use blocos de movimento (Mover + Direção) para levar o ator até o troféu 🏆",
+  2: "Use diferentes direções para navegar pelo labirinto! Use o bloco Repetir para repetir ações e poupar blocos",
+  3: "Tente usar o bloco Repetir e terminar esse nível com apenas 4 blocos! Você consegue?",
   4: "Você pode pular por cima de espinhos sabia? Use o bloco Pular para isso!",
   5: "Colete a chave 🗝️ para abrir as portas 🚪",
   6: "O fogo 🔥 ativa e desativa alternadamente a cada movimento!",
