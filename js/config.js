@@ -18,12 +18,12 @@ const CONFIG = {
     2: { maxBlocks: 10 },
     3: { maxBlocks: 3 },
     4: { maxBlocks: 5 },
-    5: { maxBlocks: 16 },
-    6: { maxBlocks: 18 },
-    7: { maxBlocks: 20 },
-    8: { maxBlocks: 22 },
-    9: { maxBlocks: 24 },
-    10: { maxBlocks: 26 },
+    5: { maxBlocks: 14 },
+    6: { maxBlocks: 10 },
+    7: { maxBlocks: 27 },
+    8: { maxBlocks: 9 },
+    9: { maxBlocks: 9 },
+    10: { maxBlocks: 16 },
   },
 
   DEFAULTS: {

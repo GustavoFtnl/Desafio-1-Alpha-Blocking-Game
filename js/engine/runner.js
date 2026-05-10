@@ -58,31 +58,23 @@ export class Runner {
 
           if (atorNoFogo && !fogoAtivoAntes) {
             // Se ator está em fogo desativado, executa ação primeiro, depois toggle
-            const posicaoAntes = { x: this.stage.x, y: this.stage.y };
             const result = await this.executeAction(instruction);
-            
-            if (result.moved) {
-              this.stage.toggleFireTrap();
-              
-              // Verifica se o ator SAIU da célula do fogo
-              const fogoIndex = posicaoAntes.y * this.stage.gridSize + posicaoAntes.x;
-              const atualIndex = this.stage.y * this.stage.gridSize + this.stage.x;
-              
-              // Só verifica colisão se o ator mudou de posição (saiu da célula do fogo)
-              if (atualIndex !== fogoIndex) {
-                const collision = this.stage.checkCollisionAtCurrentPosition();
-                
-                if (collision === "trap") {
-                  this.setBlockExecuting(instruction.blockElement, false);
-                  this.handleTrapHit();
-                  return;
-                }
-                if (collision === "trophy") {
-                  this.setBlockExecuting(instruction.blockElement, false);
-                  this.handleVictory();
-                  return;
-                }
-              }
+
+            // Sempre ativa o fogo após a ação (mesmo que movimento tenha sido bloqueado)
+            this.stage.toggleFireTrap();
+
+            // Verifica colisão APÓS ativar a armadilha, independente se moveu ou não
+            const collision = this.stage.checkCollisionAtCurrentPosition();
+
+            if (collision === "trap") {
+              this.setBlockExecuting(instruction.blockElement, false);
+              this.handleTrapHit();
+              return;
+            }
+            if (collision === "trophy") {
+              this.setBlockExecuting(instruction.blockElement, false);
+              this.handleVictory();
+              return;
             }
 
             // Delay com bloco ainda em execução (feedback visual)
