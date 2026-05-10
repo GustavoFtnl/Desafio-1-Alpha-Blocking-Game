@@ -53,7 +53,7 @@ export class TrashZoneManager {
     }
 
     element.remove();
-    domHelpers.notifyBlockChanged(this.workspace, this.workspaceInstance);
+    domHelpers.notifyBlockChanged(this.workspace, this.workspaceInstance, true);
     this.deactivate();
     return true;
   }

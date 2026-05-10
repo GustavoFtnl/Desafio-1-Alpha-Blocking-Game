@@ -221,7 +221,14 @@ export class Parser {
    * @returns {string} Direction: up, down, left, right
    */
   getDirectionFromBlock(directionBlock) {
-    const content = directionBlock.textContent.trim()
+    const blockText = directionBlock.querySelector(".block_text");
+    let content;
+
+    if (blockText) {
+      content = blockText.textContent.trim();
+    } else {
+      content = directionBlock.firstChild?.textContent?.trim() || "";
+    }
 
     if (content.includes("→") || content.includes("Direita")) {
       return "moveRight"
@@ -326,7 +333,7 @@ export class Parser {
    */
   countBlocks() {
     const allBlocks = this.workspace.querySelectorAll(".block--start, .block--move, .block--jump, .block--direction, .block--repeat");
-    return allBlocks.length;
+    return Array.from(allBlocks).filter(block => !block.classList.contains("block--start")).length;
   }
 
   /**

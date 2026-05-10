@@ -5,6 +5,7 @@
 
 import { Block } from "./Block.js";
 import { domHelpers } from "../utils/domHelpers.js";
+import { SoundManager } from "../utils/SoundManager.js";
 
 export class ContainerManager {
   constructor(workspace, workspaceInstance = null) {
@@ -76,11 +77,10 @@ export class ContainerManager {
     }
 
     element.classList.add("snapping");
+    SoundManager.playSnap();
     setTimeout(() => {
       element.classList.remove("snapping");
     }, 200);
-
-    domHelpers.notifyBlockChanged(this.workspace, this.workspaceInstance);
   }
 
   addBlockToSlot(slot, block, clientY) {
@@ -123,6 +123,7 @@ export class ContainerManager {
     }
 
     elementToInsert.classList.add("snapping");
+    SoundManager.playSnap();
     setTimeout(() => {
       elementToInsert.classList.remove("snapping");
     }, 200);
@@ -187,6 +188,7 @@ export class ContainerManager {
     }
 
     elementToInsert.classList.add("snapping");
+    SoundManager.playSnap();
     setTimeout(() => {
       elementToInsert.classList.remove("snapping");
     }, 200);
@@ -213,6 +215,7 @@ export class ContainerManager {
       element.style.top = "";
 
       element.classList.add("snapping");
+      SoundManager.playSnap();
       setTimeout(() => {
         element.classList.remove("snapping");
       }, 200);

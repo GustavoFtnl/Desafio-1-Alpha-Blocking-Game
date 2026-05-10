@@ -4,6 +4,8 @@
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
+import { BLOCK_TOOLTIPS } from "../utils/block-tooltips.js";
+
 export class Block {
   /**
    * Cria uma instância de elemento DOM para o bloco
@@ -76,9 +78,32 @@ export class Block {
         const textSpan = document.createElement("span");
         textSpan.className = "block_text";
         textSpan.textContent = text;
-        block.appendChild(iconSpan);
-        block.appendChild(textSpan);
-      }
+      block.appendChild(iconSpan);
+      block.appendChild(textSpan);
+    }
+  }
+
+    if (BLOCK_TOOLTIPS[type]) {
+      const tooltipTrigger = document.createElement("button");
+      tooltipTrigger.className = "blockTooltipTrigger";
+      tooltipTrigger.textContent = "?";
+      tooltipTrigger.setAttribute("aria-label", `Ajuda: ${text}`);
+      tooltipTrigger.setAttribute("type", "button");
+
+      tooltipTrigger.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+      });
+
+      tooltipTrigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
+      const tooltip = document.createElement("div");
+      tooltip.className = "blockTooltip";
+      tooltip.textContent = BLOCK_TOOLTIPS[type];
+
+      block.appendChild(tooltipTrigger);
+      block.appendChild(tooltip);
     }
 
     return block;

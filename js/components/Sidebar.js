@@ -49,6 +49,22 @@ export class Sidebar {
     `;
 
     this.paletteElement = this.container.querySelector(".blockPalette");
+
+    this.setupTooltipListeners();
+  }
+
+  setupTooltipListeners() {
+    this.paletteElement.addEventListener("mousedown", (e) => {
+      if (e.target.closest(".blockTooltipTrigger")) {
+        e.stopPropagation();
+      }
+    });
+
+    this.paletteElement.addEventListener("click", (e) => {
+      if (e.target.closest(".blockTooltipTrigger")) {
+        e.stopPropagation();
+      }
+    });
   }
 
   /**

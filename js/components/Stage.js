@@ -8,6 +8,7 @@
 import { Toast } from "./Toast.js";
 import * as stageHelpers from "../utils/stageHelpers.js";
 import { ELEMENT_TYPES, GRID_LENGTH } from "../utils/elementTypes.js";
+import { SoundManager } from "../utils/SoundManager.js";
 
 export class Stage {
   /**
@@ -100,6 +101,12 @@ export class Stage {
     }
 
     stageContent.appendChild(this.stageGrid);
+
+    this.stageGrid.addEventListener("click", (e) => {
+      if (e.target.closest(".actorCell")) {
+        SoundManager.playActorClick();
+      }
+    });
 
     // Controles de Execução
     this.controlsArea = document.createElement("div");
@@ -522,6 +529,7 @@ export class Stage {
       return {moved: false, reason: "border"};
     }
     if (this.hasWallAt(nextX, nextY)) {
+      SoundManager.playWallCollision();
       return {moved: false, reason: "wall"};
     }
 
@@ -529,6 +537,7 @@ export class Stage {
     this.x = nextX;
     this.y = nextY;
     this.markCurrentCell();
+    SoundManager.playMove();
     return {moved: true};
   }
 
@@ -602,6 +611,8 @@ export class Stage {
       this.doorOpen = true;
       this.keys = this.keys.filter(k => !(k.x === this.x && k.y === this.y));
       this.renderLevelElements();
+      SoundManager.playKeyCollect();
+      SoundManager.playDoorOpen();
       this.showKeyToast();
     }
     return null;

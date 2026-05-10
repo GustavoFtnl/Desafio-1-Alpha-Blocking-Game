@@ -40,12 +40,26 @@ export const domHelpers = {
     }
   },
 
-  dispatchBlockCountChanged(workspace) {
+  isStartBlock(element) {
+    return element.classList.contains("block--start");
+  },
+
+  getBlockCountWithoutStart(workspace) {
+    const allBlocks = workspace.querySelectorAll(".block");
+    return Array.from(allBlocks).filter((block) => !domHelpers.isStartBlock(block)).length;
+  },
+
+  dispatchBlockCountChanged(workspace, forceScan = false) {
+    let count;
+    if (forceScan) {
+      count = domHelpers.getBlockCountWithoutStart(workspace);
+    } else {
+      const currentCount = domHelpers.getBlockCountWithoutStart(workspace);
+      count = currentCount;
+    }
     const event = new CustomEvent("blockCountChanged", {
       bubbles: true,
-      detail: {
-        count: workspace.querySelectorAll(".block").length,
-      },
+      detail: { count },
     });
     workspace.dispatchEvent(event);
   },
@@ -81,9 +95,9 @@ export const domHelpers = {
     domHelpers.dispatchBlockCountChanged(workspace);
   },
 
-  notifyBlockChanged(workspace, workspaceInstance) {
+  notifyBlockChanged(workspace, workspaceInstance, isDeletion = false) {
     domHelpers.updatePlaceholder(workspace);
-    domHelpers.dispatchBlockCountChanged(workspace);
+    domHelpers.dispatchBlockCountChanged(workspace, isDeletion);
     if (workspaceInstance) {
       workspaceInstance.checkBlocks();
     }
