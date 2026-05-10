@@ -485,7 +485,7 @@
   position: absolute;
 }
 
-.stageCell.hasDoor.open {
+.stageCell.hasDoor.open::before {
   opacity: 0.3;
 }
 
