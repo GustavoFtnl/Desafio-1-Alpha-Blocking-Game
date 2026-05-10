@@ -21,6 +21,7 @@ import { Toast } from "../components/Toast.js";
 
 const Game = function(container) {
   this.container = container;
+  this.levelCompleteHandled = false;
   this.render();
 };
 
@@ -212,6 +213,7 @@ Game.prototype.togglePause = function() {
 };
 
 Game.prototype.handleLevelFailed = function() {
+  this.levelCompleteHandled = false;
   this.clearExecutingBlocks();
   this.enableExecutionButtons();
   this.stage.disablePauseButton();
@@ -260,6 +262,7 @@ Game.prototype.setRetryButtonToRun = function() {
 };
 
 Game.prototype.resetStageFromRetry = function() {
+  this.levelCompleteHandled = false;
   this.stage.reset();
   this.setRetryButtonToRun();
   Toast.hide(true);
@@ -282,6 +285,9 @@ Game.prototype.clearWorkspace = function() {
 };
 
 Game.prototype.handleLevelComplete = function() {
+  if (this.levelCompleteHandled) return;
+  this.levelCompleteHandled = true;
+
   this.clearExecutingBlocks();
 
   if (this.runner.running) {
@@ -377,6 +383,7 @@ export { Game };
  * Carrega a configuração do nível atual e aplica no Stage
  */
 Game.prototype.loadLevelConfig = function() {
+  this.levelCompleteHandled = false;
   const currentLevel = gameState.getCurrentLevel();
   const levelConfig = getLevelConfig(currentLevel);
   
