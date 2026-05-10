@@ -40,7 +40,7 @@
 }
 
 /* Tablet (376px - 768px) */
-@media (min-width: 376px) and (max-width: 768px) {
+@media (min-width: 526px) and (max-width: 768px) {
   .appLayout {
     flex-direction: column;
   }
@@ -75,6 +75,140 @@
   
   .controlsRowDual {
     flex-direction: row;
+  }
+
+  .topBar {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .topBar_leftSection {
+    flex-direction: column;
+    gap: 0;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: fit-content;
+  }
+
+  .topBar_title {
+    font-size: var(--font-h2-size);
+  }
+
+  .topBar_progress {
+    display: none;
+  }
+}
+
+/* Mobile Grande (321px - 375px) */
+@media (min-width: 321px) and (max-width: 525px) {
+  .topBar {
+    height: fit-content;
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .topBar_leftSection {
+    flex-direction: column;
+    gap: 0;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: fit-content;
+  }
+
+  .topBar_rightSection {
+    justify-content: space-between;
+  }
+
+  .topBar_title {
+    font-size: var(--font-label-bold-size);
+  }
+
+  .topBar_progress {
+    display: none;
+  }
+
+  .btn--levelSelect {
+    padding: var(--space-xs)
+  }
+
+  .levelSelectText {
+    font-size: var(--font-label-size);
+  }
+
+  .starSvg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .btn--rankingTop {
+    padding: var(--space-xs);
+  }
+
+  .btn--exit {
+    padding: var(--space-xs);
+  }
+
+  .btn--exit .btnText {
+    display: none;
+  }
+
+  .btn--exit span {
+    margin: 0;
+  }
+}
+
+/* iPhone SE (320px) */
+@media (max-width: 320px) {
+  .topBar {
+    height: fit-content;
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .topBar_leftSection {
+    flex-direction: column;
+    gap: 0;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: fit-content;
+  }
+
+  .topBar_rightSection {
+    justify-content: space-between;
+  }
+
+  .topBar_title {
+    font-size: var(--font-label-bold-size);
+  }
+
+  .topBar_progress {
+    display: none;
+  }
+
+  .btn--levelSelect {
+    padding: var(--space-xs)
+  }
+
+  .levelSelectText {
+    font-size: var(--font-label-size);
+  }
+
+  .starSvg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .btn--rankingTop {
+    padding: var(--space-xs);
+  }
+
+  .btn--exit {
+    padding: var(--space-xs);
+  }
+
+  .btn--exit .btnText {
+    display: none;
+  }
+
+  .btn--exit span {
+    margin: 0;
   }
 }
 

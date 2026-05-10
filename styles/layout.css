@@ -92,6 +92,7 @@
 }
 
 .topBar_progressFill {
+  display: none;
   height: 100%;
   width: 0%;
   background-color: var(--color-secondary-container);
