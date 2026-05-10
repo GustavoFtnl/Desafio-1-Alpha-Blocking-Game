@@ -79,7 +79,7 @@
 }
 
 /* Notch de encaixe na parte inferior do bloco (pseudo-elemento) */
-.block:last-child::after, 
+.block:last-child::after,
 .blockContainer:last-child::after {
   content: "";
   position: absolute;
@@ -433,6 +433,7 @@
 
 .blockContainer .block--move + .blockSlot:empty::before {
   content: "Arraste direções (→ ← ↑ ↓)";
+  color: var(--color-on-primary);
 }
 
 .blockContainer[data-type="start"] {
@@ -448,7 +449,8 @@
 }
 
 .blockContainer[data-type="start"] .blockSlot:empty::before {
-  content: "Arraste blocos Mover ou Repetir" !important;
+  color: var(--color-on-primary);
+  content: "Arraste blocos aqui" !important;
 }
 
 .blockContainer[data-type="repeat"] {
@@ -456,7 +458,8 @@
 }
 
 .blockContainer[data-type="repeat"] .blockSlot:empty::before {
-  content: "Arraste blocos Mover" !important;
+  content: "Arraste blocos aqui" !important;
+  color: var(--color-on-primary);
 }
 
 .blockContainer[data-type="move"] {
@@ -473,6 +476,7 @@
 
 .blockContainer[data-type="jump"] .blockSlot:empty::before {
   content: "Arraste direções (→ ← ↑ ↓)" !important;
+  color: var(--color-on-primary);
 }
 
 .blockSlot > .block > .blockSlot,
