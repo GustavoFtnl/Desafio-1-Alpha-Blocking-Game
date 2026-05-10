@@ -22,13 +22,6 @@ export class BlockFactory {
     return Block.clone(block);
   }
 
-  getRootBlockCount() {
-    const rootBlocks = this.workspace.querySelectorAll(
-      ".blockStack > .block, .blockStack > .blockContainer > .block",
-    );
-    return rootBlocks.length;
-  }
-
   hasSlot(element) {
     return Block.hasSlot(element);
   }

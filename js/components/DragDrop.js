@@ -208,7 +208,7 @@ export class DragDrop {
 
       const maxBlocks = this.state.getMaxBlocks();
       if (this.state.getIsFromPalette() && maxBlocks !== null) {
-        const currentCount = this.blockFactory.getRootBlockCount();
+        const currentCount = domHelpers.getBlockCountWithoutStart(this.workspace);
         if (currentCount >= maxBlocks) {
           console.warn("Limite de blocos atingido");
           return;
@@ -221,6 +221,10 @@ export class DragDrop {
 
       const insertionPoint = this.positionCalculator.getInsertionPoint(e.clientX, e.clientY);
       this.containerManager.addBlockToWorkspace(blockToInsert, dropX, dropY, insertionPoint);
+
+      if (this.state.getIsFromPalette() && !domHelpers.isStartBlock(blockToInsert)) {
+        domHelpers.dispatchBlockCountChanged(this.workspace);
+      }
 
       domHelpers.clearAllDragOverClasses(this.workspace);
     });
@@ -276,7 +280,6 @@ export class DragDrop {
       if (this.state.getDraggedBlock() && this.workspace.contains(this.state.getDraggedBlock())) {
         this.containerManager.cleanupEmptyContainers();
         domHelpers.updatePlaceholder(this.workspace);
-        domHelpers.dispatchBlockCountChanged(this.workspace);
         if (this.workspaceInstance) {
           this.workspaceInstance.checkBlocks();
         }
@@ -452,7 +455,7 @@ export class DragDrop {
     // 1. Verifica se soltou na lixeira
     if (this.trashZoneManager.isOver(e.clientX, e.clientY)) {
       element.remove();
-      domHelpers.notifyBlockChanged(this.workspace, this.workspaceInstance);
+      domHelpers.notifyBlockChanged(this.workspace, this.workspaceInstance, true);
 
       if (this.workspaceInstance) {
         this.workspaceInstance.checkBlocks();

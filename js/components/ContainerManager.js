@@ -81,8 +81,6 @@ export class ContainerManager {
     setTimeout(() => {
       element.classList.remove("snapping");
     }, 200);
-
-    domHelpers.notifyBlockChanged(this.workspace, this.workspaceInstance);
   }
 
   addBlockToSlot(slot, block, clientY) {

@@ -333,7 +333,7 @@ export class Parser {
    */
   countBlocks() {
     const allBlocks = this.workspace.querySelectorAll(".block--start, .block--move, .block--jump, .block--direction, .block--repeat");
-    return allBlocks.length;
+    return Array.from(allBlocks).filter(block => !block.classList.contains("block--start")).length;
   }
 
   /**
