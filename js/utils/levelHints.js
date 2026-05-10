@@ -1,5 +1,5 @@
 /**
- * level-hints.js - Mensagens de hint exibidas no início de cada nível
+ * levelHints.js - Mensagens de hint exibidas no início de cada nível
  * Cada nível pode ter uma mensagem de orientação para o jogador
  * Comentários em português do Brasil conforme AGENTS.md
  */
