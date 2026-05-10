@@ -51,8 +51,8 @@ export class Runner {
 
         this.setBlockExecuting(instruction.blockElement, true);
 
-        // Lógica do toggle do fogo
-        if (this.stage.fireTraps && this.stage.fireTraps.length > 0) {
+        // Lógica do toggle do fogo (pula repeat, que lida internamente em handleRepeat)
+        if (instruction.type !== "repeat" && this.stage.fireTraps && this.stage.fireTraps.length > 0) {
           const atorNoFogo = this.stage.isFireTrapAtCurrentPosition();
           const fogoAtivoAntes = this.stage.fireTrapActive;
 
@@ -263,6 +263,63 @@ export class Runner {
         }
 
         this.setBlockExecuting(subInstruction.blockElement, true);
+
+        // Lógica do toggle do fogo (mesma do run())
+        if (this.stage.fireTraps && this.stage.fireTraps.length > 0) {
+          const atorNoFogo = this.stage.isFireTrapAtCurrentPosition();
+          const fogoAtivoAntes = this.stage.fireTrapActive;
+
+          if (atorNoFogo && !fogoAtivoAntes) {
+            const posicaoAntes = { x: this.stage.x, y: this.stage.y };
+            const result = await this.executeAction(subInstruction);
+
+            if (result.moved) {
+              anyMoved = true;
+              this.stage.toggleFireTrap();
+
+              const fogoIndex = posicaoAntes.y * this.stage.gridSize + posicaoAntes.x;
+              const atualIndex = this.stage.y * this.stage.gridSize + this.stage.x;
+
+              if (atualIndex !== fogoIndex) {
+                const collision = this.stage.checkCollisionAtCurrentPosition();
+
+                if (collision === "trap") {
+                  this.setBlockExecuting(subInstruction.blockElement, false);
+                  this.handleTrapHit();
+                  return {moved: false};
+                }
+                if (collision === "trophy") {
+                  this.setBlockExecuting(subInstruction.blockElement, false);
+                  this.handleVictory();
+                  return {moved: false};
+                }
+              }
+            }
+
+            await this.delay(this.commandDelay);
+            if (!this.isRunning) break;
+            if (this.isPaused) {
+              await this.waitForResume();
+            }
+            if (!this.isRunning) break;
+
+            const shouldDeactivate = !nextSubInstruction || 
+              nextSubInstruction.blockElement !== subInstruction.blockElement;
+
+            if (shouldDeactivate) {
+              this.setBlockExecuting(subInstruction.blockElement, false);
+            }
+            continue;
+          } else {
+            this.stage.toggleFireTrap();
+
+            if (this.stage.isFireTrapAtCurrentPosition() && this.stage.fireTrapActive) {
+              this.setBlockExecuting(subInstruction.blockElement, false);
+              this.handleTrapHit();
+              return {moved: false};
+            }
+          }
+        }
 
         const result = await this.executeAction(subInstruction);
 
