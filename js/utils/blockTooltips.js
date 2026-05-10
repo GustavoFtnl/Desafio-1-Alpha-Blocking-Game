@@ -1,5 +1,5 @@
 /**
- * block-tooltips.js - Descrições dos blocos para exibição em tooltips
+ * blockTooltips.js - Descrições dos blocos para exibição em tooltips
  * Cada bloco tem uma mensagem explicativa sobre sua funcionalidade
  * descrições genéricas da i.a, passível de mudança.
  */

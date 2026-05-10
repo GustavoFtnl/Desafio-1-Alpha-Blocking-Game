@@ -1,5 +1,5 @@
 /**
- * config-levels.js - Configuração dos 10 níveis do jogo
+ * configLevels.js - Configuração dos 10 níveis do jogo
  * Cada nível contém: id, name, grid (array numérico 100 elementos)
  * Grid 10x10: índices de 0 a 99 (y * 10 + x)
  * Comentários em português do Brasil
