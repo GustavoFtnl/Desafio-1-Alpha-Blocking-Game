@@ -33,14 +33,23 @@
   /* --- Cores dos Blocos por Categoria Funcional --- */
   --color-logic-move: #10b981;
   --color-logic-direction: #34d399;
-  --color-logic-rotate: #f59e0b;
+  --color-logic-jump: #f59e0b;
   --color-logic-repeat: #a855f7;
   --color-logic-if: #ec4899;
   --color-logic-action: #3b82f6;
   --color-logic-control: #ef4444;
   --color-block-text: #ffffff;
   --color-block-hover-scale: 1.02;
-  
+
+  /* --- Cores dos slots dos blocos --- */
+  --color-logic-move-slot: #34d399;
+  --color-logic-direction-slot: #6ee7b7;
+  --color-logic-jump-slot: #fbbf24;
+  --color-logic-repeat-slot: #c084fc;
+  --color-logic-if-slot: #f472b6;
+  --color-logic-action-slot: #60a5fa;
+  --color-logic-control-slot: #f87171;
+
   /* Alias para compatibilidade */
   --color-block-move: var(--color-logic-move);
   --color-block-direction: var(--color-logic-direction);
@@ -63,7 +72,7 @@
   --font-h1-size: 24px;
   --font-h1-weight: 600;
   --font-h1-line-height: 1.3;
-  
+
   /* H2: 20px/1.4 600 */
   --font-h2-size: 20px;
   --font-h2-weight: 600;
@@ -129,4 +138,22 @@
   --transition-actor-move: 300ms ease-in-out;
   --transition-star-reveal: 500ms ease-out;
   --transition-level-complete: 800ms ease-out;
+  --transition-button: 200ms ease-in-out;
+  --transition-fast: 100ms ease-out;
+
+  /* --- Cores de Feedback (Drag & Drop) --- */
+  --color-drag-valid: var(--color-logic-move);
+  --color-drag-invalid: var(--color-logic-control);
+  --color-drag-over: var(--color-secondary);
+
+  /* --- Cores de Overlay --- */
+  --overlay-subtle: rgba(0, 0, 0, 0.02);
+  --overlay-light: rgba(0, 0, 0, 0.05);
+  --overlay-medium: rgba(0, 0, 0, 0.08);
+  --overlay-primary: rgba(0, 29, 61, 0.5);
+  --overlay-white-50: rgba(255, 255, 255, 0.5);
+  --overlay-white-40: rgba(255, 255, 255, 0.4);
+  --overlay-white-80: rgba(255, 255, 255, 0.8);
+  --overlay-success-light: rgba(76, 175, 80, 0.1);
+  --overlay-error-light: rgba(244, 67, 54, 0.1);
 }

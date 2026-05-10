@@ -6,19 +6,19 @@
 
 import { gameState } from "../state.js";
 
-var Ranking = function(container) {
+const Ranking = function(container) {
   this.container = container;
   this.render();
 };
 
 Ranking.prototype.render = function() {
-  var ranking = gameState.getRanking();
-  var rowsHtml = "";
+  const ranking = gameState.getRanking();
+  let rowsHtml = "";
   
-  for (var i = 0; i < ranking.length; i++) {
-    var player = ranking[i];
-    var position = i + 1;
-    var medal = this.getMedal(position);
+  for (let i = 0; i < ranking.length; i++) {
+    const player = ranking[i];
+    const position = i + 1;
+    const medal = this.getMedal(position);
     
     rowsHtml += "<tr class=\"rankingRow" + (position <= 3 ? " rankingRow--top" : "") + "\">" +
       "<td class=\"rankingPosition\">" + medal + " " + position + "</td>" +
@@ -83,16 +83,16 @@ Ranking.prototype.getMedal = function(position) {
 };
 
 Ranking.prototype.escapeHtml = function(text) {
-  var div = document.createElement("div");
+  const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 };
 
 Ranking.prototype.setupListeners = function() {
-  var backBtn = this.container.querySelector("#rankingBackBtn");
+  const backBtn = this.container.querySelector("#rankingBackBtn");
   if (backBtn) {
     backBtn.addEventListener("click", function() {
-      var event = new CustomEvent("showGame", { bubbles: true });
+      const event = new CustomEvent("showGame", { bubbles: true });
       this.container.dispatchEvent(event);
     }.bind(this));
   }

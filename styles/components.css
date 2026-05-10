@@ -7,7 +7,7 @@
 .starRating {
   display: flex;
   gap: var(--space-xs);
-  font-size: 24px;
+  font-size: var(--font-h1-size);
   line-height: 1;
 }
 
@@ -57,7 +57,7 @@
   cursor: grab;
   user-select: none;
   position: relative;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(var(--shadow-block-resting));
   transition: all var(--transition-hover);
 }
 
@@ -75,11 +75,12 @@
   height: 12px;
   background: inherit;
   border-radius: 4px 4px 0 0;
-  z-index: 10;
+  z-index: 100;
 }
 
 /* Notch de encaixe na parte inferior do bloco (pseudo-elemento) */
-.block::after {
+.block:last-child::after,
+.blockContainer:last-child::after {
   content: "";
   position: absolute;
   bottom: -6px;
@@ -88,7 +89,6 @@
   height: 12px;
   background-color: var(--color-surface);
   border-radius: 4px 4px 0 0;
-  z-index: 10;
 }
 
 /* Estado de arrasto (dragging) */
@@ -125,7 +125,7 @@
 
 /* Ícone do bloco */
 .blockIcon {
-  font-size: 20px;
+  font-size: var(--font-h2-size);
   font-variation-settings:
     "FILL" 0,
     "wght" 400,
@@ -138,12 +138,16 @@
   background-color: var(--color-logic-move);
 }
 
+.block--jump {
+  background-color: var(--color-logic-jump);
+}
+
 .block--direction {
   background-color: var(--color-logic-direction);
 }
 
 .block--rotate {
-  background-color: var(--color-logic-rotate);
+  background-color: var(--color-logic-jump);
 }
 
 .block--repeat {
@@ -168,17 +172,117 @@
 
 .block--start {
   background-color: var(--color-logic-control);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .block--control {
   background-color: var(--color-logic-control);
 }
 
+/* === TOOLTIP DOS BLOCOS (Botão ? com informações) === */
+.blockTooltipTrigger {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-block-text);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 0;
+  line-height: 1;
+  transition: all var(--transition-hover);
+}
+
+.blockPalette .blockTooltipTrigger {
+  display: flex;
+}
+
+.blockTooltipTrigger:hover {
+  background: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.blockTooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--color-primary-container);
+  color: var(--color-on-primary);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-body-size);
+  font-weight: var(--font-body-weight);
+  line-height: var(--font-body-line-height);
+  width: 240px;
+  max-width: 280px;
+  z-index: 200;
+  box-shadow: var(--shadow-md);
+  text-align: left;
+  pointer-events: none;
+  white-space: normal;
+}
+
+.blockTooltipTrigger:hover + .blockTooltip,
+.blockTooltipTrigger:focus-visible + .blockTooltip {
+  display: block;
+}
+
+/* Seta do tooltip apontando para baixo */
+.blockTooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid var(--color-primary-container);
+}
+
+/**
+ * Tooltips de "start" e "mover" — posicionados mais abaixo no eixo Y
+ * para evitar que sejam cortados no topo da paleta.
+ */
+.block--start > .blockTooltip {
+  bottom: -150px;
+}
+
+.block--move > .blockTooltip {
+  bottom: -110px;
+}
+
+.block--start > .blockTooltip::after,
+.block--move > .blockTooltip::after {
+  display: none;
+}
+
+/* Eleva o stacking context do bloco inteiro quando o tooltip está visível,
+   para que o tooltip não seja coberto pelo próximo bloco da paleta */
+.blockPalette .block:has(.blockTooltipTrigger:hover) {
+  z-index: 3;
+}
+
 .blockRepeatInputWrapper {
   display: inline-flex !important;
   align-items: center;
   margin-left: var(--space-sm);
-  gap: 2px;
+  gap: var(--block-gap);
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto;
@@ -192,10 +296,10 @@
   padding: 0;
   border: none;
   border-radius: var(--radius-sm);
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: var(--overlay-white-50);
   color: var(--color-block-text);
   font-family: var(--font-family);
-  font-size: 14px;
+  font-size: var(--font-body-size);
   font-weight: 700;
   cursor: pointer;
   display: inline-flex !important;
@@ -209,7 +313,7 @@
 }
 
 .blockRepeatBtn:hover {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--overlay-white-80);
 }
 
 .blockRepeatBtn:active {
@@ -222,10 +326,10 @@
   padding: 2px !important;
   border: none !important;
   border-radius: var(--radius-sm) !important;
-  background-color: rgba(255, 255, 255, 0.4) !important;
+  background-color: var(--overlay-white-40) !important;
   color: var(--color-block-text) !important;
   font-family: var(--font-family) !important;
-  font-size: var(--font-label-size) !important;
+  font-size: var(--font-label-bold-size) !important;
   font-weight: var(--font-label-bold-weight) !important;
   text-align: center !important;
   cursor: pointer !important;
@@ -247,19 +351,13 @@
   margin: 0;
 }
 
-.blockRepeatInput {
-  -moz-appearance: textfield;
-}
-
 /* === BLOCK CONTAINER (Blocos com filhos) === */
 .blockContainer {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
   position: relative;
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: var(--overlay-subtle);
   border-radius: var(--radius-lg);
-  padding: var(--space-xs);
 }
 
 .workspaceContent .blockContainer[style*="position: absolute"] {
@@ -271,6 +369,7 @@
   display: flex;
   visibility: visible;
   min-height: 48px;
+  padding: var(--space-md);
 }
 
 .blockContainer > .block {
@@ -284,15 +383,11 @@
 .blockSlot {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
   min-height: 48px;
-  padding: var(--space-sm);
+  padding: var(--space-md) !important;
   margin-left: var(--space-lg);
-  margin-top: var(--space-xs);
-  border: 2px dashed rgba(100, 100, 100, 0.4);
   border-radius: var(--radius-md);
   transition: all var(--transition-hover);
-  background-color: rgba(0, 0, 0, 0.05);
   position: relative;
   z-index: 10;
 }
@@ -304,8 +399,8 @@
 .blockSlot:empty::before {
   content: "Arraste blocos aqui";
   display: block;
-  color: #666;
-  font-size: 12px;
+  color: var(--color-on-surface-variant);
+  font-size: var(--font-label-bold-size);
   opacity: 0.7;
   text-align: center;
   padding: var(--space-sm);
@@ -324,51 +419,71 @@
   background-color: var(--color-surface-container);
 }
 
-.blockContainer block--repeat + .blockSlot {
-  border-color: #ff9800;
+.blockContainer .block--repeat + .blockSlot {
+  border-color: var(--color-logic-jump);
 }
 
-.blockContainer block--repeat + .blockSlot:empty::before {
+.blockContainer .block--repeat + .blockSlot:empty::before {
   content: "Arraste blocos Mover";
 }
 
-.blockContainer block--move + .blockSlot {
-  border-color: #4caf50;
+.blockContainer .block--move + .blockSlot {
+  border-color: var(--color-logic-move);
 }
 
-.blockContainer block--move + .blockSlot:empty::before {
+.blockContainer .block--move + .blockSlot:empty::before {
   content: "Arraste direções (→ ← ↑ ↓)";
+  color: var(--color-on-primary);
 }
 
-.blockContainer[data-type="start"] .blockSlot {
-  border-color: #ef4444 !important;
+.blockContainer[data-type="start"] {
+  background-color: var(--color-logic-control-slot);
+
+  > .block::before {
+    display: none;
+  }
+}
+
+.blockContainer[data-type="start"]::after {
+  display: none;
 }
 
 .blockContainer[data-type="start"] .blockSlot:empty::before {
-  content: "Arraste blocos Mover ou Repetir" !important;
+  color: var(--color-on-primary);
+  content: "Arraste blocos aqui" !important;
 }
 
-.blockContainer[data-type="repeat"] .blockSlot {
-  border-color: #ff9800 !important;
+.blockContainer[data-type="repeat"] {
+  background-color: var(--color-logic-repeat-slot);
 }
 
 .blockContainer[data-type="repeat"] .blockSlot:empty::before {
-  content: "Arraste blocos Mover" !important;
+  content: "Arraste blocos aqui" !important;
+  color: var(--color-on-primary);
 }
 
-.blockContainer[data-type="move"] .blockSlot {
-  border-color: #4caf50 !important;
+.blockContainer[data-type="move"] {
+  background-color: var(--color-logic-move-slot);
 }
 
 .blockContainer[data-type="move"] .blockSlot:empty::before {
   content: "Arraste direções (→ ← ↑ ↓)" !important;
 }
 
+.blockContainer[data-type="jump"] {
+  background-color: var(--color-logic-jump-slot);
+}
+
+.blockContainer[data-type="jump"] .blockSlot:empty::before {
+  content: "Arraste direções (→ ← ↑ ↓)" !important;
+  color: var(--color-on-primary);
+}
+
 .blockSlot > .block > .blockSlot,
 .blockContainer > .block + .blockSlot {
   margin-left: var(--space-md);
   margin-top: var(--space-xs);
-  padding: var(--space-sm);
+  padding: var(--space-md);
 }
 
 .blockSlot > .block .blockSlot:empty,
@@ -387,23 +502,28 @@
 }
 
 .blockSlot.dragover {
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: var(--overlay-medium);
   border-style: solid;
-  border-color: #2196f3 !important;
+  border-color: var(--color-drag-over) !important;
 }
 
 .blockSlot.dragover--valid {
-  border-color: #4caf50 !important;
-  background-color: rgba(76, 175, 80, 0.1);
+  border-color: var(--color-drag-valid) !important;
+  background-color: var(--overlay-success-light);
 }
 
 .blockSlot.dragover--invalid {
-  border-color: #f44336 !important;
-  background-color: rgba(244, 67, 54, 0.1);
+  border-color: var(--color-drag-invalid) !important;
+  background-color: var(--overlay-error-light);
 }
 
 .blockSlot .block.dragging {
   opacity: 1;
+}
+
+.blockSlot > .block:first-child::before,
+.blockSlot > .blockContainer:first-child > .block:first-child::before {
+  display: none;
 }
 
 /* === ESTILOS DE BOTÕES === */
@@ -448,7 +568,7 @@
 }
 
 .btn--pause {
-  background-color: var(--color-logic-rotate);
+  background-color: var(--color-logic-jump);
   color: var(--color-block-text);
 }
 
@@ -487,7 +607,7 @@
 }
 
 .blockCounter.warning {
-  color: var(--color-logic-rotate);
+  color: var(--color-logic-jump);
 }
 
 .blockCounter.danger {
@@ -501,7 +621,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 29, 61, 0.5);
+  background-color: var(--overlay-primary);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -512,7 +632,7 @@
 
 .modal {
   position: relative;
-  background-color: white;
+  background-color: var(--color-surface-container-lowest);
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
   max-width: 400px;
@@ -533,7 +653,9 @@
   border-radius: var(--radius-md);
   color: var(--color-on-surface);
   opacity: 0.6;
-  transition: opacity var(--transition-fast), background-color var(--transition-fast);
+  transition:
+    opacity var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
 .modal_close:hover {
@@ -542,11 +664,7 @@
 }
 
 .modal_close .material-symbols-outlined {
-  font-size: 24px;
-}
-
-.modal_content {
-  margin-top: var(--space-sm);
+  font-size: var(--font-h1-size);
 }
 
 .modal_title {
@@ -568,12 +686,12 @@
 }
 
 .modal_stars {
-  font-size: 48px;
+  font-size: var(--font-display-size);
   margin: var(--space-lg) 0;
 }
 
 .modal_stars .star {
-  font-size: 48px;
+  font-size: var(--font-display-size);
 }
 
 /* Animação de fade in */
@@ -615,10 +733,10 @@
 @keyframes blockPulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(0, 29, 61, 0.4);
+    box-shadow: 0 0 0 0 var(--overlay-primary);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(0, 29, 61, 0);
+    box-shadow: 0 0 0 8px transparent;
   }
 }
 
@@ -689,7 +807,7 @@
 }
 
 .homeTitle {
-  font-size: 36px;
+  font-size: var(--font-display-size);
   font-weight: var(--font-display-weight);
   color: var(--color-primary);
   margin-bottom: var(--space-sm);
@@ -773,7 +891,7 @@
 }
 
 .homeFeatureIcon {
-  font-size: 28px;
+  font-size: var(--font-h1-size);
   color: var(--color-secondary);
 }
 
@@ -901,7 +1019,7 @@
 }
 
 .rankingTitle .material-symbols-outlined {
-  font-size: 36px;
+  font-size: var(--font-display-size);
 }
 
 .rankingTable {
@@ -972,6 +1090,9 @@
 .levelsModal_content {
   max-width: 520px;
   width: 95%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .levelsGrid {
@@ -1018,12 +1139,11 @@
 
 .levelItem_stars {
   display: flex;
-  gap: 2px;
 }
 
 .levelItem_stars .starSvg {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
 }
 
 /* === BOTÃO DE SELEÇÃO DE NÍVEL NA TOPBAR === */
@@ -1058,7 +1178,7 @@
 
 .levelSelectStars {
   display: flex;
-  gap: 2px;
+  gap: var(--space-xs);
 }
 
 .levelSelectStars svg {

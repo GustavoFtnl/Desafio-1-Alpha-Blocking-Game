@@ -12,7 +12,7 @@ import { Home } from "./pages/Home.js";
 import { Game } from "./pages/Game.js";
 import { Ranking } from "./pages/Ranking.js";
 
-var App = function() {
+const App = function() {
   this.mode = "home";
   this.init();
 };
@@ -25,7 +25,7 @@ App.prototype.init = function() {
 };
 
 App.prototype.setupGlobalListeners = function() {
-  var self = this;
+  const self = this;
   
   document.addEventListener("showGame", function() {
     self.showGameScreen();
@@ -45,7 +45,7 @@ App.prototype.setupGlobalListeners = function() {
 };
 
 App.prototype.checkMode = function() {
-  var hasCurrentUser = gameState.getUserName() && gameState.getUserName().length > 0;
+  const hasCurrentUser = gameState.getUserName() && gameState.getUserName().length > 0;
   
   if (hasCurrentUser) {
     this.showGameScreen();
@@ -59,21 +59,21 @@ App.prototype.showHomeScreen = function() {
     document.dispatchEvent(new CustomEvent("saveWorkspace"));
   }
   
-  this.mode = "home";
-  var root = document.getElementById(CONFIG.DOM_IDS.ROOT);
-  root.innerHTML = "<div class=\"homeScreen\"></div>";
-  
-  var homeContainer = root.querySelector(".homeScreen");
+this.mode = "home";
+  const root = DOM.getElement(CONFIG.DOM_IDS.ROOT);
+  root.innerHTML = '<div class="homeScreen"></div>';
+
+  const homeContainer = DOM.getElement(".homeScreen");
   this.home = new Home(homeContainer);
   this.home.setupListeners();
 };
 
 App.prototype.showGameScreen = function() {
-  this.mode = "game";
-  var root = document.getElementById(CONFIG.DOM_IDS.ROOT);
-  root.innerHTML = "<div class=\"gameScreen\"></div>";
-  
-  var gameContainer = root.querySelector(".gameScreen");
+this.mode = "game";
+  const root = DOM.getElement(CONFIG.DOM_IDS.ROOT);
+  root.innerHTML = '<div class="gameScreen"></div>';
+
+  const gameContainer = DOM.getElement(".gameScreen");
   this.game = new Game(gameContainer);
   
   setTimeout(function() {
@@ -86,11 +86,11 @@ App.prototype.showRankingScreen = function() {
     document.dispatchEvent(new CustomEvent("saveWorkspace"));
   }
   
-  this.mode = "ranking";
-  var root = document.getElementById(CONFIG.DOM_IDS.ROOT);
-  root.innerHTML = "<div class=\"rankingScreen\"></div>";
-  
-  var rankingContainer = root.querySelector(".rankingScreen");
+this.mode = "ranking";
+  const root = DOM.getElement(CONFIG.DOM_IDS.ROOT);
+  root.innerHTML = '<div class="rankingScreen"></div>';
+
+  const rankingContainer = DOM.getElement(".rankingScreen");
   this.ranking = new Ranking(rankingContainer);
 };
 

@@ -4,21 +4,24 @@
  */
 
 import { Block } from "./Block.js";
+import { PositionCalculator } from "./PositionCalculator.js";
+import { ContainerManager } from "./ContainerManager.js";
+import { TrashZoneManager } from "./TrashZoneManager.js";
+import { BlockFactory } from "./BlockFactory.js";
+import { DragStateManager } from "./DragStateManager.js";
+import { domHelpers } from "../utils/domHelpers.js";
 
 export class DragDrop {
   constructor(paletteElement, workspaceElement, workspaceInstance) {
     this.palette = paletteElement;
     this.workspace = workspaceElement;
     this.workspaceInstance = workspaceInstance;
-    this.draggedBlock = null;
-    this.isFromPalette = false;
-    this.maxBlocks = null;
-    this.wasInContainer = false;
-    this.isDraggingFree = false;
-    this.dragOffsetX = 0;
-    this.dragOffsetY = 0;
-    this.draggedElement = null;
-    this.DELETION_THRESHOLD = 50;
+
+    this.state = new DragStateManager();
+    this.positionCalculator = new PositionCalculator(workspaceElement);
+    this.containerManager = new ContainerManager(workspaceElement, workspaceInstance);
+    this.trashZoneManager = new TrashZoneManager(workspaceElement, workspaceInstance);
+    this.blockFactory = new BlockFactory(workspaceElement);
 
     this.handleMouseMove = this.handleMouseMove.bind(this);
     this.handleMouseUp = this.handleMouseUp.bind(this);
@@ -32,182 +35,260 @@ export class DragDrop {
     this.setupFreeDragListeners();
   }
 
-  findTargetSlot(target) {
-    let slot = target.closest(".blockSlot");
-
-    if (!slot) {
-      const block = target.closest(".block");
-      if (block) {
-        const container = block.closest(".blockContainer");
-        if (container) {
-          slot = container.querySelector(".blockSlot");
-        }
-      }
-    }
-
-    return slot;
+  setMaxBlocks(maxBlocks) {
+    this.state.setMaxBlocks(maxBlocks);
   }
 
-  findBlockSlotAtPosition(clientX, clientY, draggedElement) {
-    const allElements = document.elementsFromPoint(clientX, clientY);
+  clearWorkspace() {
+    domHelpers.clearWorkspace(this.workspace);
+  }
 
-    for (let el of allElements) {
-      if (
-        el === draggedElement ||
-        (draggedElement && draggedElement.contains(el))
-      ) {
-        continue;
+  setupPaletteListeners() {
+    this.palette.addEventListener("dragstart", (e) => {
+      const block = e.target.closest(".block");
+      if (!block) return;
+
+      this.state.setDraggedBlock(block);
+      this.state.setFromPalette(true);
+
+      const blockType = Block.getType(block);
+      e.dataTransfer.setData("text/plain", blockType);
+      e.dataTransfer.effectAllowed = "copy";
+
+      block.classList.add("dragging");
+      block.setAttribute("aria-grabbed", "true");
+    });
+
+    this.palette.addEventListener("dragend", (e) => {
+      const block = e.target.closest(".block");
+      if (!block) return;
+
+      block.classList.remove("dragging");
+      block.setAttribute("aria-grabbed", "false");
+
+      this.state.setDraggedBlock(null);
+      this.state.setFromPalette(false);
+    });
+  }
+
+  setupWorkspaceListeners() {
+    this.workspace.addEventListener("dragover", (e) => {
+      e.preventDefault();
+
+      let slot = this.positionCalculator.findTargetSlot(e.target);
+
+      if (slot) {
+        e.stopPropagation();
+        slot.classList.add("dragover");
+
+        let blockType = e.dataTransfer.getData("text/plain");
+        if (!blockType && this.state.getDraggedBlock()) {
+          blockType = Block.getType(this.state.getDraggedBlock());
+        }
+
+        let parentBlock = slot.previousElementSibling;
+
+        if (!parentBlock) {
+          const slotContainer = slot.closest(".blockContainer");
+          if (slotContainer) {
+            parentBlock = slotContainer.querySelector(":scope > .block");
+          }
+        }
+
+        let canAccept = false;
+        if (parentBlock) {
+          canAccept = this.blockFactory.canAccept(parentBlock, blockType);
+        }
+
+        if (canAccept) {
+          slot.classList.add("dragover--valid");
+          slot.classList.remove("dragover--invalid");
+          e.dataTransfer.dropEffect = this.state.getIsFromPalette() ? "copy" : "move";
+        } else {
+          slot.classList.add("dragover--invalid");
+          slot.classList.remove("dragover--valid");
+          e.dataTransfer.dropEffect = "none";
+        }
+        return;
       }
 
-      if (el.classList && el.classList.contains("blockSlot")) {
-        const rect = el.getBoundingClientRect();
-        if (
-          clientX >= rect.left &&
-          clientX <= rect.right &&
-          clientY >= rect.top &&
-          clientY <= rect.bottom
-        ) {
-          return el;
+      e.dataTransfer.dropEffect = this.state.getIsFromPalette() ? "copy" : "move";
+      this.workspace.classList.add("dragover");
+    });
+
+    this.workspace.addEventListener("dragleave", (e) => {
+      let slot = this.positionCalculator.findTargetSlot(e.target);
+
+      if (slot) {
+        if (!slot.contains(e.relatedTarget)) {
+          slot.classList.remove("dragover", "dragover--valid", "dragover--invalid");
+        }
+        return;
+      }
+
+      if (!this.workspace.contains(e.relatedTarget)) {
+        this.workspace.classList.remove("dragover");
+      }
+    });
+
+    this.workspace.addEventListener("drop", (e) => {
+      e.preventDefault();
+
+      let slot = this.positionCalculator.findTargetSlot(e.target);
+
+      if (slot) {
+        e.stopPropagation();
+        slot.classList.remove("dragover", "dragover--valid", "dragover--invalid");
+
+        let blockType = e.dataTransfer.getData("text/plain");
+        if (!blockType && this.state.getDraggedBlock()) {
+          blockType = Block.getType(this.state.getDraggedBlock());
+        }
+
+        let parentBlock = slot.previousElementSibling;
+
+        if (!parentBlock) {
+          const slotContainer = slot.closest(".blockContainer");
+          if (slotContainer) {
+            parentBlock = slotContainer.querySelector(":scope > .block");
+          }
+        }
+
+        let canAccept = false;
+        if (parentBlock) {
+          canAccept = this.blockFactory.canAccept(parentBlock, blockType);
+        }
+
+        if (!canAccept) {
+          return;
+        }
+
+        let blockToInsert = null;
+
+        if (this.state.getIsFromPalette()) {
+          if (this.state.getDraggedBlock()) {
+            blockToInsert = this.blockFactory.cloneBlock(this.state.getDraggedBlock());
+          } else if (blockType) {
+            blockToInsert = this.blockFactory.createBlock(blockType);
+          }
+        } else {
+          blockToInsert = this.state.getDraggedBlock();
+        }
+
+        if (!blockToInsert) {
+          return;
+        }
+
+        this.containerManager.addBlockToSlot(slot, blockToInsert, e.clientY);
+        this.state.setDraggedBlock(null);
+
+        domHelpers.clearAllDragOverClasses(this.workspace);
+        return;
+      }
+
+      this.workspace.classList.remove("dragover");
+
+      const blockType = e.dataTransfer.getData("text/plain");
+      let blockToInsert = null;
+
+      if (this.state.getIsFromPalette()) {
+        if (this.state.getDraggedBlock()) {
+          blockToInsert = this.blockFactory.cloneBlock(this.state.getDraggedBlock());
+        } else if (blockType) {
+          blockToInsert = this.blockFactory.createBlock(blockType);
+        }
+      } else {
+        blockToInsert = this.state.getDraggedBlock();
+      }
+
+      if (!blockToInsert) {
+        console.error("Nenhum bloco válido para inserir");
+        return;
+      }
+
+      const maxBlocks = this.state.getMaxBlocks();
+      if (this.state.getIsFromPalette() && maxBlocks !== null) {
+        const currentCount = domHelpers.getBlockCountWithoutStart(this.workspace);
+        if (currentCount >= maxBlocks) {
+          console.warn("Limite de blocos atingido");
+          return;
         }
       }
 
-      if (el.classList && el.classList.contains("block")) {
-        const container = el.closest(".blockContainer");
-        if (container) {
-          const slot = container.querySelector(".blockSlot");
-          if (slot) {
-            const rect = slot.getBoundingClientRect();
-            if (
-              clientX >= rect.left &&
-              clientX <= rect.right &&
-              clientY >= rect.top &&
-              clientY <= rect.bottom
-            ) {
-              return slot;
+      const workspaceRect = this.workspace.getBoundingClientRect();
+      const dropX = e.clientX - workspaceRect.left;
+      const dropY = e.clientY - workspaceRect.top;
+
+      const insertionPoint = this.positionCalculator.getInsertionPoint(e.clientX, e.clientY);
+      this.containerManager.addBlockToWorkspace(blockToInsert, dropX, dropY, insertionPoint);
+
+      if (this.state.getIsFromPalette() && !domHelpers.isStartBlock(blockToInsert)) {
+        domHelpers.dispatchBlockCountChanged(this.workspace);
+      }
+
+      domHelpers.clearAllDragOverClasses(this.workspace);
+    });
+
+    this.workspace.addEventListener("dragstart", (e) => {
+      const block = e.target.closest(".block");
+      if (!block) return;
+      if (this.palette.contains(block)) return;
+
+      let blockToDrag = block;
+      const blockType = Block.getType(block);
+
+      if (blockType === "block--direction") {
+        blockToDrag = block;
+      } else {
+        const parentContainer = block.closest(".blockContainer");
+        if (parentContainer) {
+          const containerParent = parentContainer.parentElement;
+          if (containerParent && containerParent.classList.contains("blockStack")) {
+            const parentBlock = parentContainer.querySelector(":scope > .block");
+            if (parentBlock && Block.hasSlot(parentBlock)) {
+              blockToDrag = parentContainer;
             }
           }
         }
       }
-    }
 
-    return null;
-  }
+      this.state.setDraggedBlock(blockToDrag);
+      this.state.setFromPalette(false);
 
-  handleMouseMove(e) {
-    if (!this.isDraggingFree || !this.draggedElement) return;
+      const parentContainerCheck = blockToDrag.closest(".blockContainer");
+      this.state.setWasInContainer(parentContainerCheck !== null);
 
-    const workspaceContent = this.workspace.querySelector(".workspaceContent");
-    const contentRect = workspaceContent.getBoundingClientRect();
-    const newX = e.clientX - contentRect.left - this.dragOffsetX;
-    const newY = e.clientY - contentRect.top - this.dragOffsetY;
-
-    this.draggedElement.style.left = newX + "px";
-    this.draggedElement.style.top = newY + "px";
-  }
-
-  handleMouseUp(e) {
-    if (!this.isDraggingFree || !this.draggedElement) return;
-
-    const element = this.draggedElement;
-    const workspaceContent = this.workspace.querySelector(".workspaceContent");
-    const contentRect = workspaceContent.getBoundingClientRect();
-
-    element.classList.remove("dragging");
-    element.classList.remove("freeDragging");
-    element.style.zIndex = "";
-    element.style.width = "";
-    element.style.transition = "";
-
-    const isBlockContainer = element.classList.contains("blockContainer");
-
-    const finalLeft = element.offsetLeft;
-    const finalTop = element.offsetTop;
-
-    if (
-      finalLeft < -this.DELETION_THRESHOLD ||
-      finalTop < -this.DELETION_THRESHOLD ||
-      finalLeft > contentRect.width + this.DELETION_THRESHOLD ||
-      finalTop > contentRect.height + this.DELETION_THRESHOLD
-    ) {
-      element.remove();
-      this.updatePlaceholder();
-      this.dispatchBlockCountChanged();
-      if (this.workspaceInstance) {
-        this.workspaceInstance.checkBlocks();
+      const finalBlockType = Block.getType(
+        blockToDrag.querySelector ? blockToDrag.querySelector(".block") : blockToDrag,
+      );
+      if (finalBlockType) {
+        e.dataTransfer.setData("text/plain", finalBlockType);
       }
-    } else {
-      let hasChildren = false;
-      let blockType = Block.getType(element);
 
-      if (!blockType && element.classList.contains("blockContainer")) {
-        const innerBlock = element.querySelector(":scope > .block");
-        if (innerBlock) {
-          blockType = Block.getType(innerBlock);
-          hasChildren = Block.hasSlot(innerBlock);
+      e.dataTransfer.effectAllowed = "move";
+      blockToDrag.classList.add("dragging");
+      blockToDrag.setAttribute("aria-grabbed", "true");
+    });
+
+    this.workspace.addEventListener("dragend", (e) => {
+      const block = e.target.closest(".block");
+      if (!block) return;
+
+      block.classList.remove("dragging");
+      block.setAttribute("aria-grabbed", "false");
+
+      if (this.state.getDraggedBlock() && this.workspace.contains(this.state.getDraggedBlock())) {
+        this.containerManager.cleanupEmptyContainers();
+        domHelpers.updatePlaceholder(this.workspace);
+        if (this.workspaceInstance) {
+          this.workspaceInstance.checkBlocks();
         }
       }
 
-      const isDirection = blockType === "block--direction";
-      const canHaveChildren =
-        blockType === "block--repeat" || blockType === "block--move";
-
-      if (isDirection || (canHaveChildren && hasChildren)) {
-        const targetSlot = this.findBlockSlotAtPosition(
-          e.clientX,
-          e.clientY,
-          element,
-        );
-
-        if (targetSlot) {
-          const parentBlock = targetSlot.previousElementSibling;
-          let canAccept = false;
-
-          if (parentBlock) {
-            canAccept = Block.canAccept(parentBlock, blockType);
-          }
-
-          if (!canAccept && isDirection) {
-            canAccept =
-              parentBlock && Block.canAccept(parentBlock, blockType);
-          }
-
-          if (canAccept) {
-            element.style.position = "";
-            element.style.left = "";
-            element.style.top = "";
-            element.style.zIndex = "";
-
-            targetSlot.appendChild(element);
-
-            this.updatePlaceholder();
-            this.dispatchBlockCountChanged();
-            if (this.workspaceInstance) {
-              this.workspaceInstance.checkBlocks();
-            }
-
-            this.draggedElement = null;
-            this.isDraggingFree = false;
-            return;
-          }
-        }
-      }
-
-      element.style.position = "absolute";
-      element.style.left = finalLeft + "px";
-      element.style.top = finalTop + "px";
-
-      if (element.parentElement !== workspaceContent) {
-        workspaceContent.appendChild(element);
-      }
-
-      this.cleanupFreeDraggedElement(element, isBlockContainer);
-    }
-
-    document.removeEventListener("mousemove", this.handleMouseMove);
-    document.removeEventListener("mouseup", this.handleMouseUp);
-
-    this.draggedElement = null;
-    this.isDraggingFree = false;
+      domHelpers.clearAllDragOverClasses(this.workspace);
+      this.state.setDraggedBlock(null);
+      this.state.setWasInContainer(false);
+    });
   }
 
   setupFreeDragListeners() {
@@ -224,8 +305,7 @@ export class DragDrop {
       let elementToDrag = block;
 
       const container = block.closest(".blockContainer");
-      const workspaceContent =
-        this.workspace.querySelector(".workspaceContent");
+      const workspaceContent = this.workspace.querySelector(".workspaceContent");
 
       if (container) {
         const blockInside = container.querySelector(":scope > .block");
@@ -248,14 +328,12 @@ export class DragDrop {
 
       const rect = elementToDrag.getBoundingClientRect();
 
-      this.draggedElement = elementToDrag;
-      this.isDraggingFree = true;
+      this.state.setDraggedElement(elementToDrag);
+      this.state.setIsDraggingFree(true);
 
-      this.dragOffsetX = e.clientX - rect.left;
-      this.dragOffsetY = e.clientY - rect.top;
-
-      this.dragStartLeft = rect.left;
-      this.dragStartTop = rect.top;
+      const dragOffsetX = e.clientX - rect.left;
+      const dragOffsetY = e.clientY - rect.top;
+      this.state.setDragOffset(dragOffsetX, dragOffsetY);
 
       elementToDrag.style.position = "absolute";
       elementToDrag.style.zIndex = "10000";
@@ -275,607 +353,192 @@ export class DragDrop {
       elementToDrag.classList.add("dragging");
       elementToDrag.classList.add("freeDragging");
 
+      this.trashZoneManager.activate();
+
       document.addEventListener("mousemove", this.handleMouseMove);
       document.addEventListener("mouseup", this.handleMouseUp);
     });
   }
 
-  cleanupFreeDraggedElement(element, isBlockContainer) {
+  handleMouseMove(e) {
+    if (!this.state.getIsDraggingFree() || !this.state.getDraggedElement()) return;
+
     const workspaceContent = this.workspace.querySelector(".workspaceContent");
-    const hasAbsolutePosition = element.style.position === "absolute";
+    const contentRect = workspaceContent.getBoundingClientRect();
+    const offset = this.state.getDragOffset();
 
-    if (hasAbsolutePosition) {
-      element.style.position = "absolute";
+    const newX = e.clientX - contentRect.left - offset.x;
+    const newY = e.clientY - contentRect.top - offset.y;
 
-      if (element.parentElement !== workspaceContent) {
-        workspaceContent.appendChild(element);
+    this.state.getDraggedElement().style.left = newX + "px";
+    this.state.getDraggedElement().style.top = newY + "px";
+
+    const overTrash = this.trashZoneManager.isOver(e.clientX, e.clientY);
+    this.trashZoneManager.updateDragOver(overTrash);
+
+    // Limpa classes de dragover anteriores
+    domHelpers.clearAllDragOverClasses(this.workspace);
+
+    // Verifica se está sobre um slot válido (feedback visual)
+    const element = this.state.getDraggedElement();
+    const blockInside = element.classList.contains("block") ? element : element.querySelector(".block");
+    const blockType = blockInside ? Block.getType(blockInside) : null;
+
+    this.state.getDraggedElement().style.visibility = "hidden";
+    const allElements = document.elementsFromPoint(e.clientX, e.clientY);
+    this.state.getDraggedElement().style.visibility = "";
+
+    let targetSlot = null;
+    for (const el of allElements) {
+      if (el === element) continue;
+      if (element.contains && element.contains(el)) continue;
+      if (el.classList && el.classList.contains("blockSlot")) {
+        targetSlot = el;
+        break;
+      }
+      if (el.classList && el.classList.contains("block")) {
+        const container = el.closest(".blockContainer");
+        if (container && container !== element) {
+          const slot = container.querySelector(".blockSlot");
+          if (slot) {
+            targetSlot = slot;
+            break;
+          }
+        }
+      }
+    }
+
+    if (targetSlot) {
+      let parentBlock = targetSlot.previousElementSibling;
+      if (!parentBlock) {
+        const slotContainer = targetSlot.closest(".blockContainer");
+        if (slotContainer) {
+          parentBlock = slotContainer.querySelector(":scope > .block");
+        }
       }
 
-      this.updatePlaceholder();
-      this.dispatchBlockCountChanged();
+      let canAccept = false;
+      if (parentBlock && blockType) {
+        canAccept = this.blockFactory.canAccept(parentBlock, blockType);
+      }
+
+      if (parentBlock && blockType) {
+        targetSlot.classList.add("dragover");
+        if (canAccept) {
+          targetSlot.classList.add("dragover--valid");
+        } else {
+          targetSlot.classList.add("dragover--invalid");
+        }
+      }
+    }
+  }
+
+  handleMouseUp(e) {
+    if (!this.state.getIsDraggingFree() || !this.state.getDraggedElement()) return;
+
+    const element = this.state.getDraggedElement();
+    const workspaceContent = this.workspace.querySelector(".workspaceContent");
+
+    this.trashZoneManager.deactivate();
+
+    element.classList.remove("dragging");
+    element.classList.remove("freeDragging");
+    element.style.zIndex = "";
+    element.style.width = "";
+    element.style.transition = "";
+
+    const isBlockContainer = element.classList.contains("blockContainer");
+
+    const finalLeft = element.offsetLeft;
+    const finalTop = element.offsetTop;
+
+    // 1. Verifica se soltou na lixeira
+    if (this.trashZoneManager.isOver(e.clientX, e.clientY)) {
+      element.remove();
+      domHelpers.notifyBlockChanged(this.workspace, this.workspaceInstance, true);
+
       if (this.workspaceInstance) {
         this.workspaceInstance.checkBlocks();
       }
-    } else {
-      const blockType = Block.getType(element);
+
+      this.cleanupDrag();
+      return;
+    }
+
+    // --- INÍCIO DA CORREÇÃO: Verifica se soltou dentro de um blockSlot ---
+    
+    // Escondemos o elemento arrastado temporariamente para que o document.elementFromPoint 
+    // consiga "enxergar" o slot que está embaixo do mouse
+    const currentVisibility = element.style.visibility;
+    element.style.visibility = "hidden";
+    const targetUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
+    element.style.visibility = currentVisibility; // Restaura imediatamente
+
+    let slot = targetUnderMouse ? this.positionCalculator.findTargetSlot(targetUnderMouse) : null;
+
+    if (slot) {
+      // Pega o tipo do bloco arrastado para checar compatibilidade
+      const blockInside = element.classList.contains("block") ? element : element.querySelector(".block");
+      const blockType = blockInside ? Block.getType(blockInside) : null;
+
+      let parentBlock = slot.previousElementSibling;
+      if (!parentBlock) {
+        const slotContainer = slot.closest(".blockContainer");
+        if (slotContainer) {
+          parentBlock = slotContainer.querySelector(":scope > .block");
+        }
+      }
+
+      let canAccept = false;
+      if (parentBlock && blockType) {
+        canAccept = this.blockFactory.canAccept(parentBlock, blockType);
+      }
+
+      if (canAccept) {
+        element.style.position = "";
+        element.style.left = "";
+        element.style.top = "";
+        
+        // Insere no slot, mesma lógica usada no 'drop' nativo
+        this.containerManager.addBlockToSlot(slot, element, e.clientY);
+        
+        this.cleanupDrag();
+        return;
+      }
+    }
+    // --- FIM DA CORREÇÃO ---
+
+    // 2. Prepara para reinserir no workspace normalmente (Free Drag ou Snap em Stack)
+    element.style.position = "absolute";
+    element.style.left = finalLeft + "px";
+    element.style.top = finalTop + "px";
+
+    if (element.parentElement !== workspaceContent) {
+      workspaceContent.appendChild(element);
+    }
+
+    const insertionPoint = this.positionCalculator.getInsertionPoint(e.clientX, e.clientY);
+
+    if (insertionPoint) {
       element.style.position = "";
       element.style.left = "";
       element.style.top = "";
-
-      const parent = element.parentElement;
-      if (parent && parent.classList.contains("blockSlot")) {
-        return;
-      }
-
-      const isDirection = blockType === "block--direction";
-
-      if (isBlockContainer) {
-        this.ensureInStack(element);
-      } else if (isDirection) {
-        this.ensureInStack(element);
-      } else if (Block.hasSlot(element)) {
-        const container = document.createElement("div");
-        container.className = "blockContainer";
-
-        const typeName = blockType.replace("block--", "");
-        container.setAttribute("data-type", typeName);
-
-        const slot = document.createElement("div");
-        slot.className = "blockSlot";
-
-        const existingContainer = element.closest(".blockContainer");
-        if (existingContainer) {
-          const existingSlot = existingContainer.querySelector(".blockSlot");
-          if (existingSlot && existingSlot.children.length > 0) {
-            while (existingSlot.children.length > 0) {
-              slot.appendChild(existingSlot.children[0]);
-            }
-          }
-        }
-
-        container.appendChild(element);
-        container.appendChild(slot);
-
-        this.ensureInStack(container);
-      } else {
-        this.ensureInStack(element);
-      }
-    }
-
-    this.updatePlaceholder();
-    this.dispatchBlockCountChanged();
-    if (this.workspaceInstance) {
-      this.workspaceInstance.checkBlocks();
-    }
-  }
-
-  ensureInStack(element) {
-    let stack = this.workspace.querySelector(".blockStack");
-    if (!stack) {
-      stack = document.createElement("div");
-      stack.className = "blockStack";
-      const workspaceContent = this.workspace.querySelector(".workspaceContent");
-      if (workspaceContent) {
-        workspaceContent.appendChild(stack);
-      } else {
-        this.workspace.appendChild(stack);
-      }
-    }
-    stack.appendChild(element);
-  }
-
-  clearAllDragOverClasses() {
-    const allSlots = this.workspace.querySelectorAll(".blockSlot");
-    allSlots.forEach((slot) => {
-      slot.classList.remove("dragover", "dragover--valid", "dragover--invalid");
-    });
-  }
-
-  setupPaletteListeners() {
-    this.palette.addEventListener("dragstart", (e) => {
-      const block = e.target.closest(".block");
-      if (!block) return;
-      this.draggedBlock = block;
-      this.isFromPalette = true;
-      const blockType = Block.getType(block);
-      e.dataTransfer.setData("text/plain", blockType);
-      e.dataTransfer.effectAllowed = "copy";
-      block.classList.add("dragging");
-      block.setAttribute("aria-grabbed", "true");
-    });
-
-    this.palette.addEventListener("dragend", (e) => {
-      const block = e.target.closest(".block");
-      if (!block) return;
-      block.classList.remove("dragging");
-      block.setAttribute("aria-grabbed", "false");
-      this.draggedBlock = null;
-      this.isFromPalette = false;
-    });
-  }
-
-  setupWorkspaceListeners() {
-    this.workspace.addEventListener("dragover", (e) => {
-      e.preventDefault();
-
-      let slot = this.findTargetSlot(e.target);
-
-      if (slot) {
-        e.stopPropagation();
-        slot.classList.add("dragover");
-
-        let blockType = e.dataTransfer.getData("text/plain");
-        if (!blockType && this.draggedBlock) {
-          blockType = Block.getType(this.draggedBlock);
-        }
-
-        let parentBlock = slot.previousElementSibling;
-
-        if (!parentBlock) {
-          const slotContainer = slot.closest(".blockContainer");
-          if (slotContainer) {
-            parentBlock = slotContainer.querySelector(":scope > .block");
-          }
-        }
-
-        let canAccept = false;
-        if (parentBlock) {
-          canAccept = Block.canAccept(parentBlock, blockType);
-        }
-
-        if (canAccept) {
-          slot.classList.add("dragover--valid");
-          slot.classList.remove("dragover--invalid");
-          e.dataTransfer.dropEffect = this.isFromPalette ? "copy" : "move";
-        } else {
-          slot.classList.add("dragover--invalid");
-          slot.classList.remove("dragover--valid");
-          e.dataTransfer.dropEffect = "none";
-        }
-        return;
-      }
-
-      e.dataTransfer.dropEffect = this.isFromPalette ? "copy" : "move";
-      this.workspace.classList.add("dragover");
-    });
-
-    this.workspace.addEventListener("dragleave", (e) => {
-      let slot = this.findTargetSlot(e.target);
-
-      if (slot) {
-        if (!slot.contains(e.relatedTarget)) {
-          slot.classList.remove(
-            "dragover",
-            "dragover--valid",
-            "dragover--invalid",
-          );
-        }
-        return;
-      }
-
-      if (!this.workspace.contains(e.relatedTarget)) {
-        this.workspace.classList.remove("dragover");
-      }
-    });
-
-    this.workspace.addEventListener("drop", (e) => {
-      e.preventDefault();
-
-      let slot = this.findTargetSlot(e.target);
-
-      if (slot) {
-        e.stopPropagation();
-        slot.classList.remove(
-          "dragover",
-          "dragover--valid",
-          "dragover--invalid",
-        );
-
-        let blockType = e.dataTransfer.getData("text/plain");
-        if (!blockType && this.draggedBlock) {
-          blockType = Block.getType(this.draggedBlock);
-        }
-
-        let parentBlock = slot.previousElementSibling;
-
-        if (!parentBlock) {
-          const slotContainer = slot.closest(".blockContainer");
-          if (slotContainer) {
-            parentBlock = slotContainer.querySelector(":scope > .block");
-          }
-        }
-
-        let canAccept = false;
-        if (parentBlock) {
-          canAccept = Block.canAccept(parentBlock, blockType);
-        }
-
-        if (!canAccept) {
-          return;
-        }
-
-        let blockToInsert = null;
-
-        if (this.isFromPalette) {
-          if (this.draggedBlock) {
-            blockToInsert = Block.clone(this.draggedBlock);
-          } else if (blockType) {
-            blockToInsert = this.createBlock(blockType);
-          }
-        } else {
-          blockToInsert = this.draggedBlock;
-        }
-
-        if (!blockToInsert) {
-          return;
-        }
-
-        this.addBlockToSlot(slot, blockToInsert);
-        this.updatePlaceholder();
-        this.dispatchBlockCountChanged();
-        this.draggedBlock = null;
-
-        this.clearAllDragOverClasses();
-        return;
-      }
-
-      this.workspace.classList.remove("dragover");
-
-      const blockType = e.dataTransfer.getData("text/plain");
-      let blockToInsert = null;
-
-      if (this.isFromPalette) {
-        if (this.draggedBlock) {
-          blockToInsert = Block.clone(this.draggedBlock);
-        } else if (blockType) {
-          blockToInsert = this.createBlock(blockType);
-        }
-      } else {
-        blockToInsert = this.draggedBlock;
-      }
-
-      if (!blockToInsert) {
-        console.error("Nenhum bloco válido para inserir");
-        return;
-      }
-
-      if (this.isFromPalette && this.maxBlocks !== null) {
-        const currentCount = this.getRootBlockCount();
-        if (currentCount >= this.maxBlocks) {
-          console.warn("Limite de blocos atingido");
-          return;
-        }
-      }
-
-      this.updatePlaceholder();
-
-      const workspaceRect = this.workspace.getBoundingClientRect();
-      const dropX = e.clientX - workspaceRect.left;
-      const dropY = e.clientY - workspaceRect.top;
-
-this.addBlockToWorkspace(blockToInsert, dropX, dropY);
-        this.dispatchBlockCountChanged();
-        this.clearAllDragOverClasses();
-      });
-
-    this.workspace.addEventListener("dragstart", (e) => {
-      const block = e.target.closest(".block");
-      if (!block) return;
-      if (this.palette.contains(block)) return;
-
-      let blockToDrag = block;
-
-      const blockType = Block.getType(block);
-
-      if (blockType === "block--direction") {
-        blockToDrag = block;
-      } else {
-        const parentContainer = block.closest(".blockContainer");
-        if (parentContainer) {
-          const containerParent = parentContainer.parentElement;
-          if (
-            containerParent &&
-            containerParent.classList.contains("blockStack")
-          ) {
-            const parentBlock =
-              parentContainer.querySelector(":scope > .block");
-            if (parentBlock && Block.hasSlot(parentBlock)) {
-              blockToDrag = parentContainer;
-            }
-          }
-        }
-      }
-
-      this.draggedBlock = blockToDrag;
-      this.isFromPalette = false;
-
-      const parentContainerCheck = blockToDrag.closest(".blockContainer");
-      this.wasInContainer = parentContainerCheck !== null;
-
-      const finalBlockType = Block.getType(
-        blockToDrag.querySelector
-          ? blockToDrag.querySelector(".block")
-          : blockToDrag,
-      );
-      if (finalBlockType) {
-        e.dataTransfer.setData("text/plain", finalBlockType);
-      }
-      e.dataTransfer.effectAllowed = "move";
-      blockToDrag.classList.add("dragging");
-      blockToDrag.setAttribute("aria-grabbed", "true");
-    });
-
-    this.workspace.addEventListener("dragend", (e) => {
-      const block = e.target.closest(".block");
-      if (!block) return;
-
-      block.classList.remove("dragging");
-      block.setAttribute("aria-grabbed", "false");
-
-      if (this.draggedBlock && this.workspace.contains(this.draggedBlock)) {
-        const workspaceRect = this.workspace.getBoundingClientRect();
-        const isOutsideWorkspace =
-          e.clientX < workspaceRect.left ||
-          e.clientX > workspaceRect.right ||
-          e.clientY < workspaceRect.top ||
-          e.clientY > workspaceRect.bottom;
-
-        if (isOutsideWorkspace) {
-          const container = this.draggedBlock.closest(".blockContainer");
-          if (container) {
-            container.remove();
-          } else {
-            this.draggedBlock.remove();
-          }
-          this.updatePlaceholder();
-          this.dispatchBlockCountChanged();
-          if (this.workspaceInstance) {
-            this.workspaceInstance.checkBlocks();
-          }
-        } else {
-          this.cleanupEmptyContainers();
-          this.updatePlaceholder();
-          this.dispatchBlockCountChanged();
-          if (this.workspaceInstance) {
-            this.workspaceInstance.checkBlocks();
-          }
-        }
-      }
-
-      this.clearAllDragOverClasses();
-      this.draggedBlock = null;
-      this.wasInContainer = false;
-    });
-  }
-
-  getRootBlockCount() {
-    const rootBlocks = this.workspace.querySelectorAll(
-      ".blockStack > .block, .blockStack > .blockContainer > .block",
-    );
-    return rootBlocks.length;
-  }
-
-  updatePlaceholder() {
-    const placeholder = this.workspace.querySelector(".workspacePlaceholder");
-    if (!placeholder) return;
-
-    const stacks = this.workspace.querySelectorAll(".blockStack");
-    const containers = this.workspace.querySelectorAll(".blockContainer");
-    const workspaceContent = this.workspace.querySelector(".workspaceContent");
-
-    let hasContent = false;
-
-    stacks.forEach((stack) => {
-      if (stack.children.length > 0) {
-        hasContent = true;
-      }
-    });
-
-    containers.forEach((container) => {
-      if (container.children.length > 0) {
-        hasContent = true;
-      }
-    });
-
-    if (workspaceContent) {
-      const directBlocks = workspaceContent.querySelectorAll(":scope > .block");
-      if (directBlocks.length > 0) {
-        hasContent = true;
-      }
-    }
-
-    if (hasContent) {
-      placeholder.classList.add("hidden");
+      this.containerManager.insertIntoStackWithSnapping(insertionPoint.stack, element, insertionPoint.referenceNode);
     } else {
-      placeholder.classList.remove("hidden");
-    }
-  }
-
-  cleanupEmptyContainers() {
-    const containers = this.workspace.querySelectorAll(".blockContainer");
-    const stacks = this.workspace.querySelectorAll(".blockStack");
-
-    containers.forEach((container) => {
-      const hasBlocks = container.querySelector(".block") !== null;
-      if (!hasBlocks) {
-        container.remove();
-      }
-    });
-
-    stacks.forEach((stack) => {
-      const hasBlocks = stack.querySelector(".block, .blockContainer") !== null;
-      if (!hasBlocks) {
-        stack.remove();
-      }
-    });
-  }
-
-  addBlockToSlot(slot, block) {
-    if (Block.hasSlot(block)) {
-      const container = document.createElement("div");
-      container.className = "blockContainer";
-
-      const blockType = Block.getType(block);
-      const typeName = blockType.replace("block--", "");
-      container.setAttribute("data-type", typeName);
-
-      const innerSlot = document.createElement("div");
-      innerSlot.className = "blockSlot";
-
-      container.appendChild(block);
-      container.appendChild(innerSlot);
-      slot.appendChild(container);
-
-      block.classList.add("snapping");
-      setTimeout(() => {
-        block.classList.remove("snapping");
-      }, 200);
-    } else {
-      slot.appendChild(block);
-
-      block.classList.add("snapping");
-      setTimeout(() => {
-        block.classList.remove("snapping");
-      }, 200);
+      this.containerManager.processFreeDraggedElement(element, isBlockContainer, insertionPoint, finalLeft, finalTop);
     }
 
-    if (block.classList.contains("block--repeat")) {
-      const input = block.querySelector(".blockRepeatInput");
-      if (input) {
-        if (!input.value || input.value === "") {
-          input.value = 1;
-        }
-      }
-      Block.setupRepeatInputListeners(block);
-    }
-
-    this.ensureBlockContainer(slot);
+    this.cleanupDrag();
   }
 
-  ensureBlockContainer(slot) {
-    const container = slot.closest(".blockContainer");
-    if (container) {
-      const parentBlock = container.querySelector(":scope > .block");
-      if (parentBlock) {
-        const type = Block.getType(parentBlock);
-        if (type) {
-          const typeName = type.replace("block--", "");
-          container.setAttribute("data-type", typeName);
-        }
-      }
-    }
-  }
+  cleanupDrag() {
+    document.removeEventListener("mousemove", this.handleMouseMove);
+    document.removeEventListener("mouseup", this.handleMouseUp);
 
-  createBlock(type) {
-    const configs = Block.getConfigs();
-    const config = configs.find((c) => c.type === type);
-    if (!config) return null;
+    domHelpers.clearAllDragOverClasses(this.workspace);
+    this.trashZoneManager.deactivate();
 
-    return Block.createElement(config.text, config.icon, config.type);
-  }
-
-  addBlockToWorkspace(block, dropX, dropY) {
-    const workspaceContent = this.workspace.querySelector(".workspaceContent");
-
-    if (Block.hasSlot(block)) {
-      const container = document.createElement("div");
-      container.className = "blockContainer";
-
-      const blockType = Block.getType(block);
-      const typeName = blockType.replace("block--", "");
-      container.setAttribute("data-type", typeName);
-
-      const slot = document.createElement("div");
-      slot.className = "blockSlot";
-
-      container.appendChild(block);
-      container.appendChild(slot);
-
-      if (dropX !== undefined && dropY !== undefined) {
-        container.style.position = "absolute";
-        container.style.left = dropX + "px";
-        container.style.top = dropY + "px";
-        workspaceContent.appendChild(container);
-      } else {
-        const stacks = this.workspace.querySelectorAll(".blockStack");
-        let targetStack = null;
-
-        if (stacks.length > 0) {
-          targetStack = stacks[stacks.length - 1];
-        } else {
-          targetStack = document.createElement("div");
-          targetStack.className = "blockStack";
-          workspaceContent.appendChild(targetStack);
-        }
-        targetStack.appendChild(container);
-      }
-    } else {
-      if (dropX !== undefined && dropY !== undefined) {
-        block.style.position = "absolute";
-        block.style.left = dropX + "px";
-        block.style.top = dropY + "px";
-        workspaceContent.appendChild(block);
-      } else {
-        const stacks = this.workspace.querySelectorAll(".blockStack");
-        let targetStack = null;
-
-        if (stacks.length > 0) {
-          targetStack = stacks[stacks.length - 1];
-        } else {
-          targetStack = document.createElement("div");
-          targetStack.className = "blockStack";
-          workspaceContent.appendChild(targetStack);
-        }
-        targetStack.appendChild(block);
-      }
-    }
-
-    if (block.classList.contains("block--repeat")) {
-      const input = block.querySelector(".blockRepeatInput");
-      if (input) {
-        if (!input.value || input.value === "") {
-          input.value = 1;
-        }
-      }
-      Block.setupRepeatInputListeners(block);
-    }
-
-    block.classList.add("snapping");
-    setTimeout(() => {
-      block.classList.remove("snapping");
-    }, 200);
-
-    this.updatePlaceholder();
-  }
-
-  dispatchBlockCountChanged() {
-    const event = new CustomEvent("blockCountChanged", {
-      bubbles: true,
-      detail: {
-        count: this.workspace.querySelectorAll(".block").length,
-      },
-    });
-    this.workspace.dispatchEvent(event);
-  }
-
-  clearWorkspace() {
-    const stacks = this.workspace.querySelectorAll(".blockStack");
-    stacks.forEach((stack) => stack.remove());
-    const containers = this.workspace.querySelectorAll(".blockContainer");
-    containers.forEach((container) => container.remove());
-
-    const workspaceContent = this.workspace.querySelector(".workspaceContent");
-    const absoluteBlocks = workspaceContent.querySelectorAll(
-      ".block[style*='position: absolute']",
-    );
-    absoluteBlocks.forEach((block) => block.remove());
-
-    const absoluteContainers = workspaceContent.querySelectorAll(
-      ".blockContainer[style*='position: absolute']",
-    );
-    absoluteContainers.forEach((container) => container.remove());
-
-    this.updatePlaceholder();
-    this.dispatchBlockCountChanged();
+    this.state.setDraggedElement(null);
+    this.state.setIsDraggingFree(false);
   }
 }

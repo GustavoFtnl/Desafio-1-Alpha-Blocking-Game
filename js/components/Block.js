@@ -4,6 +4,8 @@
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
+import { BLOCK_TOOLTIPS } from "../utils/blockTooltips.js";
+
 export class Block {
   /**
    * Cria uma instância de elemento DOM para o bloco
@@ -76,9 +78,32 @@ export class Block {
         const textSpan = document.createElement("span");
         textSpan.className = "block_text";
         textSpan.textContent = text;
-        block.appendChild(iconSpan);
-        block.appendChild(textSpan);
-      }
+      block.appendChild(iconSpan);
+      block.appendChild(textSpan);
+    }
+  }
+
+    if (BLOCK_TOOLTIPS[type]) {
+      const tooltipTrigger = document.createElement("button");
+      tooltipTrigger.className = "blockTooltipTrigger";
+      tooltipTrigger.textContent = "?";
+      tooltipTrigger.setAttribute("aria-label", `Ajuda: ${text}`);
+      tooltipTrigger.setAttribute("type", "button");
+
+      tooltipTrigger.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+      });
+
+      tooltipTrigger.addEventListener("click", (e) => {
+        e.stopPropagation();
+      });
+
+      const tooltip = document.createElement("div");
+      tooltip.className = "blockTooltip";
+      tooltip.textContent = BLOCK_TOOLTIPS[type];
+
+      block.appendChild(tooltipTrigger);
+      block.appendChild(tooltip);
     }
 
     return block;
@@ -202,6 +227,7 @@ export class Block {
     return [
       { type: "block--start", icon: "play_arrow", text: "Início" },
       { type: "block--move", icon: "move_up", text: "Mover" },
+      { type: "block--jump", icon: "upgrade", text: "Pular" },
       { type: "block--direction", icon: "→", text: "Direita" },
       { type: "block--direction", icon: "←", text: "Esquerda" },
       { type: "block--direction", icon: "↑", text: "Cima" },
@@ -225,9 +251,10 @@ export class Block {
    */
   static getAcceptedChildTypes(parentType) {
     const accepts = {
-      "block--start": ["block--move", "block--repeat"],
-      "block--repeat": ["block--move"],
+      "block--repeat": ["block--move", "block--jump"],
+      "block--start": ["block--move", "block--jump", "block--repeat"],
       "block--move": ["block--direction"],
+      "block--jump": ["block--direction"],
     };
     return accepts[parentType] || [];
   }
@@ -259,8 +286,8 @@ export class Block {
       const slot = parentContainer.querySelector(".blockSlot");
       if (slot) {
         const existingBlocks = slot.querySelectorAll(".block");
-        if (parentType === "block--move") {
-          return existingBlocks.length < 4;
+        if (parentType === "block--move" || parentType === "block--jump") {
+          return existingBlocks.length < 4; // Limite de 4 direções (cima, baixo, esquerda, direita)
         }
       }
     }
@@ -278,7 +305,7 @@ export class Block {
       return false;
     }
     const type = Block.getType(block);
-    return type === "block--start" || type === "block--repeat" || type === "block--move";
+    return type === "block--start" || type === "block--repeat" || type === "block--move" || type === "block--jump";
   }
 
   /**

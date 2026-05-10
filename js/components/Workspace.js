@@ -5,6 +5,7 @@
  */
 
 import { Block } from "./Block.js";
+import { domHelpers } from "../utils/domHelpers.js";
 
 export class Workspace {
   /**
@@ -22,9 +23,6 @@ export class Workspace {
     this.setupPanListeners()
   }
 
-  /**
-   * Configura listeners para pan estilo Excalidraw
-   */
   setupPanListeners() {
     this.container.addEventListener("mousedown", (e) => {
       const target = e.target
@@ -78,7 +76,7 @@ export class Workspace {
     }
   }
 
-  /**
+/**
    * Renderiza o workspace com placeholder
    */
   render() {
@@ -88,6 +86,9 @@ export class Workspace {
           <span class="material-symbols-outlined workspacePlaceholderIcon">drag_pan</span>
           <p class="workspacePlaceholderText">Arraste blocos aqui</p>
         </div>
+      </div>
+      <div class="trashZone" aria-label="Lixeira" role="button" tabindex="0">
+        <span class="material-symbols-outlined trashZoneIcon">delete</span>
       </div>
     `
 
@@ -144,7 +145,7 @@ export class Workspace {
     this.updatePanPosition()
     this.centerPlaceholder()
 
-    this.dispatchBlockCountChanged()
+    domHelpers.dispatchBlockCountChanged(this.container);
   }
 
   /**
@@ -171,25 +172,12 @@ export class Workspace {
     }
   }
 
-  /**
-   * Retorna a quantidade total de blocos no workspace
-   * @returns {number} Total de blocos
-   */
+/**
+    * Retorna a quantidade total de blocos no workspace (desconsiderando inicio)
+    * @returns {number} Total de blocos
+    */
   getBlockCount() {
-    return this.container.querySelectorAll('.block').length
-  }
-
-  /**
-   * Dispara evento customizado de mudança na quantidade de blocos
-   */
-  dispatchBlockCountChanged() {
-    const event = new CustomEvent('blockCountChanged', {
-      bubbles: true,
-      detail: {
-        count: this.getBlockCount()
-      }
-    })
-    this.container.dispatchEvent(event)
+    return domHelpers.getBlockCountWithoutStart(this.container)
   }
 
   /**
@@ -325,8 +313,8 @@ export class Workspace {
       }
     })
 
-    this.updatePlaceholder()
-    this.dispatchBlockCountChanged()
+    domHelpers.updatePlaceholder(this.container);
+    domHelpers.dispatchBlockCountChanged(this.container);
   }
 
   /**
@@ -406,41 +394,5 @@ export class Workspace {
 
     container.appendChild(slot)
     return container
-  }
-
-  updatePlaceholder() {
-    const placeholder = this.container.querySelector(".workspacePlaceholder")
-    if (!placeholder) return
-
-    const stacks = this.container.querySelectorAll(".blockStack")
-    const containers = this.container.querySelectorAll(".blockContainer")
-    const workspaceContent = this.container.querySelector(".workspaceContent")
-
-    let hasContent = false
-
-    stacks.forEach(stack => {
-      if (stack.children.length > 0) {
-        hasContent = true
-      }
-    })
-
-    containers.forEach(container => {
-      if (container.children.length > 0) {
-        hasContent = true
-      }
-    })
-
-    if (workspaceContent) {
-      const directBlocks = workspaceContent.querySelectorAll(":scope > .block")
-      if (directBlocks.length > 0) {
-        hasContent = true
-      }
-    }
-
-    if (hasContent) {
-      placeholder.classList.add("hidden")
-    } else {
-      placeholder.classList.remove("hidden")
-    }
   }
 }

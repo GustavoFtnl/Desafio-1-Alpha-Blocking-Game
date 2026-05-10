@@ -6,6 +6,8 @@
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
+import { SoundManager } from "../utils/SoundManager.js";
+
 export class Runner {
   constructor(stage) {
     this.stage = stage;
@@ -49,6 +51,54 @@ export class Runner {
 
         this.setBlockExecuting(instruction.blockElement, true);
 
+        // Lógica do toggle do fogo (pula repeat, que lida internamente em handleRepeat)
+        if (instruction.type !== "repeat" && this.stage.fireTraps && this.stage.fireTraps.length > 0) {
+          const atorNoFogo = this.stage.isFireTrapAtCurrentPosition();
+          const fogoAtivoAntes = this.stage.fireTrapActive;
+
+          if (atorNoFogo && !fogoAtivoAntes) {
+            // Se ator está em fogo desativado, executa ação primeiro, depois toggle
+            const result = await this.executeAction(instruction);
+
+            // Sempre ativa o fogo após a ação (mesmo que movimento tenha sido bloqueado)
+            this.stage.toggleFireTrap();
+
+            // Verifica colisão APÓS ativar a armadilha, independente se moveu ou não
+            const collision = this.stage.checkCollisionAtCurrentPosition();
+
+            if (collision === "trap") {
+              this.setBlockExecuting(instruction.blockElement, false);
+              this.handleTrapHit();
+              return;
+            }
+            if (collision === "trophy") {
+              this.setBlockExecuting(instruction.blockElement, false);
+              this.handleVictory();
+              return;
+            }
+
+            // Delay com bloco ainda em execução (feedback visual)
+            await this.delay(this.commandDelay);
+            if (!this.isRunning) break;
+            if (this.isPaused) {
+              await this.waitForResume();
+            }
+            if (!this.isRunning) break;
+            this.setBlockExecuting(instruction.blockElement, false);
+            continue;
+          } else {
+            // Caso normal: toggle primeiro, depois verifica colisão e executa
+            this.stage.toggleFireTrap();
+
+            // Verifica se há fogo ativo na posição atual antes do movimento
+            if (this.stage.isFireTrapAtCurrentPosition() && this.stage.fireTrapActive) {
+              this.setBlockExecuting(instruction.blockElement, false);
+              this.handleTrapHit();
+              return;
+            }
+          }
+        }
+
         const result = await this.executeAction(instruction);
 
         if (result.moved) {
@@ -67,6 +117,13 @@ export class Runner {
           }
         }
 
+        await this.delay(this.commandDelay);
+        if (!this.isRunning) break;
+        if (this.isPaused) {
+          await this.waitForResume();
+        }
+        if (!this.isRunning) break;
+
         // Só desativa se a próxima instrução for de um bloco diferente
         const shouldDeactivate = !nextInstruction || 
           nextInstruction.blockElement !== instruction.blockElement;
@@ -74,11 +131,9 @@ export class Runner {
         if (shouldDeactivate) {
           this.setBlockExecuting(instruction.blockElement, false);
         }
-
-        await this.delay(this.commandDelay);
       }
 
-      if (this.isRunning && !this.isPaused) {
+      if (this.isRunning) {
         this.dispatchExecutionCompleteEvent();
       }
     } catch (error) {
@@ -108,6 +163,18 @@ export class Runner {
       case "moveRight":
         return this.stage.moveRight();
 
+      case "jumpUp":
+        return this.executeJump("up");
+
+      case "jumpDown":
+        return this.executeJump("down");
+
+      case "jumpLeft":
+        return this.executeJump("left");
+
+      case "jumpRight":
+        return this.executeJump("right");
+
       case "repeat":
         return await this.handleRepeat(instruction.count, instruction.body);
 
@@ -115,6 +182,46 @@ export class Runner {
         console.warn(`Tipo de instrução desconhecido: ${instruction.type}`);
         return {moved: false};
     }
+  }
+
+  /**
+   * Executa um pulo do ator
+   * O pulo ignora armadilhas e buracos na posição intermediária
+   * Apenas verifica colisão na posição final
+   * @param {string} direction - Direção do pulo (up, down, left, right)
+   * @returns {Promise<{moved: boolean}>} Resultado do pulo
+   */
+  async executeJump(direction) {
+    const canJumpResult = this.stage.canJump(direction);
+
+    if (!canJumpResult.canJump) {
+      return {moved: false, reason: canJumpResult.reason};
+    }
+
+    switch (direction) {
+      case "up":
+        this.stage.y -= 2;
+        break;
+      case "down":
+        this.stage.y += 2;
+        break;
+      case "left":
+        this.stage.x -= 2;
+        break;
+      case "right":
+        this.stage.x += 2;
+        break;
+    }
+
+    this.stage.markCurrentCell();
+    SoundManager.playJump();
+
+    const finalCollision = this.stage.checkCollisionAtCurrentPosition();
+    if (finalCollision === "trap") {
+      return {moved: true};
+    }
+
+    return {moved: true};
   }
 
   /**
@@ -149,6 +256,63 @@ export class Runner {
 
         this.setBlockExecuting(subInstruction.blockElement, true);
 
+        // Lógica do toggle do fogo (mesma do run())
+        if (this.stage.fireTraps && this.stage.fireTraps.length > 0) {
+          const atorNoFogo = this.stage.isFireTrapAtCurrentPosition();
+          const fogoAtivoAntes = this.stage.fireTrapActive;
+
+          if (atorNoFogo && !fogoAtivoAntes) {
+            const posicaoAntes = { x: this.stage.x, y: this.stage.y };
+            const result = await this.executeAction(subInstruction);
+
+            if (result.moved) {
+              anyMoved = true;
+              this.stage.toggleFireTrap();
+
+              const fogoIndex = posicaoAntes.y * this.stage.gridSize + posicaoAntes.x;
+              const atualIndex = this.stage.y * this.stage.gridSize + this.stage.x;
+
+              if (atualIndex !== fogoIndex) {
+                const collision = this.stage.checkCollisionAtCurrentPosition();
+
+                if (collision === "trap") {
+                  this.setBlockExecuting(subInstruction.blockElement, false);
+                  this.handleTrapHit();
+                  return {moved: false};
+                }
+                if (collision === "trophy") {
+                  this.setBlockExecuting(subInstruction.blockElement, false);
+                  this.handleVictory();
+                  return {moved: false};
+                }
+              }
+            }
+
+            await this.delay(this.commandDelay);
+            if (!this.isRunning) break;
+            if (this.isPaused) {
+              await this.waitForResume();
+            }
+            if (!this.isRunning) break;
+
+            const shouldDeactivate = !nextSubInstruction || 
+              nextSubInstruction.blockElement !== subInstruction.blockElement;
+
+            if (shouldDeactivate) {
+              this.setBlockExecuting(subInstruction.blockElement, false);
+            }
+            continue;
+          } else {
+            this.stage.toggleFireTrap();
+
+            if (this.stage.isFireTrapAtCurrentPosition() && this.stage.fireTrapActive) {
+              this.setBlockExecuting(subInstruction.blockElement, false);
+              this.handleTrapHit();
+              return {moved: false};
+            }
+          }
+        }
+
         const result = await this.executeAction(subInstruction);
 
         if (result.moved) {
@@ -169,14 +333,19 @@ export class Runner {
           }
         }
 
+        await this.delay(this.commandDelay);
+        if (!this.isRunning) break;
+        if (this.isPaused) {
+          await this.waitForResume();
+        }
+        if (!this.isRunning) break;
+
         const shouldDeactivate = !nextSubInstruction || 
           nextSubInstruction.blockElement !== subInstruction.blockElement;
         
         if (shouldDeactivate) {
           this.setBlockExecuting(subInstruction.blockElement, false);
         }
-
-        await this.delay(this.commandDelay);
       }
     }
 
@@ -194,6 +363,12 @@ export class Runner {
       this.setBlockExecuting(instruction.blockElement, false);
     });
 
+    if (this.stage.isFireTrapAtCurrentPosition()) {
+      SoundManager.playFireTrap();
+    } else {
+      SoundManager.playSpikeTrap();
+    }
+
     this.dispatchFailedEvent("trap");
   }
 
@@ -201,6 +376,7 @@ export class Runner {
    * Trata vitória - atingiu o troféu
    */
   handleVictory() {
+    SoundManager.playTrophy();
     this.dispatchCompleteEvent();
   }
 
@@ -212,9 +388,38 @@ export class Runner {
   setBlockExecuting(blockElement, executing) {
     if (blockElement) {
       if (executing) {
+        // Remove e força reflow ANTES de re-adicionar
+        // Impede que o navegador coalesça as mudanças no mesmo frame,
+        // garantindo que a animação CSS reinicie corretamente
+        blockElement.classList.remove("executing");
+        void blockElement.offsetWidth;
         blockElement.classList.add("executing");
+
+        // Se é um bloco de direção (→←↑↓), também pulsa o bloco pai (move/jump)
+        if (blockElement.classList.contains("block--direction")) {
+          const parentContainer = blockElement.closest(".blockContainer");
+          if (parentContainer) {
+            const parentBlock = parentContainer.querySelector(":scope > .block");
+            if (parentBlock) {
+              parentBlock.classList.remove("executing");
+              void parentBlock.offsetWidth;
+              parentBlock.classList.add("executing");
+            }
+          }
+        }
       } else {
         blockElement.classList.remove("executing");
+
+        // Se é um bloco de direção, também para o pulse do bloco pai
+        if (blockElement.classList.contains("block--direction")) {
+          const parentContainer = blockElement.closest(".blockContainer");
+          if (parentContainer) {
+            const parentBlock = parentContainer.querySelector(":scope > .block");
+            if (parentBlock) {
+              parentBlock.classList.remove("executing");
+            }
+          }
+        }
       }
     }
   }

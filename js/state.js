@@ -7,7 +7,7 @@
 
 import CONFIG from "./config.js";
 
-var GameState = function() {
+const GameState = function() {
   this.currentUser = null;
   this.users = [];
   this._listeners = [];
@@ -19,8 +19,8 @@ GameState.prototype.init = function() {
 
 GameState.prototype.loadFromStorage = function() {
   try {
-    var savedUsers = localStorage.getItem(CONFIG.STORAGE_KEYS.USERS);
-    var savedCurrentUser = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_NAME);
+    const savedUsers = localStorage.getItem(CONFIG.STORAGE_KEYS.USERS);
+    const savedCurrentUser = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_NAME);
 
     if (savedUsers !== null) {
       this.users = JSON.parse(savedUsers);
@@ -44,7 +44,7 @@ GameState.prototype.saveUsersToStorage = function() {
 };
 
 GameState.prototype.findUser = function(name) {
-  for (var i = 0; i < this.users.length; i++) {
+  for (let i = 0; i < this.users.length; i++) {
     if (this.users[i].name === name) {
       return this.users[i];
     }
@@ -65,7 +65,7 @@ GameState.prototype.hasUsers = function() {
 };
 
 GameState.prototype.switchUser = function(name) {
-  var user = this.findUser(name);
+  const user = this.findUser(name);
   if (user) {
     this.currentUser = user;
     this.saveCurrentUser();
@@ -76,13 +76,13 @@ GameState.prototype.switchUser = function(name) {
 };
 
 GameState.prototype.createUser = function(name) {
-  var existing = this.findUser(name);
+  const existing = this.findUser(name);
   if (existing) {
     alert("Usuário já existe!");
     return false;
   }
 
-  var newUser = {
+  const newUser = {
     name: name,
     level: CONFIG.DEFAULTS.CURRENT_LEVEL,
     stars: {},
@@ -112,8 +112,8 @@ GameState.prototype.getCurrentLevel = function() {
 };
 
 GameState.prototype.getMaxBlocks = function() {
-  var level = this.getCurrentLevel();
-  var levelConfig = CONFIG.LEVEL_CONFIG[level];
+  const level = this.getCurrentLevel();
+  const levelConfig = CONFIG.LEVEL_CONFIG[level];
   return levelConfig ? levelConfig.maxBlocks : level * 2 + 6;
 };
 
@@ -176,22 +176,22 @@ GameState.prototype.getBlocksUsedForLevel = function(level) {
 };
 
 GameState.prototype.calculateStars = function(usedBlocks) {
-  var maxBlocks = this.getMaxBlocks();
+  const maxBlocks = this.getMaxBlocks();
 
   if (usedBlocks <= maxBlocks) {
-    var percentage = usedBlocks / maxBlocks;
-    if (percentage <= 0.7) {
-      return 3;
-    } else if (percentage <= 1.0) {
-      return 2;
-    }
+    return 3;
   }
+
+  if (usedBlocks <= maxBlocks * 1.5) {
+    return 2;
+  }
+
   return 1;
 };
 
 GameState.prototype.completeLevel = function(usedBlocks) {
-  var stars = this.calculateStars(usedBlocks);
-  var level = this.getCurrentLevel();
+  const stars = this.calculateStars(usedBlocks);
+  const level = this.getCurrentLevel();
   this.setStarsForLevel(level, stars);
   this.saveBlocksUsed(level, usedBlocks);
   return stars;
@@ -224,7 +224,7 @@ GameState.prototype.saveWorkspaceBlocks = function(blocksData) {
 GameState.prototype.getWorkspaceBlocks = function() {
   if (this.currentUser) {
     try {
-      var savedBlocks = localStorage.getItem(CONFIG.STORAGE_KEYS.WORKSPACE_BLOCKS + '_' + this.currentUser.name);
+      const savedBlocks = localStorage.getItem(CONFIG.STORAGE_KEYS.WORKSPACE_BLOCKS + '_' + this.currentUser.name);
       return savedBlocks ? JSON.parse(savedBlocks) : null;
     } catch (error) {
       console.error("Erro ao carregar blocos do workspace:", error);
@@ -245,11 +245,11 @@ GameState.prototype.clearWorkspaceBlocks = function() {
 };
 
 GameState.prototype.getTotalCompletedLevels = function() {
-  var count = 0;
-  for (var i = 0; i < this.users.length; i++) {
-    var user = this.users[i];
+  let count = 0;
+  for (let i = 0; i < this.users.length; i++) {
+    const user = this.users[i];
     if (user.stars) {
-      for (var level in user.stars) {
+      for (const level in user.stars) {
         if (user.stars[level] > 0) {
           count++;
         }
@@ -260,13 +260,13 @@ GameState.prototype.getTotalCompletedLevels = function() {
 };
 
 GameState.prototype.getUserStats = function(user) {
-  var totalStars = 0;
-  var completedLevels = 0;
-  var totalBlocks = 0;
+  let totalStars = 0;
+  let completedLevels = 0;
+  let totalBlocks = 0;
 
   if (user.stars) {
-    for (var level in user.stars) {
-      var stars = user.stars[level];
+      for (const level in user.stars) {
+        const stars = user.stars[level];
       if (stars > 0) {
         totalStars += stars;
         completedLevels++;
@@ -275,7 +275,7 @@ GameState.prototype.getUserStats = function(user) {
   }
 
   if (user.blocksUsed) {
-    for (var level in user.blocksUsed) {
+    for (const level in user.blocksUsed) {
       totalBlocks += user.blocksUsed[level] || 0;
     }
   }
@@ -290,9 +290,9 @@ GameState.prototype.getUserStats = function(user) {
 };
 
 GameState.prototype.getRanking = function() {
-  var ranking = [];
+  const ranking = [];
 
-  for (var i = 0; i < this.users.length; i++) {
+  for (let i = 0; i < this.users.length; i++) {
     ranking.push(this.getUserStats(this.users[i]));
   }
 
@@ -314,14 +314,14 @@ GameState.prototype.addListener = function(callback) {
 };
 
 GameState.prototype.removeListener = function(callback) {
-  var index = this._listeners.indexOf(callback);
+  const index = this._listeners.indexOf(callback);
   if (index > -1) {
     this._listeners.splice(index, 1);
   }
 };
 
 GameState.prototype._notifyListeners = function(event, data) {
-  for (var i = 0; i < this._listeners.length; i++) {
+  for (let i = 0; i < this._listeners.length; i++) {
     try {
       this._listeners[i](event, data);
     } catch (error) {
@@ -330,7 +330,7 @@ GameState.prototype._notifyListeners = function(event, data) {
   }
 };
 
-var gameState = new GameState();
+const gameState = new GameState();
 
 export default gameState;
 export { gameState, GameState };

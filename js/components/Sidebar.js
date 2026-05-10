@@ -38,7 +38,7 @@ export class Sidebar {
       <div class="sidebar_content">
         <div class="sidebar_title">
           <span class="material-symbols-outlined sidebar_titleIcon">psychology</span>
-          <h2 style="font-size: var(--font-h2-size); font-weight: var(--font-h2-weight); font-weight: 700;">Biblioteca</h2>
+          <h2 class="sidebar_titleText">Biblioteca</h2>
         </div>
         <p class="sidebar_subtitle">Arraste os blocos</p>
         <div class="blockPalette">
@@ -49,6 +49,22 @@ export class Sidebar {
     `;
 
     this.paletteElement = this.container.querySelector(".blockPalette");
+
+    this.setupTooltipListeners();
+  }
+
+  setupTooltipListeners() {
+    this.paletteElement.addEventListener("mousedown", (e) => {
+      if (e.target.closest(".blockTooltipTrigger")) {
+        e.stopPropagation();
+      }
+    });
+
+    this.paletteElement.addEventListener("click", (e) => {
+      if (e.target.closest(".blockTooltipTrigger")) {
+        e.stopPropagation();
+      }
+    });
   }
 
   /**

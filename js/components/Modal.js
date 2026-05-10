@@ -183,10 +183,11 @@ export class Modal {
     return `
       <h2 class="modal_title">Nível Concluído!</h2>
       <div class="modal_stars">${starsHtml}</div>
-      <p>Você usou ${usedBlocks} blocos (limite: ${maxBlocks}).</p>
-      <button class="btn btn--run" id="${uniqueId}" aria-label="Avançar para próximo nível">
-        Próximo Nível
-      </button>
+      <div class="modal_actions">
+        <button class="btn btn--run" id="${uniqueId}" aria-label="Avançar para próximo nível">
+          Próximo Nível
+        </button>
+      </div>
     `
   }
 
@@ -202,10 +203,12 @@ export class Modal {
     return `
       <h2 class="modal_title">Parabéns! Jogo Zerado!</h2>
       <div class="modal_stars">${starsHtml}</div>
-      <p>Você completou todos os 20 níveis!</p>
-      <button class="btn btn--run" id="${uniqueId}" aria-label="Reiniciar carreira">
-        Reiniciar Carreira
-      </button>
+      <p>Você completou todos os 10 níveis!</p>
+      <div class="modal_actions">
+        <button class="btn btn--run" id="${uniqueId}" aria-label="Reiniciar carreira">
+          Reiniciar Carreira
+        </button>
+      </div>
     `
   }
 

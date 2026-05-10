@@ -5,6 +5,11 @@
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
+import { Toast } from "./Toast.js";
+import * as stageHelpers from "../utils/stageHelpers.js";
+import { ELEMENT_TYPES, GRID_LENGTH } from "../utils/elementTypes.js";
+import { SoundManager } from "../utils/SoundManager.js";
+
 export class Stage {
   /**
    * Construtor do Stage
@@ -29,7 +34,12 @@ export class Stage {
     this.start = { x: 0, y: 0 };
     this.walls = [];
     this.holes = [];
+    this.doors = [];
+    this.keys = [];
+    this.doorOpen = false;
     this.traps = [];
+    this.fireTraps = [];
+    this.fireTrapActive = false;
     this.trophy = { x: 0, y: 0 };
 
     this.stageGrid = null;
@@ -60,7 +70,7 @@ export class Stage {
 
     const blockCounter = document.createElement("span");
     blockCounter.className = "stageBlockCounter";
-    blockCounter.textContent = `0/${this.maxBlocks} blocos`;
+    blockCounter.textContent = `0 blocos`;
     this.blockCounterElement = blockCounter;
 
     stageHeader.appendChild(stageTitle);
@@ -82,7 +92,7 @@ export class Stage {
       
       // Posiciona o ator no canto superior esquerdo (0,0)
       if (i === 0) {
-        cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
+        cell.innerHTML = '<span class="actorIcon">🤠</span>';
         cell.classList.add("actorCell");
       }
       
@@ -91,6 +101,12 @@ export class Stage {
     }
 
     stageContent.appendChild(this.stageGrid);
+
+    this.stageGrid.addEventListener("click", (e) => {
+      if (e.target.closest(".actorCell")) {
+        SoundManager.playActorClick();
+      }
+    });
 
     // Controles de Execução
     this.controlsArea = document.createElement("div");
@@ -174,47 +190,40 @@ export class Stage {
   }
 
   /**
-   * Desabilita o botão de pausar e reseta o texto para "Pausar"
+   * Atualiza o estado do botão de pausa
+   * @param {string} state - Estado: "disabled", "enabled", "resume", "pause"
    */
-  disablePauseButton() {
+  updatePauseButton(state) {
     const pauseButton = this.controlsArea.querySelector(".btn--pause");
-    if (pauseButton) {
-      pauseButton.disabled = true;
-      pauseButton.classList.add("btn--disabled");
-      pauseButton.innerHTML = '<span class="material-symbols-outlined">pause</span> Pausar';
+    if (!pauseButton) return;
+
+    const icons = { pause: "pause", resume: "play_arrow" };
+    const texts = { pause: "Pausar", resume: "Retomar" };
+
+    switch (state) {
+      case "disabled":
+        pauseButton.disabled = true;
+        pauseButton.classList.add("btn--disabled");
+        pauseButton.innerHTML = `<span class="material-symbols-outlined">${icons.pause}</span> ${texts.pause}`;
+        break;
+      case "enabled":
+        pauseButton.disabled = false;
+        pauseButton.classList.remove("btn--disabled");
+        break;
+      case "resume":
+        pauseButton.innerHTML = `<span class="material-symbols-outlined">${icons.resume}</span> ${texts.resume}`;
+        break;
+      case "pause":
+        pauseButton.innerHTML = `<span class="material-symbols-outlined">${icons.pause}</span> ${texts.pause}`;
+        break;
     }
   }
 
-  /**
-   * Habilita o botão de pausar
-   */
-  enablePauseButton() {
-    const pauseButton = this.controlsArea.querySelector(".btn--pause");
-    if (pauseButton) {
-      pauseButton.disabled = false;
-      pauseButton.classList.remove("btn--disabled");
-    }
-  }
-
-  /**
-   * Altera o texto do botão de pausar para "Retomar"
-   */
-  setPauseToResume() {
-    const pauseButton = this.controlsArea.querySelector(".btn--pause");
-    if (pauseButton) {
-      pauseButton.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> Retomar';
-    }
-  }
-
-  /**
-   * Altera o texto do botão de retomar para "Pausar"
-   */
-  setResumeToPause() {
-    const pauseButton = this.controlsArea.querySelector(".btn--pause");
-    if (pauseButton) {
-      pauseButton.innerHTML = '<span class="material-symbols-outlined">pause</span> Pausar';
-    }
-  }
+  // Aliases para compatibilidade
+  disablePauseButton() { this.updatePauseButton("disabled"); }
+  enablePauseButton() { this.updatePauseButton("enabled"); }
+  setPauseToResume() { this.updatePauseButton("resume"); }
+  setResumeToPause() { this.updatePauseButton("pause"); }
 
   /**
    * Atualiza o título do stage com o nível atual
@@ -233,7 +242,7 @@ export class Stage {
    */
   updateBlockCounter(used) {
     if (this.blockCounterElement) {
-      this.blockCounterElement.textContent = `${used}/${this.maxBlocks} blocos`;
+      this.blockCounterElement.textContent = `${used} blocos`;
     }
   }
 
@@ -252,6 +261,23 @@ export class Stage {
   reset() {
     this.x = this.start.x;
     this.y = this.start.y;
+    this.doorOpen = false;
+    this.fireTrapActive = false;
+
+    // Restaura elementos do nível original a partir do grid
+    if (this.currentLevelConfig && this.currentLevelConfig.grid) {
+      const elements = this.parseGridToElements(this.currentLevelConfig.grid);
+      this.keys = elements.keys;
+      this.fireTraps = elements.fireTraps;
+    } else {
+      // Compatibilidade com formato original
+      if (this.currentLevelConfig && this.currentLevelConfig.keys) {
+        this.keys = [...this.currentLevelConfig.keys];
+      }
+      if (this.currentLevelConfig && this.currentLevelConfig.fireTraps) {
+        this.fireTraps = [...this.currentLevelConfig.fireTraps];
+      }
+    }
 
     // Redesenha todos os elementos do nível (limpa e renderiza ator, walls, traps, trophy)
     this.renderLevelElements();
@@ -261,47 +287,49 @@ export class Stage {
    * Marca a célula atual como visitada e atual
    */
   markCurrentCell() {
-    // Remove ator de todas as células
-    this.stageCells.forEach(cell => {
-      if (cell.classList.contains("actorCell")) {
-        cell.innerHTML = "";
-        cell.classList.remove("actorCell");
-      }
-    });
-
-    const cellIndex = this.y * this.gridSize + this.x;
-    const cell = this.stageCells[cellIndex];
-
-    if (cell) {
-      cell.classList.add("visited", "current", "actorCell");
-      cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
-    }
+    stageHelpers.clearActorFromCells(this.stageCells);
+    stageHelpers.renderActor(this.stageCells, this.x, this.y, this.gridSize);
   }
 
   /**
    * Remove a marcação de célula atual (mantém visitada)
    */
   clearCurrentCell() {
-    const cellIndex = this.y * this.gridSize + this.x;
-    const cell = this.stageCells[cellIndex];
-
-    if (cell) {
-      cell.classList.remove("current");
-    }
+    stageHelpers.clearCurrentFromCell(this.stageCells, this.x, this.y, this.gridSize);
   }
 
   /**
    * Define a configuração do nível atual
-   * @param {Object} levelConfig - Configuração do nível (start, trophy, walls, traps)
+   * @param {Object} levelConfig - Configuração do nível (grid array numérico ou formato original)
    */
   setLevelConfig(levelConfig) {
     this.currentLevelConfig = levelConfig;
-    this.start = levelConfig.start || { x: 0, y: 0 };
-    this.walls = levelConfig.walls || [];
-    this.holes = levelConfig.holes || [];
-    this.traps = levelConfig.traps || [];
-    this.trophy = levelConfig.trophy || { x: 0, y: 0 };
     this.maxBlocks = levelConfig.maxBlocks || this.maxBlocks;
+    this.doorOpen = false;
+    this.fireTrapActive = false;
+
+    // Verifica se o nível tem o novo formato de grid numérico
+    if (levelConfig.grid && Array.isArray(levelConfig.grid)) {
+      const elements = this.parseGridToElements(levelConfig.grid);
+      this.start = elements.start;
+      this.trophy = elements.trophy;
+      this.walls = elements.walls;
+      this.holes = elements.holes;
+      this.traps = elements.traps;
+      this.keys = elements.keys;
+      this.doors = elements.doors;
+      this.fireTraps = elements.fireTraps;
+    } else {
+      // Compatibilidade com formato original (arrays de coordenadas)
+      this.start = levelConfig.start || { x: 0, y: 0 };
+      this.walls = levelConfig.walls || [];
+      this.holes = levelConfig.holes || [];
+      this.doors = levelConfig.doors || [];
+      this.keys = levelConfig.keys || [];
+      this.traps = levelConfig.traps || [];
+      this.fireTraps = levelConfig.fireTraps || [];
+      this.trophy = levelConfig.trophy || { x: 0, y: 0 };
+    }
 
     // Define posição inicial do ator
     this.x = this.start.x;
@@ -312,52 +340,83 @@ export class Stage {
   }
 
   /**
+   * Converte o grid numérico para objetos de elementos
+   * @param {number[]} grid - Array numérico do nível (100 elementos)
+   * @returns {Object} Objeto com arrays de coordenadas
+   */
+  parseGridToElements(grid) {
+    const elements = {
+      start: { x: 0, y: 0 },
+      trophy: { x: 0, y: 0 },
+      walls: [],
+      holes: [],
+      traps: [],
+      keys: [],
+      doors: [],
+      fireTraps: [],
+    };
+
+    for (let i = 0; i < GRID_LENGTH; i++) {
+      const x = i % this.gridSize;
+      const y = Math.floor(i / this.gridSize);
+      const cellType = grid[i];
+
+      switch (cellType) {
+        case ELEMENT_TYPES.START:
+          elements.start = { x, y };
+          break;
+        case ELEMENT_TYPES.TROPHY:
+          elements.trophy = { x, y };
+          break;
+        case ELEMENT_TYPES.WALL:
+          elements.walls.push({ x, y });
+          break;
+        case ELEMENT_TYPES.HOLE:
+          elements.holes.push({ x, y });
+          break;
+        case ELEMENT_TYPES.TRAP:
+          elements.traps.push({ x, y });
+          break;
+        case ELEMENT_TYPES.KEY:
+          elements.keys.push({ x, y });
+          break;
+        case ELEMENT_TYPES.DOOR:
+          elements.doors.push({ x, y });
+          break;
+        case ELEMENT_TYPES.FIRE:
+          elements.fireTraps.push({ x, y });
+          break;
+      }
+    }
+
+    return elements;
+  }
+
+/**
    * Renderiza os elementos do nível no grid (walls, holes, traps, trophy, ator)
    */
   renderLevelElements() {
     if (!this.stageCells || !this.stageGrid) return;
 
     // Limpa células (remove ator também)
-    this.stageCells.forEach(cell => {
-      cell.innerHTML = "";
-      cell.classList.remove("hasWall", "hasHole", "hasTrap", "hasTrophy", "actorCell", "visited", "current");
-    });
+    stageHelpers.clearGridCells(this.stageCells, stageHelpers.GRID_CLEAR_CLASSES);
 
-    // Renderiza paredes
-    this.walls.forEach(wall => {
-      const index = wall.y * this.gridSize + wall.x;
-      const cell = this.stageCells[index];
-      if (cell) {
-        cell.classList.add("hasWall");
-      }
-    });
+    // Renderiza elementos usando helpers
+    stageHelpers.renderElementsToGrid(this.stageCells, this.walls, "hasWall", this.gridSize);
+    stageHelpers.renderElementsToGrid(this.stageCells, this.holes, "hasHole", this.gridSize);
+    stageHelpers.renderElementsToGrid(this.stageCells, this.keys, "hasKey", this.gridSize);
+    stageHelpers.renderElementsToGrid(this.stageCells, this.traps, "hasTrap", this.gridSize);
 
-    // Renderiza buracos
-    this.holes.forEach(hole => {
-      const index = hole.y * this.gridSize + hole.x;
-      const cell = this.stageCells[index];
-      if (cell) {
-        cell.classList.add("hasHole");
-      }
-    });
+    // Renderiza portas (com estado)
+    stageHelpers.renderDoors(this.stageCells, this.doors, this.gridSize, this.doorOpen);
 
-    // Renderiza armadilhas
-    this.traps.forEach(trap => {
-      const index = trap.y * this.gridSize + trap.x;
-      const cell = this.stageCells[index];
-      if (cell) {
-        cell.classList.add("hasTrap");
-        cell.innerHTML = '<span class="cellIcon">💣</span>';
-      }
-    });
+    // Renderiza fogos (com estado ativo/inativo)
+    stageHelpers.renderElementWithState(
+      this.stageCells, this.fireTraps, "hasFireTrap", this.gridSize, this.fireTrapActive, "active"
+    );
 
     // Renderiza troféu
-    const trophyIndex = this.trophy.y * this.gridSize + this.trophy.x;
-    const trophyCell = this.stageCells[trophyIndex];
-    if (trophyCell) {
-      trophyCell.classList.add("hasTrophy");
-      trophyCell.innerHTML = '<span class="cellIcon">🏆</span>';
-    }
+    stageHelpers.renderTrophy(this.stageCells, this.trophy, this.gridSize);
 
     // Renderiza ator na posição inicial
     this.renderActor();
@@ -367,13 +426,7 @@ export class Stage {
    * Renderiza o ator na posição atual
    */
   renderActor() {
-    const cellIndex = this.y * this.gridSize + this.x;
-    const cell = this.stageCells[cellIndex];
-
-    if (cell) {
-      cell.classList.add("actorCell", "visited", "current");
-      cell.innerHTML = '<span style="font-size: 24px;">🤠</span>';
-    }
+    stageHelpers.renderActor(this.stageCells, this.x, this.y, this.gridSize);
   }
 
   /**
@@ -383,18 +436,14 @@ export class Stage {
    * @returns {string} Tipo de elemento: "wall", "trap", "trophy" ou null
    */
   checkCollision(x, y) {
-    // Verifica parede
-    if (this.walls.some(w => w.x === x && w.y === y)) {
-      return "wall";
+    const checkers = [
+      { elements: this.walls, type: "wall" },
+      { elements: this.traps, type: "trap" }
+    ];
+    for (const { elements, type } of checkers) {
+      if (elements.some(el => el.x === x && el.y === y)) return type;
     }
-    // Verifica armadilha
-    if (this.traps.some(t => t.x === x && t.y === y)) {
-      return "trap";
-    }
-    // Verifica troféu
-    if (this.trophy.x === x && this.trophy.y === y) {
-      return "trophy";
-    }
+    if (this.trophy.x === x && this.trophy.y === y) return "trophy";
     return null;
   }
 
@@ -405,105 +454,131 @@ export class Stage {
    * @returns {boolean} true se houver parede ou buraco na posição
    */
   hasWallAt(x, y) {
-    const hasWall = this.walls.some(w => w.x === x && w.y === y);
-    const hasHole = this.holes.some(h => h.x === x && h.y === y);
-    return hasWall || hasHole;
+    const checkers = [
+      { elements: this.walls },
+      { elements: this.holes }
+    ];
+    for (const { elements } of checkers) {
+      if (elements.some(el => el.x === x && el.y === y)) return true;
+    }
+    if (!this.doorOpen && this.doors.some(d => d.x === x && d.y === y)) return true;
+    return false;
   }
 
   /**
-   * Move o ator para cima (absoluto)
-   * @returns {Object} {moved: boolean, reason: string}
+   * Verifica se o ator pode pular para uma direção
+   * Não pode pular se houver parede na posição intermediária ou na posição final
+   * Não pode pular se houver buraco na posição final
+   * Pode pular por cima de buracos e armadilhas na posição intermediária
+   * @param {string} direction - Direção do pulo (up, down, left, right)
+   * @returns {Object} {canJump: boolean, reason: string}
    */
-  moveUp() {
-    const nextY = this.y - 1;
+  canJump(direction) {
+    const deltas = {
+      up: { ix: 0, iy: -1, fx: 0, fy: -2 },
+      down: { ix: 0, iy: 1, fx: 0, fy: 2 },
+      left: { ix: -1, iy: 0, fx: -2, fy: 0 },
+      right: { ix: 1, iy: 0, fx: 2, fy: 0 }
+    };
+    const d = deltas[direction];
+    const intermediateX = this.x + d.ix;
+    const intermediateY = this.y + d.iy;
+    const finalX = this.x + d.fx;
+    const finalY = this.y + d.fy;
 
-    if (this.hasWallAt(this.x, nextY)) {
-      return {moved: false, reason: "wall"};
+    if (intermediateX < 0 || intermediateX >= this.gridSize ||
+        intermediateY < 0 || intermediateY >= this.gridSize) {
+      return {canJump: false, reason: "border"};
+    }
+    if (finalX < 0 || finalX >= this.gridSize || finalY < 0 || finalY >= this.gridSize) {
+      return {canJump: false, reason: "border"};
     }
 
-    if (nextY < 0) {
-      return {moved: false, reason: "border"};
+    const checkWall = (x, y) => this.walls.some(w => w.x === x && w.y === y);
+    if (checkWall(intermediateX, intermediateY) || checkWall(finalX, finalY)) {
+      return {canJump: false, reason: "wall"};
+    }
+    if (this.holes.some(h => h.x === finalX && h.y === finalY)) {
+      return {canJump: false, reason: "hole"};
+    }
+    const checkDoor = (x, y) => !this.doorOpen && this.doors.some(d => d.x === x && d.y === y);
+    if (checkDoor(intermediateX, intermediateY) || checkDoor(finalX, finalY)) {
+      return {canJump: false, reason: "door"};
     }
 
-    this.clearCurrentCell();
-    this.y = nextY;
-    this.markCurrentCell();
-
-    return {moved: true};
+    return {canJump: true, reason: "ok"};
   }
 
   /**
-   * Move o ator para baixo (absoluto)
+   * Move o ator em uma direção (genérico)
+   * @param {string} direction - Direção do movimento (up, down, left, right)
    * @returns {Object} {moved: boolean, reason: string}
    */
-  moveDown() {
-    const nextY = this.y + 1;
+  move(direction) {
+    const deltas = {
+      up: { x: 0, y: -1 },
+      down: { x: 0, y: 1 },
+      left: { x: -1, y: 0 },
+      right: { x: 1, y: 0 }
+    };
+    const delta = deltas[direction];
+    const nextX = this.x + delta.x;
+    const nextY = this.y + delta.y;
 
-    if (this.hasWallAt(this.x, nextY)) {
-      return {moved: false, reason: "wall"};
-    }
-
-    if (nextY >= this.gridSize) {
+    if (nextX < 0 || nextX >= this.gridSize || nextY < 0 || nextY >= this.gridSize) {
       return {moved: false, reason: "border"};
     }
-
-    this.clearCurrentCell();
-    this.y = nextY;
-    this.markCurrentCell();
-
-    return {moved: true};
-  }
-
-  /**
-   * Move o ator para esquerda (absoluto)
-   * @returns {Object} {moved: boolean, reason: string}
-   */
-  moveLeft() {
-    const nextX = this.x - 1;
-
-    if (this.hasWallAt(nextX, this.y)) {
+    if (this.hasWallAt(nextX, nextY)) {
+      SoundManager.playWallCollision();
       return {moved: false, reason: "wall"};
-    }
-
-    if (nextX < 0) {
-      return {moved: false, reason: "border"};
-    }
-
-    this.clearCurrentCell();
-    this.x = nextX;
-    this.markCurrentCell();
-
-    return {moved: true};
-  }
-
-  /**
-   * Move o ator para direita (absoluto)
-   * @returns {Object} {moved: boolean, reason: string}
-   */
-  moveRight() {
-    const nextX = this.x + 1;
-
-    if (this.hasWallAt(nextX, this.y)) {
-      return {moved: false, reason: "wall"};
-    }
-
-    if (nextX >= this.gridSize) {
-      return {moved: false, reason: "border"};
     }
 
     this.clearCurrentCell();
     this.x = nextX;
+    this.y = nextY;
     this.markCurrentCell();
-
+    SoundManager.playMove();
     return {moved: true};
   }
+
+  // Aliases para compatibilidade com API existente
+  moveUp() { return this.move("up"); }
+  moveDown() { return this.move("down"); }
+  moveLeft() { return this.move("left"); }
+  moveRight() { return this.move("right"); }
 
   /**
    * Verifica se há armadilha na posição atual do ator
    * @returns {boolean} true se houver armadilha
    */
   isTrapAtCurrentPosition() {
-    return this.traps.some(t => t.x === this.x && t.y === this.y);
+    return this.isElementAtPosition(this.traps);
+  }
+
+  /**
+   * Verifica se há armadilha de fogo na posição atual do ator
+   * @returns {boolean} true se houver fogo
+   */
+  isFireTrapAtCurrentPosition() {
+    return this.isElementAtPosition(this.fireTraps);
+  }
+
+  /**
+   * Método genérico para verificar se há elemento na posição atual
+   * @param {Array} elements - Array de elementos {x, y}
+   * @returns {boolean} true se houver elemento na posição atual
+   */
+  isElementAtPosition(elements) {
+    return elements.some(el => el.x === this.x && el.y === this.y);
+  }
+
+  /**
+   * Alterna o estado da armadilha de fogo (ativo/inativo)
+   */
+  toggleFireTrap() {
+    if (this.fireTraps.length === 0) return;
+    this.fireTrapActive = !this.fireTrapActive;
+    this.renderLevelElements();
   }
 
   /**
@@ -519,13 +594,36 @@ export class Stage {
    * @returns {string|null} "trap", "trophy" ou null
    */
   checkCollisionAtCurrentPosition() {
-    if (this.isTrapAtCurrentPosition()) {
-      return "trap";
+    // Verifica armadilhas (inclui fogo ativo)
+    const traps = [
+      { check: () => this.isTrapAtCurrentPosition(), type: "trap" },
+      { check: () => this.isFireTrapAtCurrentPosition() && this.fireTrapActive, type: "trap" }
+    ];
+    for (const { check, type } of traps) {
+      if (check()) return type;
     }
-    if (this.isTrophyAtCurrentPosition()) {
-      return "trophy";
+
+    // Verifica troféu
+    if (this.isTrophyAtCurrentPosition()) return "trophy";
+
+    // Verifica chave (ação especial)
+    if (this.isKeyAtCurrentPosition()) {
+      this.doorOpen = true;
+      this.keys = this.keys.filter(k => !(k.x === this.x && k.y === this.y));
+      this.renderLevelElements();
+      SoundManager.playKeyCollect();
+      SoundManager.playDoorOpen();
+      this.showKeyToast();
     }
     return null;
   }
 
+  showKeyToast() {
+    Toast.show("Chave coletada!", 0, "🗝️", "key");
   }
+
+  isKeyAtCurrentPosition() {
+    return this.isElementAtPosition(this.keys);
+  }
+
+}
