@@ -23,9 +23,9 @@ Ranking.prototype.render = function() {
     rowsHtml += "<tr class=\"rankingRow" + (position <= 3 ? " rankingRow--top" : "") + "\">" +
       "<td class=\"rankingPosition\">" + medal + " " + position + "</td>" +
       "<td class=\"rankingName\">" + this.escapeHtml(player.name) + "</td>" +
-      "<td class=\"rankingStat rankingStat--hideable\">" + player.completedLevels + "</td>" +
+      "<td class=\"rankingStat\">" + player.completedLevels + "</td>" +
       "<td class=\"rankingStat\">" + player.totalStars + "</td>" +
-      "<td class=\"rankingStat rankingStat--hideable\">" + player.totalBlocks + "</td>" +
+      "<td class=\"rankingStat\">" + player.totalBlocks + "</td>" +
     "</tr>";
   }
   
@@ -37,22 +37,20 @@ Ranking.prototype.render = function() {
           "Ranking" +
         "</h1>" +
         
-        "<div class=\"rankingTableWrapper\">" +
-          "<table class=\"rankingTable\">" +
-            "<thead>" +
-              "<tr>" +
-                "<th>#</th>" +
-                "<th>Jogador</th>" +
-                "<th>Níveis</th>" +
-                "<th>Estrelas</th>" +
-                "<th>Blocos</th>" +
-              "</tr>" +
-            "</thead>" +
-            "<tbody>" +
-              rowsHtml +
-            "</tbody>" +
-          "</table>" +
-        "</div>" +
+        "<table class=\"rankingTable\">" +
+          "<thead>" +
+            "<tr>" +
+              "<th>#</th>" +
+              "<th>Jogador</th>" +
+              "<th>Níveis</th>" +
+              "<th>Estrelas</th>" +
+              "<th>Blocos</th>" +
+            "</tr>" +
+          "</thead>" +
+          "<tbody>" +
+            rowsHtml +
+          "</tbody>" +
+        "</table>" +
         
         "<div class=\"rankingCriteria\">" +
           "<p><strong>Critérios de classificação:</strong></p>" +

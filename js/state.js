@@ -192,17 +192,8 @@ GameState.prototype.calculateStars = function(usedBlocks) {
 GameState.prototype.completeLevel = function(usedBlocks) {
   const stars = this.calculateStars(usedBlocks);
   const level = this.getCurrentLevel();
-  
-  const currentStars = this.getStarsForLevel(level);
-  if (currentStars === 0 || stars > currentStars) {
-    this.setStarsForLevel(level, stars);
-  }
-  
-  const currentBlocks = this.getBlocksUsedForLevel(level);
-  if (currentBlocks === 0 || usedBlocks < currentBlocks) {
-    this.saveBlocksUsed(level, usedBlocks);
-  }
-  
+  this.setStarsForLevel(level, stars);
+  this.saveBlocksUsed(level, usedBlocks);
   return stars;
 };
 
