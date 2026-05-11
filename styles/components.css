@@ -288,6 +288,11 @@
   white-space: normal;
 }
 
+/* tooltips individuais na paleta são substituídas pelas tooltips por categoria */
+.blockPalette .blockTooltip {
+  display: none !important;
+}
+
 .blockTooltipTrigger:hover + .blockTooltip,
 .blockTooltipTrigger:focus-visible + .blockTooltip {
   display: block;
@@ -308,26 +313,46 @@
 }
 
 /**
- * Tooltips de "start" e "mover" — posicionados mais abaixo no eixo Y
+ * Tooltips de "repeat", "jump" e "direction" — posicionados abaixo no eixo Y
  * para evitar que sejam cortados no topo da paleta.
  */
-.block--start > .blockTooltip {
-  bottom: -150px;
+.block--repeat > .blockTooltip,
+.block--jump > .blockTooltip,
+.block--direction > .blockTooltip {
+  bottom: -20px;
 }
 
-.block--move > .blockTooltip {
-  bottom: -110px;
-}
-
-.block--start > .blockTooltip::after,
-.block--move > .blockTooltip::after {
+.block--repeat > .blockTooltip::after,
+.block--jump > .blockTooltip::after,
+.block--direction > .blockTooltip::after {
   display: none;
 }
 
-/* Eleva o stacking context do bloco inteiro quando o tooltip está visível,
-   para que o tooltip não seja coberto pelo próximo bloco da paleta */
-.blockPalette .block:has(.blockTooltipTrigger:hover) {
-  z-index: 3;
+/* === TOOLTIP FLUTUANTE (position: fixed, nunca cortado) === */
+.blockTooltipFloating {
+  position: fixed;
+  max-height: 0;
+  overflow: hidden;
+  background: var(--color-primary-container);
+  color: var(--color-on-primary);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-body-size);
+  font-weight: var(--font-body-weight);
+  line-height: var(--font-body-line-height);
+  width: 240px;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+  text-align: left;
+  pointer-events: none;
+  white-space: normal;
+  opacity: 0;
+  transition: opacity var(--transition-hover);
+}
+
+.blockTooltipFloating--visible {
+  max-height: 200px;
+  opacity: 90%;
 }
 
 .blockRepeatInputWrapper {
