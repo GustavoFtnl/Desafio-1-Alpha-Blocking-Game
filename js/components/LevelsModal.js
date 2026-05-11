@@ -46,7 +46,10 @@ export class LevelsModal {
     this.modalElement.setAttribute("aria-label", "Seleção de nível");
     this.modalElement.setAttribute("tabindex", "-1");
 
-    const levelsList = this.generateLevelsList(currentLevel, getStarsForLevelFn);
+    const levelsList = this.generateLevelsList(
+      currentLevel,
+      getStarsForLevelFn,
+    );
 
     this.modalElement.innerHTML = `
       <button class="modal_close" aria-label="Fechar modal">
@@ -93,7 +96,9 @@ export class LevelsModal {
         ? `Nível ${level}, ${stars} estrela${stars !== 1 ? "s" : ""}`
         : `Nível ${level} bloqueado - complete o nível anterior para desbloquear`;
 
-      const starsHtml = isUnlocked ? this.generateStarsSvg(stars) : this.generateLockedIcon();
+      const starsHtml = isUnlocked
+        ? this.generateStarsSvg(stars)
+        : this.generateLockedIcon();
 
       html += `
         <button 
@@ -111,7 +116,6 @@ export class LevelsModal {
 
     return html;
   }
-
   /**
    * Verifica se um nível está desbloqueado
    * @param {number} level - Número do nível
@@ -121,7 +125,9 @@ export class LevelsModal {
   isLevelUnlocked(level, getStarsForLevelFn) {
     if (level === 1) return true;
 
-    const previousLevelStars = getStarsForLevelFn ? getStarsForLevelFn(level - 1) : 0;
+    const previousLevelStars = getStarsForLevelFn
+      ? getStarsForLevelFn(level - 1)
+      : 0;
     return previousLevelStars >= 1;
   }
 

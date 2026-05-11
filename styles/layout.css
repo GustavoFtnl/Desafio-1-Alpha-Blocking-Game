@@ -67,14 +67,14 @@
 }
 
 .topBar_progress {
-  display: flex;
+  display: none;
   flex-direction: column;
   width: 192px;
   gap: var(--space-xs);
 }
 
 .topBar_progressLabel {
-  display: flex;
+  display: none;
   justify-content: space-between;
   font-size: var(--font-label-bold-size);
   font-weight: var(--font-label-bold-weight);
@@ -83,6 +83,7 @@
 }
 
 .topBar_progressBar {
+  display: none;
   height: 8px;
   width: 100%;
   background-color: var(--color-surface-container-highest);
@@ -91,6 +92,7 @@
 }
 
 .topBar_progressFill {
+  display: none;
   height: 100%;
   width: 0%;
   background-color: var(--color-secondary-container);
@@ -645,7 +647,6 @@
 .keyIcon {
   font-size: 24px;
 }
-
 /* === RESPONSIVIDADE - STAGE (1024px) === */
 @media (max-width: 1366px) {
   .stageContainer {

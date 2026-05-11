@@ -18,7 +18,6 @@ export class Runner {
     this.pausePromise = null;
     this.pauseResolve = null;
     this.levelCompleted = false;
-
     this.commandDelay = 300;
   }
 
@@ -42,7 +41,7 @@ export class Runner {
       for (let i = 0; i < this.instructions.length; i++) {
         const instruction = this.instructions[i];
         const nextInstruction = this.instructions[i + 1];
-        
+
         if (!this.isRunning) break;
 
         if (this.isPaused) {
@@ -54,7 +53,11 @@ export class Runner {
         this.setBlockExecuting(instruction.blockElement, true);
 
         // Lógica do toggle do fogo (pula repeat, que lida internamente em handleRepeat)
-        if (instruction.type !== "repeat" && this.stage.fireTraps && this.stage.fireTraps.length > 0) {
+        if (
+          instruction.type !== "repeat" &&
+          this.stage.fireTraps &&
+          this.stage.fireTraps.length > 0
+        ) {
           const atorNoFogo = this.stage.isFireTrapAtCurrentPosition();
           const fogoAtivoAntes = this.stage.fireTrapActive;
 
@@ -93,7 +96,10 @@ export class Runner {
             this.stage.toggleFireTrap();
 
             // Verifica se há fogo ativo na posição atual antes do movimento
-            if (this.stage.isFireTrapAtCurrentPosition() && this.stage.fireTrapActive) {
+            if (
+              this.stage.isFireTrapAtCurrentPosition() &&
+              this.stage.fireTrapActive
+            ) {
               this.setBlockExecuting(instruction.blockElement, false);
               this.handleTrapHit();
               return;
@@ -127,9 +133,10 @@ export class Runner {
         if (!this.isRunning) break;
 
         // Só desativa se a próxima instrução for de um bloco diferente
-        const shouldDeactivate = !nextInstruction || 
+        const shouldDeactivate =
+          !nextInstruction ||
           nextInstruction.blockElement !== instruction.blockElement;
-        
+
         if (shouldDeactivate) {
           this.setBlockExecuting(instruction.blockElement, false);
         }
@@ -182,7 +189,7 @@ export class Runner {
 
       default:
         console.warn(`Tipo de instrução desconhecido: ${instruction.type}`);
-        return {moved: false};
+        return { moved: false };
     }
   }
 
@@ -197,7 +204,7 @@ export class Runner {
     const canJumpResult = this.stage.canJump(direction);
 
     if (!canJumpResult.canJump) {
-      return {moved: false, reason: canJumpResult.reason};
+      return { moved: false, reason: canJumpResult.reason };
     }
 
     switch (direction) {
@@ -220,10 +227,10 @@ export class Runner {
 
     const finalCollision = this.stage.checkCollisionAtCurrentPosition();
     if (finalCollision === "trap") {
-      return {moved: true};
+      return { moved: true };
     }
 
-    return {moved: true};
+    return { moved: true };
   }
 
   /**
@@ -234,7 +241,7 @@ export class Runner {
    */
   async handleRepeat(count, body) {
     if (!body || body.length === 0) {
-      return {moved: false};
+      return { moved: false };
     }
 
     let anyMoved = false;
@@ -249,7 +256,7 @@ export class Runner {
       for (let j = 0; j < body.length; j++) {
         const subInstruction = body[j];
         const nextSubInstruction = body[j + 1];
-        
+
         if (!this.isRunning) break;
 
         if (this.isPaused) {
@@ -271,8 +278,10 @@ export class Runner {
               anyMoved = true;
               this.stage.toggleFireTrap();
 
-              const fogoIndex = posicaoAntes.y * this.stage.gridSize + posicaoAntes.x;
-              const atualIndex = this.stage.y * this.stage.gridSize + this.stage.x;
+              const fogoIndex =
+                posicaoAntes.y * this.stage.gridSize + posicaoAntes.x;
+              const atualIndex =
+                this.stage.y * this.stage.gridSize + this.stage.x;
 
               if (atualIndex !== fogoIndex) {
                 const collision = this.stage.checkCollisionAtCurrentPosition();
@@ -280,12 +289,12 @@ export class Runner {
                 if (collision === "trap") {
                   this.setBlockExecuting(subInstruction.blockElement, false);
                   this.handleTrapHit();
-                  return {moved: false};
+                  return { moved: false };
                 }
                 if (collision === "trophy") {
                   this.setBlockExecuting(subInstruction.blockElement, false);
                   this.handleVictory();
-                  return {moved: false};
+                  return { moved: false };
                 }
               }
             }
@@ -297,7 +306,8 @@ export class Runner {
             }
             if (!this.isRunning) break;
 
-            const shouldDeactivate = !nextSubInstruction || 
+            const shouldDeactivate =
+              !nextSubInstruction ||
               nextSubInstruction.blockElement !== subInstruction.blockElement;
 
             if (shouldDeactivate) {
@@ -307,10 +317,13 @@ export class Runner {
           } else {
             this.stage.toggleFireTrap();
 
-            if (this.stage.isFireTrapAtCurrentPosition() && this.stage.fireTrapActive) {
+            if (
+              this.stage.isFireTrapAtCurrentPosition() &&
+              this.stage.fireTrapActive
+            ) {
               this.setBlockExecuting(subInstruction.blockElement, false);
               this.handleTrapHit();
-              return {moved: false};
+              return { moved: false };
             }
           }
         }
@@ -325,13 +338,13 @@ export class Runner {
           if (collision === "trap") {
             this.setBlockExecuting(subInstruction.blockElement, false);
             this.handleTrapHit();
-            return {moved: false};
+            return { moved: false };
           }
 
           if (collision === "trophy") {
             this.setBlockExecuting(subInstruction.blockElement, false);
             this.handleVictory();
-            return {moved: false};
+            return { moved: false };
           }
         }
 
@@ -342,16 +355,17 @@ export class Runner {
         }
         if (!this.isRunning) break;
 
-        const shouldDeactivate = !nextSubInstruction || 
+        const shouldDeactivate =
+          !nextSubInstruction ||
           nextSubInstruction.blockElement !== subInstruction.blockElement;
-        
+
         if (shouldDeactivate) {
           this.setBlockExecuting(subInstruction.blockElement, false);
         }
       }
     }
 
-    return {moved: anyMoved};
+    return { moved: anyMoved };
   }
 
   /**
@@ -361,7 +375,7 @@ export class Runner {
     this.isRunning = false;
     this.isPaused = false;
 
-    this.instructions.forEach(instruction => {
+    this.instructions.forEach((instruction) => {
       this.setBlockExecuting(instruction.blockElement, false);
     });
 
@@ -403,7 +417,8 @@ export class Runner {
         if (blockElement.classList.contains("block--direction")) {
           const parentContainer = blockElement.closest(".blockContainer");
           if (parentContainer) {
-            const parentBlock = parentContainer.querySelector(":scope > .block");
+            const parentBlock =
+              parentContainer.querySelector(":scope > .block");
             if (parentBlock) {
               parentBlock.classList.remove("executing");
               void parentBlock.offsetWidth;
@@ -418,7 +433,8 @@ export class Runner {
         if (blockElement.classList.contains("block--direction")) {
           const parentContainer = blockElement.closest(".blockContainer");
           if (parentContainer) {
-            const parentBlock = parentContainer.querySelector(":scope > .block");
+            const parentBlock =
+              parentContainer.querySelector(":scope > .block");
             if (parentBlock) {
               parentBlock.classList.remove("executing");
             }
@@ -458,7 +474,7 @@ export class Runner {
     this.isPaused = false;
     this.levelCompleted = false;
 
-    this.instructions.forEach(instruction => {
+    this.instructions.forEach((instruction) => {
       this.setBlockExecuting(instruction.blockElement, false);
     });
 
@@ -473,7 +489,7 @@ export class Runner {
    * @returns {Promise} Resolve quando resume
    */
   waitForResume() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this.pauseResolve = resolve;
     });
   }
@@ -484,7 +500,7 @@ export class Runner {
    * @returns {Promise} Resolve após o delay
    */
   delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -494,8 +510,8 @@ export class Runner {
     const event = new CustomEvent("levelComplete", {
       bubbles: true,
       detail: {
-        success: true
-      }
+        success: true,
+      },
     });
     document.dispatchEvent(event);
   }
@@ -509,8 +525,8 @@ export class Runner {
       bubbles: true,
       detail: {
         success: false,
-        reason: reason
-      }
+        reason: reason,
+      },
     });
     document.dispatchEvent(event);
   }
@@ -523,8 +539,8 @@ export class Runner {
       bubbles: true,
       detail: {
         success: false,
-        reason: "incomplete"
-      }
+        reason: "incomplete",
+      },
     });
     document.dispatchEvent(event);
   }
@@ -536,8 +552,8 @@ export class Runner {
     const event = new CustomEvent("executionComplete", {
       bubbles: true,
       detail: {
-        reachedEnd: true
-      }
+        reachedEnd: true,
+      },
     });
     document.dispatchEvent(event);
   }
