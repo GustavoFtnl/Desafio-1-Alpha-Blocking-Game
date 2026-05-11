@@ -14,7 +14,6 @@ import { Ranking } from "./pages/Ranking.js";
 
 const App = function() {
   this.mode = "home";
-  this.gameListeners = {};
   this.init();
 };
 
@@ -70,9 +69,7 @@ this.mode = "home";
 };
 
 App.prototype.showGameScreen = function() {
-  this.removeGameListeners();
-  
-  this.mode = "game";
+this.mode = "game";
   const root = DOM.getElement(CONFIG.DOM_IDS.ROOT);
   root.innerHTML = '<div class="gameScreen"></div>';
 
@@ -82,29 +79,6 @@ App.prototype.showGameScreen = function() {
   setTimeout(function() {
     document.dispatchEvent(new CustomEvent("loadWorkspace"));
   }, 100);
-};
-
-App.prototype.removeGameListeners = function() {
-  if (this.game && this.game.onLevelComplete) {
-    document.removeEventListener("levelComplete", this.game.onLevelComplete);
-    this.game.onLevelComplete = null;
-  }
-  if (this.game && this.game.onLevelFailed) {
-    document.removeEventListener("levelFailed", this.game.onLevelFailed);
-    this.game.onLevelFailed = null;
-  }
-  if (this.game && this.game.onExecutionComplete) {
-    document.removeEventListener("executionComplete", this.game.onExecutionComplete);
-    this.game.onExecutionComplete = null;
-  }
-  if (this.game && this.game.onSaveWorkspace) {
-    document.removeEventListener("saveWorkspace", this.game.onSaveWorkspace);
-    this.game.onSaveWorkspace = null;
-  }
-  if (this.game && this.game.onLoadWorkspace) {
-    document.removeEventListener("loadWorkspace", this.game.onLoadWorkspace);
-    this.game.onLoadWorkspace = null;
-  }
 };
 
 App.prototype.showRankingScreen = function() {

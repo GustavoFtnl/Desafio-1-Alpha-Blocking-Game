@@ -21,8 +21,6 @@ import { Toast } from "../components/Toast.js";
 
 const Game = function(container) {
   this.container = container;
-  this.levelCompleteHandled = false;
-  this.lastLevelCompleteTime = 0;
   this.isMobileStageOpen = false;
   this.render();
 };
@@ -79,42 +77,30 @@ Game.prototype.setupListeners = function() {
     self.stage.updateBlockCounter(e.detail.count);
   });
 
-  const stageContainer = DOM.getStageContainer();
-  stageContainer.addEventListener("stageRun", function() { self.runCode(); });
-  stageContainer.addEventListener("stagePause", function() { self.togglePause(); });
-  stageContainer.addEventListener("stageClear", function() { self.clearWorkspace(); });
-
-  this.onLevelComplete = function(e) {
   document.addEventListener("levelComplete", function(e) {
     if (e.detail.success) {
       self.handleLevelComplete();
     }
-  };
-  document.addEventListener("levelComplete", this.onLevelComplete);
+  });
 
-  this.onLevelFailed = function(e) {
+  document.addEventListener("levelFailed", function(e) {
     if (e.detail.reason === "trap") {
       self.handleLevelFailed();
     }
-  };
-  document.addEventListener("levelFailed", this.onLevelFailed);
+  });
 
-  this.onExecutionComplete = function(e) {
+  document.addEventListener("executionComplete", function(e) {
     if (e.detail.reachedEnd) {
       self.handleExecutionComplete();
     }
-  };
-  document.addEventListener("executionComplete", this.onExecutionComplete);
+  });
 
-  this.onSaveWorkspace = function() {
+  document.addEventListener("saveWorkspace", function() {
     self.saveWorkspaceBlocks();
-  };
-  document.addEventListener("saveWorkspace", this.onSaveWorkspace);
+  });
 
-  this.onLoadWorkspace = function() {
+  document.addEventListener("loadWorkspace", function() {
     self.loadWorkspaceBlocks();
-  };
-  document.addEventListener("loadWorkspace", this.onLoadWorkspace);
   });
 
   // Sidebar mobile
@@ -252,8 +238,6 @@ Game.prototype.togglePause = function() {
 };
 
 Game.prototype.handleLevelFailed = function() {
-  this.levelCompleteHandled = false;
-  this.lastLevelCompleteTime = 0;
   this.clearExecutingBlocks();
   this.enableExecutionButtons();
   this.stage.disablePauseButton();
@@ -302,8 +286,6 @@ Game.prototype.setRetryButtonToRun = function() {
 };
 
 Game.prototype.resetStageFromRetry = function() {
-  this.levelCompleteHandled = false;
-  this.lastLevelCompleteTime = 0;
   this.stage.reset();
   this.setRetryButtonToRun();
   Toast.hide(true);
@@ -326,15 +308,6 @@ Game.prototype.clearWorkspace = function() {
 };
 
 Game.prototype.handleLevelComplete = function() {
-  if (this.modal && this.modal.isOpen) return;
-  
-  const now = Date.now();
-  if (now - this.lastLevelCompleteTime < 500) return;
-  this.lastLevelCompleteTime = now;
-
-  if (this.levelCompleteHandled) return;
-  this.levelCompleteHandled = true;
-
   this.clearExecutingBlocks();
 
   if (this.runner.running) {
@@ -628,8 +601,6 @@ export { Game };
  * Carrega a configuração do nível atual e aplica no Stage
  */
 Game.prototype.loadLevelConfig = function() {
-  this.levelCompleteHandled = false;
-  this.lastLevelCompleteTime = 0;
   const currentLevel = gameState.getCurrentLevel();
   const levelConfig = getLevelConfig(currentLevel);
   
