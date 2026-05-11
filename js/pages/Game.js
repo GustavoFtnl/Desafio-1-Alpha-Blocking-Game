@@ -486,6 +486,7 @@ Game.prototype.openMobileSidebar = function () {
           decrementBtn.className = "blockRepeatBtn blockRepeatBtn--decrement";
           decrementBtn.textContent = "-";
           decrementBtn.setAttribute("aria-label", "Diminuir");
+          decrementBtn.disabled = true;
 
           const input = document.createElement("input");
           input.type = "number";
@@ -493,6 +494,7 @@ Game.prototype.openMobileSidebar = function () {
           input.value = 1;
           input.min = 1;
           input.max = 10;
+          input.disabled = true;
           input.setAttribute("aria-label", "Quantidade de repetições");
 
           const incrementBtn = document.createElement("button");
@@ -500,6 +502,7 @@ Game.prototype.openMobileSidebar = function () {
           incrementBtn.className = "blockRepeatBtn blockRepeatBtn--increment";
           incrementBtn.textContent = "+";
           incrementBtn.setAttribute("aria-label", "Aumentar");
+          incrementBtn.disabled = true;
 
           inputWrapper.appendChild(decrementBtn);
           inputWrapper.appendChild(input);

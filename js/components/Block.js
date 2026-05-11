@@ -45,6 +45,7 @@ export class Block {
       decrementBtn.className = "blockRepeatBtn blockRepeatBtn--decrement";
       decrementBtn.textContent = "-";
       decrementBtn.setAttribute("aria-label", "Diminuir");
+      decrementBtn.disabled = true;
 
       const input = document.createElement("input");
       input.type = "number";
@@ -52,6 +53,7 @@ export class Block {
       input.value = 1;
       input.min = 1;
       input.max = 10;
+      input.disabled = true;
       input.setAttribute("aria-label", "Quantidade de repetições");
 
       const incrementBtn = document.createElement("button");
@@ -59,6 +61,7 @@ export class Block {
       incrementBtn.className = "blockRepeatBtn blockRepeatBtn--increment";
       incrementBtn.textContent = "+";
       incrementBtn.setAttribute("aria-label", "Aumentar");
+      incrementBtn.disabled = true;
 
       inputWrapper.appendChild(decrementBtn);
       inputWrapper.appendChild(input);
@@ -197,7 +200,23 @@ export class Block {
       }
     }
 
+    Block.enableRepeatInput(clone);
+
     return clone;
+  }
+
+  /**
+   * Habilita o input de repetição do bloco
+   * @param {HTMLElement} block - Bloco com input de repetição
+   */
+  static enableRepeatInput(block) {
+    const input = block.querySelector('.blockRepeatInput');
+    const decrementBtn = block.querySelector('.blockRepeatBtn--decrement');
+    const incrementBtn = block.querySelector('.blockRepeatBtn--increment');
+
+    if (input) input.disabled = false;
+    if (decrementBtn) decrementBtn.disabled = false;
+    if (incrementBtn) incrementBtn.disabled = false;
   }
 
   /**
@@ -225,14 +244,14 @@ export class Block {
    */
   static getConfigs() {
     return [
-      { type: "block--start", icon: "play_arrow", text: "Início", category: "start" },
+      { type: "block--start", icon: "play_arrow", text: "Início", category: "control" },
+      { type: "block--repeat", icon: "loop", text: "Repetir", category: "control" },
       { type: "block--move", icon: "move_up", text: "Mover", category: "movement" },
       { type: "block--jump", icon: "upgrade", text: "Pular", category: "movement" },
       { type: "block--direction", icon: "→", text: "Direita", category: "direction" },
       { type: "block--direction", icon: "←", text: "Esquerda", category: "direction" },
       { type: "block--direction", icon: "↑", text: "Cima", category: "direction" },
       { type: "block--direction", icon: "↓", text: "Baixo", category: "direction" },
-      { type: "block--repeat", icon: "loop", text: "Repetir", category: "control" },
     ];
   }
 
@@ -242,10 +261,9 @@ export class Block {
    */
   static getCategories() {
     return [
-      { id: "start", name: "Início", icon: "play_circle" },
+      { id: "control", name: "Controle", icon: "control_point" },
       { id: "movement", name: "Movimento", icon: "directions_run" },
       { id: "direction", name: "Direção", icon: "arrow_forward" },
-      { id: "control", name: "Controle", icon: "repeat" },
     ];
   }
 
