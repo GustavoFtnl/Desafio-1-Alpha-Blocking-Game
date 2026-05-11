@@ -1141,9 +1141,9 @@ html.theme-transitioning * {
 }
 
 .topBar_userName {
-  font-size: var(--font-body-size);
+  font-size: var(--font-h2-size);
   font-weight: 600;
-  color: var(--color-secondary);
+  color: var(--color-secondary-container);
 }
 
 .btn--exit {
