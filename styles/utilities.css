@@ -261,7 +261,6 @@
 
 /* Desktop (769px+) - Stage fica visível no layout */
 @media (min-width: 769px) {
-  .floatingSidebarBtn,
   .floatingStageBtn {
     display: none !important;
   }
