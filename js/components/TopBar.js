@@ -4,6 +4,7 @@
  * Comentários em português do Brasil conforme AGENTS.md
  */
 
+import CONFIG from "../config.js";
 import { gameState } from "../state.js";
 import { LevelsModal } from "./LevelsModal.js";
 
@@ -14,9 +15,11 @@ const TopBar = function (container) {
 };
 
 TopBar.prototype.render = function () {
+  const self = this;
   const userName = gameState.getUserName() || "";
   const currentLevel = gameState.getCurrentLevel();
   const currentStars = gameState.getStarsForLevel(currentLevel);
+  const isDark = this.isDarkMode();
 
   this.container.innerHTML =
     '<div class="topBar_leftSection">' +
@@ -35,6 +38,11 @@ TopBar.prototype.render = function () {
     "</div>" +
     "</div>" +
     '<div class="topBar_rightSection">' +
+    '<button class="btn btn--theme" id="themeToggleBtn" aria-label="Alternar modo escuro">' +
+    '<span class="material-symbols-outlined">' +
+    (isDark ? "light_mode" : "dark_mode") +
+    "</span>" +
+    "</button>" +
     '<button class="btn btn--levelSelect" id="levelSelectBtn" aria-label="Selecionar nível">' +
     '<span class="levelSelectText">Nível ' +
     currentLevel +
@@ -52,7 +60,43 @@ TopBar.prototype.render = function () {
     "</button>" +
     "</div>";
 
+  this.applyTheme();
   this.setupListeners();
+};
+
+TopBar.prototype.isDarkMode = function () {
+  try {
+    return localStorage.getItem(CONFIG.STORAGE_KEYS.THEME) === "dark";
+  } catch (error) {
+    return false;
+  }
+};
+
+TopBar.prototype.applyTheme = function () {
+  const isDark = this.isDarkMode();
+  const html = document.documentElement;
+
+  html.classList.add("theme-transitioning");
+  html.setAttribute("data-theme", isDark ? "dark" : "light");
+
+  setTimeout(function () {
+    html.classList.remove("theme-transitioning");
+  }, 300);
+};
+
+TopBar.prototype.toggleDarkMode = function () {
+  const isDark = !this.isDarkMode();
+  try {
+    localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, isDark ? "dark" : "light");
+  } catch (error) {
+    console.error("Erro ao salvar tema:", error);
+  }
+  this.applyTheme();
+
+  const icon = this.container.querySelector("#themeToggleBtn .material-symbols-outlined");
+  if (icon) {
+    icon.textContent = isDark ? "light_mode" : "dark_mode";
+  }
 };
 
 TopBar.prototype.generateStarsHtml = function (starCount) {
@@ -74,6 +118,13 @@ TopBar.prototype.generateStarsHtml = function (starCount) {
 
 TopBar.prototype.setupListeners = function () {
   const self = this;
+
+  const themeToggleBtn = this.container.querySelector("#themeToggleBtn");
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", function () {
+      self.toggleDarkMode();
+    });
+  }
 
   const exitBtn = this.container.querySelector("#exitBtn");
   if (exitBtn) {

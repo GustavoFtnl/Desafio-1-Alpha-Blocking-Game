@@ -11,6 +11,7 @@ const CONFIG = {
     USER_NAME: "alphaBlockingGame_userName",
     USERS: "alphaBlockingGame_users",
     WORKSPACE_BLOCKS: "alphaBlockingGame_workspaceBlocks",
+    THEME: "alphaBlockingGame_theme",
   },
 
   LEVEL_CONFIG: {
