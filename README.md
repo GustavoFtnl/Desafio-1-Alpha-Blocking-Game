@@ -9,6 +9,7 @@ O projeto é um **MVP funcional** desenvolvido inteiramente com HTML, CSS e Java
 ### 🎯 Objetivo
 
 Ensinar conceitos fundamentais de programação como:
+
 - **Sequenciamento**: ordenar blocos de comando
 - **Loops**: usar blocos de repetição
 - **Condicionais implícitas**: desviar de obstáculos
@@ -73,17 +74,18 @@ Ensinar conceitos fundamentais de programação como:
 
 ## 🧩 Sistema de Blocos
 
-| Bloco | Tipo | Função |
-|-------|------|--------|
-| **Início** | Controle | Ponto de partida da execução |
-| **Mover** | Movimento | Move o personagem 1 casa na direção escolhida |
-| **Pular** | Movimento | Pula 2 casas (ignora armadilhas no meio do caminho) |
-| **Direção (→←↑↓)** | Direção | Especifica direção do movimento/pulo |
-| **Repetir** | Controle | Repete blocos internos N vezes (1-10) |
+| Bloco              | Tipo      | Função                                              |
+| ------------------ | --------- | --------------------------------------------------- |
+| **Início**         | Controle  | Ponto de partida da execução                        |
+| **Mover**          | Movimento | Move o personagem 1 casa na direção escolhida       |
+| **Pular**          | Movimento | Pula 2 casas (ignora armadilhas no meio do caminho) |
+| **Direção (→←↑↓)** | Direção   | Especifica direção do movimento/pulo                |
+| **Repetir**        | Controle  | Repete blocos internos N vezes (1-10)               |
 
 ## 🎮 Mecânicas do Jogo
 
 ### Grid 10x10
+
 - Personagem começa na posição **start** (verde)
 - Objetivo: chegar no **troféu** (🏆)
 - **Paredes (🧱)**: bloqueiam movimento — verificadas antes de executar
@@ -93,12 +95,14 @@ Ensinar conceitos fundamentais de programação como:
 - **Portas e Chaves (🚪🗝️)**: portas são destrancadas ao coletar a chave
 
 ### Execução
+
 - Clique em **EXECUTAR** para rodar a sequência de blocos
 - A execução é **assíncrona e cadenciada** (um comando por vez, com delay visual)
 - Botões de **Pausar/Retomar** e **Limpar**
 - Blocos em execução ganham destaque visual (classe `executing`)
 
 ### Sistema de Estrelas ⭐
+
 - **3 estrelas**: usar ≤ `maxBlocks` blocos
 - **2 estrelas**: usar até 1.5× `maxBlocks`
 - **1 estrela**: exceder o limite
@@ -109,13 +113,13 @@ São **10 níveis** crescentes em dificuldade:
 
 1. **Arena Central** — Introdução ao movimento
 2. **Corredor Interno** — Primeiras paredes
-3. **Escada Diagonal** — Buracos e caminho tortuoso
-4. **Coluna de Buracos** — Mais buracos e armadilhas
-5. **Labirinto de Buracos** — Labirinto com muitas armadilhas
-6. **Campo de Fogo** — Armadilhas de fogo alternadas
-7. **Chave do Corredor** — Mecânica de chave e porta
-8. **Corredor em Chamas** — Fogo em corredor estreito
-9. **Porta e Chave** — Múltiplas chaves e portas
+3. **Escada Diagonal** — Caminho diagonal
+4. **Coluna de Buracos** — Introdução a buracos
+5. **Labirinto de Buracos** — Labirinto com muitos buracos
+6. **Chave do Corredor** — Mecânica de chave e porta
+7. **Porta e Chave** — Múltiplas chaves e portas
+8. **Campo de Fogo** — Armadilhas de fogo alternadas introduzidas
+9. **Corredor em Chamas** — Fogo em corredor estreito
 10. **Fortaleza Final** — Nível desafiador combinando todos os elementos
 
 ## 💾 Persistência
