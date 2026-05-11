@@ -45,6 +45,7 @@ export class Block {
       decrementBtn.className = "blockRepeatBtn blockRepeatBtn--decrement";
       decrementBtn.textContent = "-";
       decrementBtn.setAttribute("aria-label", "Diminuir");
+      decrementBtn.disabled = true;
 
       const input = document.createElement("input");
       input.type = "number";
@@ -52,6 +53,7 @@ export class Block {
       input.value = 1;
       input.min = 1;
       input.max = 10;
+      input.disabled = true;
       input.setAttribute("aria-label", "Quantidade de repetições");
 
       const incrementBtn = document.createElement("button");
@@ -59,6 +61,7 @@ export class Block {
       incrementBtn.className = "blockRepeatBtn blockRepeatBtn--increment";
       incrementBtn.textContent = "+";
       incrementBtn.setAttribute("aria-label", "Aumentar");
+      incrementBtn.disabled = true;
 
       inputWrapper.appendChild(decrementBtn);
       inputWrapper.appendChild(input);
@@ -197,7 +200,23 @@ export class Block {
       }
     }
 
+    Block.enableRepeatInput(clone);
+
     return clone;
+  }
+
+  /**
+   * Habilita o input de repetição do bloco
+   * @param {HTMLElement} block - Bloco com input de repetição
+   */
+  static enableRepeatInput(block) {
+    const input = block.querySelector('.blockRepeatInput');
+    const decrementBtn = block.querySelector('.blockRepeatBtn--decrement');
+    const incrementBtn = block.querySelector('.blockRepeatBtn--increment');
+
+    if (input) input.disabled = false;
+    if (decrementBtn) decrementBtn.disabled = false;
+    if (incrementBtn) incrementBtn.disabled = false;
   }
 
   /**
@@ -225,15 +244,49 @@ export class Block {
    */
   static getConfigs() {
     return [
-      { type: "block--start", icon: "play_arrow", text: "Início" },
-      { type: "block--move", icon: "move_up", text: "Mover" },
-      { type: "block--jump", icon: "upgrade", text: "Pular" },
-      { type: "block--direction", icon: "→", text: "Direita" },
-      { type: "block--direction", icon: "←", text: "Esquerda" },
-      { type: "block--direction", icon: "↑", text: "Cima" },
-      { type: "block--direction", icon: "↓", text: "Baixo" },
-      { type: "block--repeat", icon: "loop", text: "Repetir" },
+      { type: "block--start", icon: "play_arrow", text: "Início", category: "control" },
+      { type: "block--repeat", icon: "loop", text: "Repetir", category: "control" },
+      { type: "block--move", icon: "move_up", text: "Mover", category: "movement" },
+      { type: "block--jump", icon: "upgrade", text: "Pular", category: "movement" },
+      { type: "block--direction", icon: "→", text: "Direita", category: "direction" },
+      { type: "block--direction", icon: "←", text: "Esquerda", category: "direction" },
+      { type: "block--direction", icon: "↑", text: "Cima", category: "direction" },
+      { type: "block--direction", icon: "↓", text: "Baixo", category: "direction" },
     ];
+  }
+
+  /**
+   * Retorna as categorias de blocos com seus nomes traduzidos
+   * @returns {Array} Array de objetos com id e name
+   */
+  static getCategories() {
+    return [
+      { id: "control", name: "Controle", icon: "control_point" },
+      { id: "movement", name: "Movimento", icon: "directions_run" },
+      { id: "direction", name: "Direção", icon: "arrow_forward" },
+    ];
+  }
+
+  /**
+   * Retorna os blocos agrupados por categoria
+   * @returns {Object} Objeto com categorias como chaves e arrays de blocos como valores
+   */
+  static getConfigsByCategory() {
+    const configs = Block.getConfigs();
+    const categories = Block.getCategories();
+    const grouped = {};
+
+    categories.forEach((cat) => {
+      grouped[cat.id] = [];
+    });
+
+    configs.forEach((config) => {
+      if (grouped[config.category]) {
+        grouped[config.category].push(config);
+      }
+    });
+
+    return grouped;
   }
 
   static validateConfig(config) {

@@ -13,7 +13,7 @@ const BLOCK_TOOLTIPS = {
     "Faz o personagem pular uma casa. Útil para passar por cima de buracos, espinhos e fogo sem sofrer dano.",
   "block--direction": "Define a direção do movimento ou pulo.",
   "block--repeat":
-    "Repete os blocos internos várias vezes seguidas. Ajuste a quantidade com +/-. Bom para poupar blocos na construção de sequências longas e repetitivas.",
+    "Repete os blocos internos várias vezes seguidas. Ajuste a quantidade com +/-. Bom para economizar blocos na construção de sequências longas e repetitivas.",
 };
 
 export default BLOCK_TOOLTIPS;

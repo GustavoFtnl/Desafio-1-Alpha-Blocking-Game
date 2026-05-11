@@ -339,7 +339,12 @@ export class Workspace {
       const input = blockElement.querySelector('.blockRepeatInput')
       if (input) {
         input.value = blockData.repeatCount
+        input.disabled = false
       }
+      const decrementBtn = blockElement.querySelector('.blockRepeatBtn--decrement')
+      const incrementBtn = blockElement.querySelector('.blockRepeatBtn--increment')
+      if (decrementBtn) decrementBtn.disabled = false
+      if (incrementBtn) incrementBtn.disabled = false
     }
 
     return blockElement
