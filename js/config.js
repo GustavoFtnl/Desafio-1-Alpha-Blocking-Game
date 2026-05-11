@@ -16,7 +16,7 @@ const CONFIG = {
   LEVEL_CONFIG: {
     1: { maxBlocks: 3 },
     2: { maxBlocks: 10 },
-    3: { maxBlocks: 3 },
+    3: { maxBlocks: 4 },
     4: { maxBlocks: 5 },
     5: { maxBlocks: 14 },
     6: { maxBlocks: 10 },
