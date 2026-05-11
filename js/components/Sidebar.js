@@ -5,6 +5,7 @@
  */
 
 import { Block } from "./Block.js";
+import { BLOCK_TOOLTIPS } from "../utils/blockTooltips.js";
 
 export class Sidebar {
   /**
@@ -68,7 +69,7 @@ export class Sidebar {
 
     this.paletteElement = this.container.querySelector(".blockPalette");
 
-    this.setupTooltipListeners();
+    this.setupCategoryTooltips();
     this.setupCategoryToggle();
   }
 
@@ -94,7 +95,74 @@ export class Sidebar {
     });
   }
 
-  setupTooltipListeners() {
+  setupCategoryTooltips() {
+    this.paletteElement.querySelectorAll(".blockTooltip").forEach((t) => t.remove());
+
+    const tooltipEl = document.createElement("div");
+    tooltipEl.className = "blockTooltipFloating";
+    tooltipEl.id = "blockTooltipFloating";
+    document.body.appendChild(tooltipEl);
+
+    let hideTimeout = null;
+
+    const showTooltip = (trigger, text) => {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+      }
+
+      tooltipEl.textContent = text;
+
+      const rect = trigger.getBoundingClientRect();
+      const tooltipWidth = 240;
+      const gap = 8;
+
+      let left = rect.right + gap;
+      if (left + tooltipWidth > window.innerWidth - gap) {
+        left = rect.left - gap - tooltipWidth;
+      }
+
+      let top = rect.top - 6;
+      if (top < gap) {
+        top = gap;
+      }
+
+      tooltipEl.style.left = left + "px";
+      tooltipEl.style.top = top + "px";
+      tooltipEl.classList.add("blockTooltipFloating--visible");
+    };
+
+    const hideTooltip = () => {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+      }
+      hideTimeout = setTimeout(() => {
+        tooltipEl.classList.remove("blockTooltipFloating--visible");
+        hideTimeout = null;
+      }, 100);
+    };
+
+    this.paletteElement.addEventListener("mouseover", (e) => {
+      const trigger = e.target.closest(".blockTooltipTrigger");
+
+      if (!trigger) {
+        hideTooltip();
+        return;
+      }
+
+      const block = trigger.closest(".block");
+      const type = Block.getType(block);
+      const text = BLOCK_TOOLTIPS[type];
+
+      if (text) {
+        showTooltip(trigger, text);
+      }
+    });
+
+    this.paletteElement.addEventListener("mouseleave", () => {
+      hideTooltip();
+    });
+
     this.paletteElement.addEventListener("mousedown", (e) => {
       if (e.target.closest(".blockTooltipTrigger")) {
         e.stopPropagation();
@@ -118,5 +186,14 @@ export class Sidebar {
 
   getBlockConfigs() {
     return Block.getConfigs();
+  }
+
+  destroy() {
+    const tooltip = document.getElementById("blockTooltipFloating");
+    if (tooltip) {
+      tooltip.remove();
+    }
+    this.paletteElement = null;
+    this.container = null;
   }
 }

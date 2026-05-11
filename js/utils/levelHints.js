@@ -11,10 +11,10 @@ const LEVEL_HINTS = {
   4: "Você pode pular por cima de buracos sabia? Use o bloco Pular para isso!",
   5: "Use o que aprendeu até agora para chegar até o troféu com menos de 15 blocos!",
   6: "Pegue a chave para abrir a porta e chegar até o troféu!",
-  7: "Combine movimento e pulo para desviar dos obstáculos",
+  7: "Combine movimento e pulo para desviar dos obstáculos, pegar a chave e chegar até o troféu!",
   8: "O fogo 🔥 ativa e desativa alternadamente a cada movimento!",
   9: "Você também pode pular por cima do fogo 🔥 para não ser atingido. Tente chegar ao troféu usando menos de 10 blocos!",
-  10: "Parabéns! Você chegou ao último nível!",
+  10: "Parabéns! Você chegou ao último nível! Use tudo o que aprendeu até agora e vença esse desafio final!",
 };
 
 export default LEVEL_HINTS;

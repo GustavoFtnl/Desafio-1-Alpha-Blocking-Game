@@ -69,75 +69,144 @@ Game.prototype.setupListeners = function () {
   const self = this;
   const workspaceContainer = DOM.getWorkspaceContainer();
 
-  // Listener para mudança de nível
-  document.addEventListener("levelSelected", function (e) {
+  this.onLevelSelected = function (e) {
     self.handleLevelSelected(e.detail.level);
-  });
+  };
+  document.addEventListener("levelSelected", this.onLevelSelected);
 
-  workspaceContainer.addEventListener("blockCountChanged", function (e) {
+  this.onBlockCountChanged = function (e) {
     const maxBlocks = gameState.getMaxBlocks();
     self.stage.updateBlockCounter(e.detail.count);
-  });
+  };
+  workspaceContainer.addEventListener("blockCountChanged", this.onBlockCountChanged);
 
-  document.addEventListener("levelComplete", function (e) {
+  this.onLevelComplete = function (e) {
     if (e.detail.success) {
       self.handleLevelComplete();
     }
-  });
+  };
+  document.addEventListener("levelComplete", this.onLevelComplete);
 
-  document.addEventListener("levelFailed", function (e) {
+  this.onLevelFailed = function (e) {
     if (e.detail.reason === "trap") {
       self.handleLevelFailed();
     }
-  });
+  };
+  document.addEventListener("levelFailed", this.onLevelFailed);
 
-  document.addEventListener("executionComplete", function (e) {
+  this.onExecutionComplete = function (e) {
     if (e.detail.reachedEnd) {
       self.handleExecutionComplete();
     }
-  });
+  };
+  document.addEventListener("executionComplete", this.onExecutionComplete);
 
-  document.addEventListener("saveWorkspace", function () {
+  this.onSaveWorkspace = function () {
     self.saveWorkspaceBlocks();
-  });
+  };
+  document.addEventListener("saveWorkspace", this.onSaveWorkspace);
 
-  document.addEventListener("loadWorkspace", function () {
+  this.onLoadWorkspace = function () {
     self.loadWorkspaceBlocks();
-  });
+  };
+  document.addEventListener("loadWorkspace", this.onLoadWorkspace);
 
   // Sidebar mobile
   const floatingBtn = document.getElementById("floatingSidebarBtn");
   if (floatingBtn) {
-    floatingBtn.addEventListener("click", function () {
+    this.onFloatingSidebarClick = function () {
       self.openMobileSidebar();
-    });
+    };
+    floatingBtn.addEventListener("click", this.onFloatingSidebarClick);
   }
 
   // Stage mobile
   const floatingStageBtn = document.getElementById("floatingStageBtn");
   if (floatingStageBtn) {
-    floatingStageBtn.addEventListener("click", function () {
+    this.onFloatingStageClick = function () {
       self.openMobileStage();
-    });
+    };
+    floatingStageBtn.addEventListener("click", this.onFloatingStageClick);
   }
 
   // Eventos globais para controles do stage (funciona com stageClone também)
-  document.addEventListener("stageRun", function () {
+  this.onStageRun = function () {
     self.runCode();
-  });
-  document.addEventListener("stagePause", function () {
+  };
+  document.addEventListener("stageRun", this.onStageRun);
+
+  this.onStagePause = function () {
     self.togglePause();
-  });
-  document.addEventListener("stageClear", function () {
+  };
+  document.addEventListener("stagePause", this.onStagePause);
+
+  this.onStageClear = function () {
     self.clearWorkspace();
-  });
+  };
+  document.addEventListener("stageClear", this.onStageClear);
 
   // Atualizar stage ao redimensionar para desktop
-  window.addEventListener("resize", function () {
+  this.onWindowResize = function () {
     if (window.innerWidth >= 769) {
       self.moveStageContentBack();
     }
-  });
+  };
+  window.addEventListener("resize", this.onWindowResize);
+};
+
+Game.prototype.destroy = function () {
+  const workspaceContainer = DOM.getWorkspaceContainer();
+
+  document.removeEventListener("levelSelected", this.onLevelSelected);
+  document.removeEventListener("levelComplete", this.onLevelComplete);
+  document.removeEventListener("levelFailed", this.onLevelFailed);
+  document.removeEventListener("executionComplete", this.onExecutionComplete);
+  document.removeEventListener("saveWorkspace", this.onSaveWorkspace);
+  document.removeEventListener("loadWorkspace", this.onLoadWorkspace);
+  document.removeEventListener("stageRun", this.onStageRun);
+  document.removeEventListener("stagePause", this.onStagePause);
+  document.removeEventListener("stageClear", this.onStageClear);
+  window.removeEventListener("resize", this.onWindowResize);
+
+  if (workspaceContainer && this.onBlockCountChanged) {
+    workspaceContainer.removeEventListener("blockCountChanged", this.onBlockCountChanged);
+  }
+
+  const floatingBtn = document.getElementById("floatingSidebarBtn");
+  if (floatingBtn && this.onFloatingSidebarClick) {
+    floatingBtn.removeEventListener("click", this.onFloatingSidebarClick);
+  }
+
+  const floatingStageBtn = document.getElementById("floatingStageBtn");
+  if (floatingStageBtn && this.onFloatingStageClick) {
+    floatingStageBtn.removeEventListener("click", this.onFloatingStageClick);
+  }
+
+  if (this.runner && this.runner.running) {
+    this.runner.stop();
+  }
+
+  if (this.dragDrop && typeof this.dragDrop.destroy === "function") {
+    this.dragDrop.destroy();
+  }
+  this.dragDrop = null;
+
+  if (this.workspace && typeof this.workspace.destroy === "function") {
+    this.workspace.destroy();
+  }
+  this.workspace = null;
+
+  if (this.sidebar && typeof this.sidebar.destroy === "function") {
+    this.sidebar.destroy();
+  }
+  this.sidebar = null;
+
+  this.topBar = null;
+  this.stage = null;
+  this.modal = null;
+  this.parser = null;
+  this.runner = null;
+  this.container = null;
 };
 
 Game.prototype.saveWorkspaceBlocks = function () {
@@ -536,18 +605,18 @@ Game.prototype.openMobileSidebar = function () {
   overlay.classList.add("active");
 
   const closeBtn = overlay.querySelector(".sidebarMobileClose");
-  if (closeBtn) {
+  if (closeBtn && !this._mobileSidebarListenersAttached) {
     closeBtn.addEventListener("click", this.closeMobileSidebar.bind(this));
+    overlay.addEventListener(
+      "click",
+      function (e) {
+        if (e.target === overlay) {
+          this.closeMobileSidebar();
+        }
+      }.bind(this),
+    );
+    this._mobileSidebarListenersAttached = true;
   }
-
-  overlay.addEventListener(
-    "click",
-    function (e) {
-      if (e.target === overlay) {
-        this.closeMobileSidebar();
-      }
-    }.bind(this),
-  );
 };
 
 Game.prototype.closeMobileSidebar = function () {
@@ -595,30 +664,27 @@ Game.prototype.openMobileStage = function () {
 };
 
 Game.prototype.bindMobileStageButtons = function () {
+  if (this._mobileStageListenersAttached) return;
+  
   const self = this;
   const overlay = document.querySelector(".stageOverlay");
   const closeBtn = overlay ? overlay.querySelector(".stageMobileClose") : null;
 
   if (closeBtn) {
-    closeBtn.onclick = function () {
+    closeBtn.addEventListener("click", function () {
       self.closeMobileStage();
-    };
+    });
   }
 
   if (overlay) {
-    overlay.onclick = function (e) {
+    overlay.addEventListener("click", function (e) {
       if (e.target === overlay) {
         self.closeMobileStage();
       }
-    };
+    });
   }
-};
-
-Game.prototype.closeMobileStage = function () {
-  const overlay = document.querySelector(".stageOverlay");
-  if (overlay) {
-    overlay.classList.remove("active");
-  }
+  
+  this._mobileStageListenersAttached = true;
 };
 
 Game.prototype.moveStageContentBack = function () {

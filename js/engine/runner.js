@@ -19,6 +19,8 @@ export class Runner {
     this.pauseResolve = null;
     this.levelCompleted = false;
     this.commandDelay = 300;
+    this._handlingTrap = false;
+    this._handlingVictory = false;
   }
 
   /**
@@ -372,30 +374,39 @@ export class Runner {
    * Trata hit em armadilha - falha do nível
    */
   handleTrapHit() {
+    if (this._handlingTrap) return;
+    this._handlingTrap = true;
+
     this.isRunning = false;
     this.isPaused = false;
 
-    this.instructions.forEach((instruction) => {
-      this.setBlockExecuting(instruction.blockElement, false);
-    });
+    if (this.instructions) {
+      this.instructions.forEach((instruction) => {
+        this.setBlockExecuting(instruction.blockElement, false);
+      });
+    }
 
-    if (this.stage.isFireTrapAtCurrentPosition()) {
+    if (this.stage && this.stage.isFireTrapAtCurrentPosition()) {
       SoundManager.playFireTrap();
     } else {
       SoundManager.playSpikeTrap();
     }
 
     this.dispatchFailedEvent("trap");
+    this._handlingTrap = false;
   }
 
   /**
    * Trata vitória - atingiu o troféu
    */
   handleVictory() {
-    if (this.levelCompleted) return;
+    if (this.levelCompleted || this._handlingVictory) return;
+    this._handlingVictory = true;
     this.levelCompleted = true;
+    
     SoundManager.playTrophy();
     this.dispatchCompleteEvent();
+    this._handlingVictory = false;
   }
 
   /**
@@ -473,15 +484,23 @@ export class Runner {
     this.isRunning = false;
     this.isPaused = false;
     this.levelCompleted = false;
+    this._handlingTrap = false;
+    this._handlingVictory = false;
 
-    this.instructions.forEach((instruction) => {
-      this.setBlockExecuting(instruction.blockElement, false);
-    });
+    if (this.instructions) {
+      this.instructions.forEach((instruction) => {
+        if (instruction.blockElement) {
+          this.setBlockExecuting(instruction.blockElement, false);
+        }
+      });
+      this.instructions = [];
+    }
 
     if (this.pauseResolve) {
       this.pauseResolve();
       this.pauseResolve = null;
     }
+    this.pausePromise = null;
   }
 
   /**

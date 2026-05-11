@@ -580,4 +580,20 @@ export class DragDrop {
   setMobileSidebarCloseCallback(callback) {
     this.mobileSidebarCloseCallback = callback;
   }
+
+  destroy() {
+    this.cleanupDrag();
+
+    this.state = null;
+    this.positionCalculator = null;
+    this.containerManager = null;
+    this.trashZoneManager = null;
+    this.blockFactory = null;
+    this.palette = null;
+    this.workspace = null;
+    this.workspaceInstance = null;
+    this.mobileSidebarCloseCallback = null;
+    this.handleMouseMove = null;
+    this.handleMouseUp = null;
+  }
 }

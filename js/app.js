@@ -28,21 +28,37 @@ App.prototype.init = function() {
 App.prototype.setupGlobalListeners = function() {
   const self = this;
   
-  document.addEventListener("showGame", function() {
+  this._onShowGame = function() {
     self.showGameScreen();
-  });
+  };
+  document.addEventListener("showGame", this._onShowGame);
 
-  document.addEventListener("showHome", function() {
+  this._onShowHome = function() {
     self.showHomeScreen();
-  });
+  };
+  document.addEventListener("showHome", this._onShowHome);
 
-  document.addEventListener("showRanking", function() {
+  this._onShowRanking = function() {
     self.showRankingScreen();
-  });
+  };
+  document.addEventListener("showRanking", this._onShowRanking);
 
-  document.addEventListener("exitToHome", function() {
+  this._onExitToHome = function() {
     self.exitToHome();
-  });
+  };
+  document.addEventListener("exitToHome", this._onExitToHome);
+};
+
+App.prototype.removeGlobalListeners = function() {
+  document.removeEventListener("showGame", this._onShowGame);
+  document.removeEventListener("showHome", this._onShowHome);
+  document.removeEventListener("showRanking", this._onShowRanking);
+  document.removeEventListener("exitToHome", this._onExitToHome);
+  
+  this._onShowGame = null;
+  this._onShowHome = null;
+  this._onShowRanking = null;
+  this._onExitToHome = null;
 };
 
 App.prototype.checkMode = function() {
@@ -58,6 +74,8 @@ App.prototype.checkMode = function() {
 App.prototype.showHomeScreen = function() {
   if (this.mode === "game" && this.game) {
     document.dispatchEvent(new CustomEvent("saveWorkspace"));
+    this.game.destroy();
+    this.game = null;
   }
   
 this.mode = "home";
@@ -70,7 +88,10 @@ this.mode = "home";
 };
 
 App.prototype.showGameScreen = function() {
-  this.removeGameListeners();
+  if (this.game) {
+    this.game.destroy();
+    this.game = null;
+  }
   
   this.mode = "game";
   const root = DOM.getElement(CONFIG.DOM_IDS.ROOT);
@@ -85,31 +106,17 @@ App.prototype.showGameScreen = function() {
 };
 
 App.prototype.removeGameListeners = function() {
-  if (this.game && this.game.onLevelComplete) {
-    document.removeEventListener("levelComplete", this.game.onLevelComplete);
-    this.game.onLevelComplete = null;
-  }
-  if (this.game && this.game.onLevelFailed) {
-    document.removeEventListener("levelFailed", this.game.onLevelFailed);
-    this.game.onLevelFailed = null;
-  }
-  if (this.game && this.game.onExecutionComplete) {
-    document.removeEventListener("executionComplete", this.game.onExecutionComplete);
-    this.game.onExecutionComplete = null;
-  }
-  if (this.game && this.game.onSaveWorkspace) {
-    document.removeEventListener("saveWorkspace", this.game.onSaveWorkspace);
-    this.game.onSaveWorkspace = null;
-  }
-  if (this.game && this.game.onLoadWorkspace) {
-    document.removeEventListener("loadWorkspace", this.game.onLoadWorkspace);
-    this.game.onLoadWorkspace = null;
+  if (this.game && typeof this.game.destroy === "function") {
+    this.game.destroy();
+    this.game = null;
   }
 };
 
 App.prototype.showRankingScreen = function() {
   if (this.mode === "game" && this.game) {
     document.dispatchEvent(new CustomEvent("saveWorkspace"));
+    this.game.destroy();
+    this.game = null;
   }
   
 this.mode = "ranking";
