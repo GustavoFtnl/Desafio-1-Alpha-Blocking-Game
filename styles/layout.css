@@ -67,14 +67,14 @@
 }
 
 .topBar_progress {
-  display: flex;
+  display: none;
   flex-direction: column;
   width: 192px;
   gap: var(--space-xs);
 }
 
 .topBar_progressLabel {
-  display: flex;
+  display: none;
   justify-content: space-between;
   font-size: var(--font-label-bold-size);
   font-weight: var(--font-label-bold-weight);
@@ -83,6 +83,7 @@
 }
 
 .topBar_progressBar {
+  display: none;
   height: 8px;
   width: 100%;
   background-color: var(--color-surface-container-highest);
@@ -91,6 +92,7 @@
 }
 
 .topBar_progressFill {
+  display: none;
   height: 100%;
   width: 0%;
   background-color: var(--color-secondary-container);
@@ -485,7 +487,7 @@
   position: absolute;
 }
 
-.stageCell.hasDoor.open {
+.stageCell.hasDoor.open::before {
   opacity: 0.3;
 }
 
@@ -644,4 +646,46 @@
 
 .keyIcon {
   font-size: 24px;
+}
+/* === RESPONSIVIDADE - STAGE (1024px) === */
+@media (max-width: 1366px) {
+  .stageContainer {
+    width: 320px;
+  }
+
+  .stageContent {
+    padding: var(--space-sm);
+    gap: var(--space-md);
+  }
+
+  .stageTitle {
+    font-size: var(--font-h3-size);
+  }
+
+  .stageBlockCounter {
+    padding: 4px var(--space-xs);
+    font-size: var(--font-label-size);
+  }
+
+  .actor {
+    width: 24px;
+    height: 24px;
+    font-size: 16px;
+  }
+
+  .stageCell.hasTrophy {
+    font-size: 18px;
+  }
+
+  .stageCell.hasKey::before {
+    font-size: 18px;
+  }
+
+  .stageCell.hasDoor::before {
+    font-size: 1.5em;
+  }
+
+  .stageCell.hasFireTrap::before {
+    font-size: 1.5em;
+  }
 }

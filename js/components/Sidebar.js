@@ -21,16 +21,35 @@ export class Sidebar {
    * Renderiza a sidebar com título e paleta de blocos
    */
   render() {
-    const blockConfigs = Block.getConfigs();
+    const categories = Block.getCategories();
+    const configsByCategory = Block.getConfigsByCategory();
 
-    const blocksHtml = blockConfigs
-      .map((config) => {
-        const blockElement = Block.createElement(
-          config.text,
-          config.icon,
-          config.type,
-        );
-        return blockElement.outerHTML;
+    const categoriesHtml = categories
+      .map((category) => {
+        const blocks = configsByCategory[category.id] || [];
+        const blocksHtml = blocks
+          .map((config) => {
+            const blockElement = Block.createElement(
+              config.text,
+              config.icon,
+              config.type,
+            );
+            return blockElement.outerHTML;
+          })
+          .join("");
+
+        return `
+          <div class="blockCategory" data-category="${category.id}">
+            <button class="blockCategoryHeader" aria-expanded="true" aria-controls="blocks-${category.id}">
+              <span class="material-symbols-outlined blockCategoryIcon">${category.icon}</span>
+              <span class="blockCategoryName">${category.name}</span>
+              <span class="material-symbols-outlined blockCategoryToggle">expand_more</span>
+            </button>
+            <div class="blockCategoryBlocks" id="blocks-${category.id}">
+              ${blocksHtml}
+            </div>
+          </div>
+        `;
       })
       .join("");
 
@@ -42,15 +61,37 @@ export class Sidebar {
         </div>
         <p class="sidebar_subtitle">Arraste os blocos</p>
         <div class="blockPalette">
-          ${blocksHtml}
+          ${categoriesHtml}
         </div>
-        <button class="sidebar_newProjectBtn">Novo Projeto</button>
       </div>
     `;
 
     this.paletteElement = this.container.querySelector(".blockPalette");
 
     this.setupTooltipListeners();
+    this.setupCategoryToggle();
+  }
+
+  setupCategoryToggle() {
+    const headers = this.paletteElement.querySelectorAll(".blockCategoryHeader");
+    headers.forEach((header) => {
+      header.addEventListener("click", () => {
+        const category = header.closest(".blockCategory");
+        const isExpanded = header.getAttribute("aria-expanded") === "true";
+        const blocks = category.querySelector(".blockCategoryBlocks");
+        const toggle = header.querySelector(".blockCategoryToggle");
+
+        if (isExpanded) {
+          header.setAttribute("aria-expanded", "false");
+          blocks.style.display = "none";
+          toggle.textContent = "chevron_right";
+        } else {
+          header.setAttribute("aria-expanded", "true");
+          blocks.style.display = "flex";
+          toggle.textContent = "expand_more";
+        }
+      });
+    });
   }
 
   setupTooltipListeners() {
@@ -73,5 +114,9 @@ export class Sidebar {
    */
   getPaletteElement() {
     return this.paletteElement;
+  }
+
+  getBlockConfigs() {
+    return Block.getConfigs();
   }
 }

@@ -137,7 +137,12 @@ export class ContainerManager {
         if (!input.value || input.value === "") {
           input.value = 1;
         }
+        input.disabled = false;
       }
+      const decrementBtn = realBlock.querySelector(".blockRepeatBtn--decrement");
+      const incrementBtn = realBlock.querySelector(".blockRepeatBtn--increment");
+      if (decrementBtn) decrementBtn.disabled = false;
+      if (incrementBtn) incrementBtn.disabled = false;
       Block.setupRepeatInputListeners(realBlock);
     }
 
@@ -183,7 +188,12 @@ export class ContainerManager {
         if (!input.value || input.value === "") {
           input.value = 1;
         }
+        input.disabled = false;
       }
+      const decrementBtn = realBlock.querySelector(".blockRepeatBtn--decrement");
+      const incrementBtn = realBlock.querySelector(".blockRepeatBtn--increment");
+      if (decrementBtn) decrementBtn.disabled = false;
+      if (incrementBtn) incrementBtn.disabled = false;
       Block.setupRepeatInputListeners(realBlock);
     }
 

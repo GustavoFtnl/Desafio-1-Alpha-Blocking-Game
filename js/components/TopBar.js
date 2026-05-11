@@ -48,7 +48,7 @@ TopBar.prototype.render = function () {
     "</button>" +
     '<button class="btn btn--exit" id="exitBtn" aria-label="Sair do jogo">' +
     '<span class="material-symbols-outlined">logout</span>' +
-    "Sair" +
+    '<span class="btnText">Sair</span>' +
     "</button>" +
     "</div>";
 
@@ -170,10 +170,6 @@ TopBar.prototype.updateProgress = function (percent) {
   const progressFill = this.container.querySelector(".topBar_progressFill");
   const progressPercent = this.container.querySelector(".progressPercent");
   const progressContainer = this.container.querySelector(".topBar_progress");
-
-  if (progressContainer) {
-    progressContainer.style.display = "flex";
-  }
 
   if (progressFill) {
     progressFill.style.width = percent + "%";
