@@ -13,6 +13,7 @@ export class LevelsModal {
     this.overlayElement = null;
     this.resolvePromise = null;
     this.boundKeyHandler = null;
+    this.isOpen = false;
   }
 
   /**
@@ -22,6 +23,11 @@ export class LevelsModal {
    * @returns {Promise<number>} Resolve com nível seleccionado
    */
   open(currentLevel, getStarsForLevelFn) {
+    if (this.isOpen) {
+      return Promise.resolve(null);
+    }
+    
+    this.isOpen = true;
     return new Promise((resolve) => {
       this.resolvePromise = resolve;
       this.render(currentLevel, getStarsForLevelFn);
@@ -222,6 +228,7 @@ export class LevelsModal {
    * Fecha o modal
    */
   close() {
+    this.isOpen = false;
     this.removeEventListeners();
 
     if (this.modalElement) {

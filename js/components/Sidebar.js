@@ -187,4 +187,13 @@ export class Sidebar {
   getBlockConfigs() {
     return Block.getConfigs();
   }
+
+  destroy() {
+    const tooltip = document.getElementById("blockTooltipFloating");
+    if (tooltip) {
+      tooltip.remove();
+    }
+    this.paletteElement = null;
+    this.container = null;
+  }
 }

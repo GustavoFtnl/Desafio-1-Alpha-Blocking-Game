@@ -24,7 +24,7 @@ export class Workspace {
   }
 
   setupPanListeners() {
-    this.container.addEventListener("mousedown", (e) => {
+    this._handleMouseDown = (e) => {
       const target = e.target
       const withinWorkspace = this.container.contains(target)
 
@@ -43,9 +43,9 @@ export class Workspace {
           }
         }
       }
-    })
+    }
 
-    document.addEventListener("mousemove", (e) => {
+    this._handleMouseMove = (e) => {
       if (!this.isPanning) return
       e.preventDefault()
 
@@ -59,11 +59,25 @@ export class Workspace {
       this.startY = e.clientY
 
       this.updatePanPosition()
-    })
+    }
 
-    document.addEventListener("mouseup", () => {
+    this._handleMouseUp = () => {
       this.isPanning = false
-    })
+    }
+
+    this.container.addEventListener("mousedown", this._handleMouseDown)
+    document.addEventListener("mousemove", this._handleMouseMove)
+    document.addEventListener("mouseup", this._handleMouseUp)
+  }
+
+  destroy() {
+    document.removeEventListener("mousemove", this._handleMouseMove)
+    document.removeEventListener("mouseup", this._handleMouseUp)
+    this._handleMouseDown = null
+    this._handleMouseMove = null
+    this._handleMouseUp = null
+    this.container = null
+    this.workspaceElement = null
   }
 
   /**

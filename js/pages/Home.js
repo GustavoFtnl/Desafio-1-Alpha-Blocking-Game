@@ -18,7 +18,7 @@ Home.prototype.render = function() {
   this.container.innerHTML = 
     "<div class=\"homeContainer\">" +
       "<div class=\"homeContent\">" +
-        "<h1 class=\"homeTitle\">Code Blocks Game</h1>" +
+        "<h1 class=\"homeTitle\">Temple Blocks</h1>" +
         "<p class=\"homeSubtitle\">Aprenda lógica de programação com blocos!</p>" +
         
         (hasUsers ? this.renderUserSelection() : this.renderCreateFirstUser()) +
