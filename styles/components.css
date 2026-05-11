@@ -900,22 +900,23 @@ html.theme-transitioning * {
     linear-gradient(to bottom, #333333 1px, transparent 1px);
 }
 
+/* Stage mantém mesma aparência no dark mode */
 [data-theme="dark"] .stageGrid {
-  background-color: #1e1e1e;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  background-color: white;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="dark"] .stageCell {
-  background-color: #1e1e1e;
-  border-color: #333333;
+  background-color: white;
+  border-color: #f1f5f9;
 }
 
 [data-theme="dark"] .stageCell.visited {
-  background-color: rgba(16, 185, 129, 0.2);
+  background-color: rgba(46, 196, 182, 0.15);
 }
 
 [data-theme="dark"] .stageCell.current {
-  background-color: rgba(112, 248, 232, 0.15);
+  background-color: rgba(0, 29, 61, 0.1);
 }
 
 [data-theme="dark"] .homeScreen {
