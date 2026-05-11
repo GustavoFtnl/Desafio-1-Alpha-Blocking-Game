@@ -17,6 +17,7 @@ export class Runner {
     this.isPaused = false;
     this.pausePromise = null;
     this.pauseResolve = null;
+    this.levelCompleted = false;
 
     this.commandDelay = 300;
   }
@@ -35,6 +36,7 @@ export class Runner {
     this.currentIndex = 0;
     this.isRunning = true;
     this.isPaused = false;
+    this.levelCompleted = false;
 
     try {
       for (let i = 0; i < this.instructions.length; i++) {
@@ -376,6 +378,8 @@ export class Runner {
    * Trata vitória - atingiu o troféu
    */
   handleVictory() {
+    if (this.levelCompleted) return;
+    this.levelCompleted = true;
     SoundManager.playTrophy();
     this.dispatchCompleteEvent();
   }
@@ -452,6 +456,7 @@ export class Runner {
   stop() {
     this.isRunning = false;
     this.isPaused = false;
+    this.levelCompleted = false;
 
     this.instructions.forEach(instruction => {
       this.setBlockExecuting(instruction.blockElement, false);

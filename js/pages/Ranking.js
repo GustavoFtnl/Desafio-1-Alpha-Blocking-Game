@@ -37,20 +37,22 @@ Ranking.prototype.render = function() {
           "Ranking" +
         "</h1>" +
         
-        "<table class=\"rankingTable\">" +
-          "<thead>" +
-            "<tr>" +
-              "<th>#</th>" +
-              "<th>Jogador</th>" +
-              "<th>Níveis</th>" +
-              "<th>Estrelas</th>" +
-              "<th>Blocos</th>" +
-            "</tr>" +
-          "</thead>" +
-          "<tbody>" +
-            rowsHtml +
-          "</tbody>" +
-        "</table>" +
+        "<div class=\"rankingTableWrapper\">" +
+          "<table class=\"rankingTable\">" +
+            "<thead>" +
+              "<tr>" +
+                "<th>#</th>" +
+                "<th>Jogador</th>" +
+                "<th>Níveis</th>" +
+                "<th>Estrelas</th>" +
+                "<th>Blocos</th>" +
+              "</tr>" +
+            "</thead>" +
+            "<tbody>" +
+              rowsHtml +
+            "</tbody>" +
+          "</table>" +
+        "</div>" +
         
         "<div class=\"rankingCriteria\">" +
           "<p><strong>Critérios de classificação:</strong></p>" +

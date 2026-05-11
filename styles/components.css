@@ -1022,10 +1022,16 @@
   font-size: var(--font-display-size);
 }
 
+.rankingTableWrapper {
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
+}
+
 .rankingTable {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: var(--space-lg);
 }
 
 .rankingTable th,
