@@ -6,7 +6,7 @@
 
 const LEVEL_HINTS = {
   1: "Coloque blocos dentro de um bloco Inicio para começar o jogo. Use blocos de movimento (Mover + Direção) para levar o ator até o troféu 🏆",
-  2: "Use diferentes direções para navegar pelo labirinto! Use o bloco Repetir para repetir ações e poupar blocos",
+  2: "Use diferentes direções para navegar pelo labirinto! Use o bloco Repetir para repetir ações e economizar blocos",
   3: "Tente usar o bloco Repetir e terminar esse nível com apenas 4 blocos! Você consegue?",
   4: "Você pode pular por cima de boracos sabia? Use o bloco Pular para isso!",
   5: "Use o que aprendeu até agora para chegar até o troféu com menos de 15 blocos!",
