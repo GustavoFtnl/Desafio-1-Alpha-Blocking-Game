@@ -259,8 +259,8 @@
   }
 }
 
-/* Desktop (769px+) */
-@media (min-width: 769px) {
+/* Desktop (1081px+) */
+@media (min-width: 1081px) {
   .sidebarOverlay,
   .sidebarMobile,
   .stageOverlay,
@@ -319,14 +319,6 @@
 .floatingSidebarBtn span,
 .floatingStageBtn span {
   font-size: 28px;
-}
-
-/* Mostrar botões flutuantes no tablet/mobile */
-@media (max-width: 768px) {
-  .floatingSidebarBtn,
-  .floatingStageBtn {
-    display: flex;
-  }
 }
 
 /* === MODAIS MOBILE (SIDEBAR E STAGE) === */
@@ -482,12 +474,20 @@
   gap: var(--space-md);
 }
 
-/* Mostrar modais apenas no tablet/mobile */
 @media (max-width: 768px) {
-  .sidebarOverlay,
-  .sidebarMobile,
-  .stageOverlay,
-  .stageMobile {
+  .stageMobile, .stageOverlay, .floatingStageBtn {
     display: flex;
+  }
+}
+
+/* Mostrar modais apenas no tablet/mobile */
+@media (max-width: 1080px) {
+  .sidebarOverlay,
+  .sidebarMobile, .floatingSidebarBtn {
+    display: flex;
+  }
+
+  .sidebar {
+    display: none;
   }
 }
