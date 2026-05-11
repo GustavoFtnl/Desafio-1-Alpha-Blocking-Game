@@ -21,6 +21,7 @@ import { Toast } from "../components/Toast.js";
 
 const Game = function(container) {
   this.container = container;
+  this.isMobileStageOpen = false;
   this.render();
 };
 
@@ -76,11 +77,6 @@ Game.prototype.setupListeners = function() {
     self.stage.updateBlockCounter(e.detail.count);
   });
 
-  const stageContainer = DOM.getStageContainer();
-  stageContainer.addEventListener("stageRun", function() { self.runCode(); });
-  stageContainer.addEventListener("stagePause", function() { self.togglePause(); });
-  stageContainer.addEventListener("stageClear", function() { self.clearWorkspace(); });
-
   document.addEventListener("levelComplete", function(e) {
     if (e.detail.success) {
       self.handleLevelComplete();
@@ -122,6 +118,18 @@ Game.prototype.setupListeners = function() {
       self.openMobileStage();
     });
   }
+
+  // Eventos globais para controles do stage (funciona com stageClone também)
+  document.addEventListener("stageRun", function() { self.runCode(); });
+  document.addEventListener("stagePause", function() { self.togglePause(); });
+  document.addEventListener("stageClear", function() { self.clearWorkspace(); });
+
+  // Atualizar stage ao redimensionar para desktop
+  window.addEventListener("resize", function() {
+    if (window.innerWidth >= 769) {
+      self.moveStageContentBack();
+    }
+  });
 };
 
 Game.prototype.saveWorkspaceBlocks = function() {
@@ -185,8 +193,9 @@ Game.prototype.executeInstructions = function() {
 
 Game.prototype.disableExecutionButtons = function() {
   const stageContainer = DOM.getStageContainer();
-  const runButton = stageContainer.querySelector(".btn--run");
-  const clearButton = stageContainer.querySelector(".btn--clear");
+  const mobileContent = document.querySelector(".stageMobileContent");
+  const runButton = (stageContainer.querySelector(".btn--run") || mobileContent?.querySelector(".btn--run"));
+  const clearButton = (stageContainer.querySelector(".btn--clear") || mobileContent?.querySelector(".btn--clear"));
 
   if (runButton) {
     runButton.classList.add("btn--disabled");
@@ -201,8 +210,9 @@ Game.prototype.disableExecutionButtons = function() {
 
 Game.prototype.enableExecutionButtons = function() {
   const stageContainer = DOM.getStageContainer();
-  const runButton = stageContainer.querySelector(".btn--run");
-  const clearButton = stageContainer.querySelector(".btn--clear");
+  const mobileContent = document.querySelector(".stageMobileContent");
+  const runButton = (stageContainer.querySelector(".btn--run") || mobileContent?.querySelector(".btn--run"));
+  const clearButton = (stageContainer.querySelector(".btn--clear") || mobileContent?.querySelector(".btn--clear"));
 
   if (runButton) {
     runButton.classList.remove("btn--disabled");
@@ -431,6 +441,36 @@ Game.prototype.openMobileSidebar = function() {
         block.appendChild(iconSpan);
         block.appendChild(textSpan);
 
+        if (config.type === "block--repeat") {
+          const inputWrapper = document.createElement("div");
+          inputWrapper.className = "blockRepeatInputWrapper";
+
+          const decrementBtn = document.createElement("button");
+          decrementBtn.type = "button";
+          decrementBtn.className = "blockRepeatBtn blockRepeatBtn--decrement";
+          decrementBtn.textContent = "-";
+          decrementBtn.setAttribute("aria-label", "Diminuir");
+
+          const input = document.createElement("input");
+          input.type = "number";
+          input.className = "blockRepeatInput";
+          input.value = 1;
+          input.min = 1;
+          input.max = 10;
+          input.setAttribute("aria-label", "Quantidade de repetições");
+
+          const incrementBtn = document.createElement("button");
+          incrementBtn.type = "button";
+          incrementBtn.className = "blockRepeatBtn blockRepeatBtn--increment";
+          incrementBtn.textContent = "+";
+          incrementBtn.setAttribute("aria-label", "Aumentar");
+
+          inputWrapper.appendChild(decrementBtn);
+          inputWrapper.appendChild(input);
+          inputWrapper.appendChild(incrementBtn);
+          block.appendChild(inputWrapper);
+        }
+
         return block.outerHTML;
       })
       .join("");
@@ -498,38 +538,59 @@ Game.prototype.openMobileStage = function() {
 
   const content = mobileStage.querySelector(".stageMobileContent");
   if (content) {
-    content.innerHTML = "";
     const stageContent = this.stage.container.querySelector(".stageContent");
-    if (stageContent) {
-      content.appendChild(stageContent.cloneNode(true));
+    if (stageContent && stageContent.parentElement !== content) {
+      content.innerHTML = "";
+      content.appendChild(stageContent);
     }
   }
 
   overlay.classList.add("active");
+  this.bindMobileStageButtons();
+};
 
-  const closeBtn = overlay.querySelector(".stageMobileClose");
+Game.prototype.bindMobileStageButtons = function() {
+  const self = this;
+  const overlay = document.querySelector(".stageOverlay");
+  const closeBtn = overlay ? overlay.querySelector(".stageMobileClose") : null;
+
   if (closeBtn) {
-    closeBtn.addEventListener("click", this.closeMobileStage.bind(this));
+    closeBtn.onclick = function() {
+      self.closeMobileStage();
+    };
   }
 
-  overlay.addEventListener("click", function(e) {
-    if (e.target === overlay) {
-      this.closeMobileStage();
-    }
-  }.bind(this));
+  if (overlay) {
+    overlay.onclick = function(e) {
+      if (e.target === overlay) {
+        self.closeMobileStage();
+      }
+    };
+  }
 };
 
 Game.prototype.closeMobileStage = function() {
   const overlay = document.querySelector(".stageOverlay");
   if (overlay) {
     overlay.classList.remove("active");
-    const stageContent = overlay.querySelector(".stageMobileContent .stageContent");
-    if (stageContent && this.stage.container) {
-      const originalContent = this.stage.container.querySelector(".stageContent");
-      if (originalContent && originalContent.parentNode) {
-        originalContent.parentNode.replaceChild(stageContent.cloneNode(true), originalContent);
-      }
-    }
+  }
+};
+
+Game.prototype.moveStageContentBack = function() {
+  const mobileContent = document.querySelector(".stageMobileContent");
+  const stageContent = mobileContent ? mobileContent.querySelector(".stageContent") : null;
+  const stageContainer = this.stage ? this.stage.container : null;
+
+  if (stageContent && stageContainer && !stageContainer.contains(stageContent)) {
+    stageContainer.appendChild(stageContent);
+  }
+};
+
+Game.prototype.closeMobileStage = function() {
+  this.isMobileStageOpen = false;
+  const overlay = document.querySelector(".stageOverlay");
+  if (overlay) {
+    overlay.classList.remove("active");
   }
 };
 

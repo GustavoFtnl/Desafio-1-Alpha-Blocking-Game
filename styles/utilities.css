@@ -259,18 +259,33 @@
   }
 }
 
-/* Desktop (1081px+) */
-@media (min-width: 1081px) {
-  .sidebarOverlay,
-  .sidebarMobile,
-  .stageOverlay,
-  .stageMobile {
-    display: none;
-  }
-
+/* Desktop (769px+) - Stage fica visível no layout */
+@media (min-width: 769px) {
   .floatingSidebarBtn,
   .floatingStageBtn {
     display: none !important;
+  }
+
+  .sidebarOverlay,
+  .sidebarMobile {
+    display: none;
+  }
+
+  .stageMobile {
+    position: relative;
+    height: 100%;
+    transform: none;
+    border-radius: 0;
+    width: auto;
+  }
+
+  .stageOverlay,
+  .stageOverlay.active {
+    display: none;
+  }
+
+  .stageOverlay.active .stageMobile .stageContent {
+    display: flex;
   }
 }
 
@@ -427,8 +442,23 @@
   overflow: hidden;
 }
 
+@media (min-width: 769px) {
+  .stageMobile {
+    position: relative;
+    height: 100%;
+    transform: none;
+    border-radius: 0;
+  }
+}
+
 .stageOverlay.active .stageMobile {
   transform: translateY(0);
+}
+
+@media (min-width: 769px) {
+  .stageOverlay.active .stageMobile {
+    transform: none;
+  }
 }
 
 .stageMobileHeader {
