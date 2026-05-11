@@ -89,7 +89,7 @@ Game.prototype.setupListeners = function() {
     if (e.detail.success) {
       self.handleLevelComplete();
     }
-  };
+  });
   document.addEventListener("levelComplete", this.onLevelComplete);
 
   this.onLevelFailed = function(e) {
@@ -115,7 +115,7 @@ Game.prototype.setupListeners = function() {
     self.loadWorkspaceBlocks();
   };
   document.addEventListener("loadWorkspace", this.onLoadWorkspace);
-  });
+  };
 
   // Sidebar mobile
   const floatingBtn = document.getElementById("floatingSidebarBtn");
