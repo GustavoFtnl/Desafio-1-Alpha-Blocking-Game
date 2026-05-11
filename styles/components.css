@@ -1092,6 +1092,70 @@
   width: 100%;
 }
 
+/* === RESPONSIVIDADE - RANKING === */
+
+/* Tablet */
+@media (max-width: 768px) {
+  .rankingContent {
+    padding: var(--space-lg);
+  }
+
+  .rankingTable th,
+  .rankingTable td {
+    padding: var(--space-sm);
+  }
+
+  .rankingTable th {
+    font-size: var(--font-label-bold-size);
+  }
+}
+
+/* Mobile grande (425px) */
+@media (max-width: 425px) {
+  .rankingTable th:nth-child(5),
+  .rankingTable td:nth-child(5) {
+    display: none;
+  }
+
+  .rankingTable th,
+  .rankingTable td {
+    padding: var(--space-xs);
+  }
+
+  .rankingCriteria {
+    font-size: var(--font-label-bold-size);
+  }
+
+  .rankingCriteria ol {
+    padding-left: var(--space-md);
+  }
+}
+
+/* Mobile pequeno (320px) */
+@media (max-width: 320px) {
+  .rankingContent {
+    padding: var(--space-md);
+  }
+
+  .rankingTitle {
+    font-size: var(--font-headline-size);
+  }
+
+  .rankingTable th,
+  .rankingTable td {
+    padding: 4px var(--space-xs);
+    font-size: var(--font-label-bold-size);
+  }
+
+  .rankingPosition {
+    font-size: var(--font-label-bold-size);
+  }
+
+  .rankingName {
+    font-size: var(--font-label-bold-size);
+  }
+}
+
 /* === MODAL DE SELEÇÃO DE NÍVEIS === */
 .levelsModal_content {
   max-width: 520px;

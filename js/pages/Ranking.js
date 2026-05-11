@@ -23,9 +23,9 @@ Ranking.prototype.render = function() {
     rowsHtml += "<tr class=\"rankingRow" + (position <= 3 ? " rankingRow--top" : "") + "\">" +
       "<td class=\"rankingPosition\">" + medal + " " + position + "</td>" +
       "<td class=\"rankingName\">" + this.escapeHtml(player.name) + "</td>" +
-      "<td class=\"rankingStat\">" + player.completedLevels + "</td>" +
+      "<td class=\"rankingStat rankingStat--hideable\">" + player.completedLevels + "</td>" +
       "<td class=\"rankingStat\">" + player.totalStars + "</td>" +
-      "<td class=\"rankingStat\">" + player.totalBlocks + "</td>" +
+      "<td class=\"rankingStat rankingStat--hideable\">" + player.totalBlocks + "</td>" +
     "</tr>";
   }
   
