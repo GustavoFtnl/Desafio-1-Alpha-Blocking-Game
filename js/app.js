@@ -58,6 +58,8 @@ App.prototype.checkMode = function() {
 App.prototype.showHomeScreen = function() {
   if (this.mode === "game" && this.game) {
     document.dispatchEvent(new CustomEvent("saveWorkspace"));
+    this.game.destroy();
+    this.game = null;
   }
   
 this.mode = "home";
@@ -70,7 +72,10 @@ this.mode = "home";
 };
 
 App.prototype.showGameScreen = function() {
-  this.removeGameListeners();
+  if (this.game) {
+    this.game.destroy();
+    this.game = null;
+  }
   
   this.mode = "game";
   const root = DOM.getElement(CONFIG.DOM_IDS.ROOT);
@@ -85,31 +90,17 @@ App.prototype.showGameScreen = function() {
 };
 
 App.prototype.removeGameListeners = function() {
-  if (this.game && this.game.onLevelComplete) {
-    document.removeEventListener("levelComplete", this.game.onLevelComplete);
-    this.game.onLevelComplete = null;
-  }
-  if (this.game && this.game.onLevelFailed) {
-    document.removeEventListener("levelFailed", this.game.onLevelFailed);
-    this.game.onLevelFailed = null;
-  }
-  if (this.game && this.game.onExecutionComplete) {
-    document.removeEventListener("executionComplete", this.game.onExecutionComplete);
-    this.game.onExecutionComplete = null;
-  }
-  if (this.game && this.game.onSaveWorkspace) {
-    document.removeEventListener("saveWorkspace", this.game.onSaveWorkspace);
-    this.game.onSaveWorkspace = null;
-  }
-  if (this.game && this.game.onLoadWorkspace) {
-    document.removeEventListener("loadWorkspace", this.game.onLoadWorkspace);
-    this.game.onLoadWorkspace = null;
+  if (this.game && typeof this.game.destroy === "function") {
+    this.game.destroy();
+    this.game = null;
   }
 };
 
 App.prototype.showRankingScreen = function() {
   if (this.mode === "game" && this.game) {
     document.dispatchEvent(new CustomEvent("saveWorkspace"));
+    this.game.destroy();
+    this.game = null;
   }
   
 this.mode = "ranking";
