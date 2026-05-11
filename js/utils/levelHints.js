@@ -14,7 +14,7 @@ const LEVEL_HINTS = {
   7: "Combine movimento e pulo para desviar dos obstáculos",
   8: "O fogo 🔥 ativa e desativa alternadamente a cada movimento!",
   9: "Você também pode pular por cima do fogo 🔥 para não ser atingido. Tente chegar ao troféu usando menos de 10 blocos!",
-  10: "Parabéns! Você completou o primeiro nível. Continue assim!",
+  10: "Tente colocar em prática tudo que aprendeu até agora!",
 };
 
 export default LEVEL_HINTS;
