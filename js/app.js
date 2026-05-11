@@ -28,21 +28,37 @@ App.prototype.init = function() {
 App.prototype.setupGlobalListeners = function() {
   const self = this;
   
-  document.addEventListener("showGame", function() {
+  this._onShowGame = function() {
     self.showGameScreen();
-  });
+  };
+  document.addEventListener("showGame", this._onShowGame);
 
-  document.addEventListener("showHome", function() {
+  this._onShowHome = function() {
     self.showHomeScreen();
-  });
+  };
+  document.addEventListener("showHome", this._onShowHome);
 
-  document.addEventListener("showRanking", function() {
+  this._onShowRanking = function() {
     self.showRankingScreen();
-  });
+  };
+  document.addEventListener("showRanking", this._onShowRanking);
 
-  document.addEventListener("exitToHome", function() {
+  this._onExitToHome = function() {
     self.exitToHome();
-  });
+  };
+  document.addEventListener("exitToHome", this._onExitToHome);
+};
+
+App.prototype.removeGlobalListeners = function() {
+  document.removeEventListener("showGame", this._onShowGame);
+  document.removeEventListener("showHome", this._onShowHome);
+  document.removeEventListener("showRanking", this._onShowRanking);
+  document.removeEventListener("exitToHome", this._onExitToHome);
+  
+  this._onShowGame = null;
+  this._onShowHome = null;
+  this._onShowRanking = null;
+  this._onExitToHome = null;
 };
 
 App.prototype.checkMode = function() {

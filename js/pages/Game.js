@@ -186,14 +186,27 @@ Game.prototype.destroy = function () {
     this.runner.stop();
   }
 
-  this.topBar = null;
-  this.sidebar = null;
+  if (this.dragDrop && typeof this.dragDrop.destroy === "function") {
+    this.dragDrop.destroy();
+  }
+  this.dragDrop = null;
+
+  if (this.workspace && typeof this.workspace.destroy === "function") {
+    this.workspace.destroy();
+  }
   this.workspace = null;
+
+  if (this.sidebar && typeof this.sidebar.destroy === "function") {
+    this.sidebar.destroy();
+  }
+  this.sidebar = null;
+
+  this.topBar = null;
   this.stage = null;
   this.modal = null;
   this.parser = null;
   this.runner = null;
-  this.dragDrop = null;
+  this.container = null;
 };
 
 Game.prototype.saveWorkspaceBlocks = function () {
@@ -592,18 +605,18 @@ Game.prototype.openMobileSidebar = function () {
   overlay.classList.add("active");
 
   const closeBtn = overlay.querySelector(".sidebarMobileClose");
-  if (closeBtn) {
+  if (closeBtn && !this._mobileSidebarListenersAttached) {
     closeBtn.addEventListener("click", this.closeMobileSidebar.bind(this));
+    overlay.addEventListener(
+      "click",
+      function (e) {
+        if (e.target === overlay) {
+          this.closeMobileSidebar();
+        }
+      }.bind(this),
+    );
+    this._mobileSidebarListenersAttached = true;
   }
-
-  overlay.addEventListener(
-    "click",
-    function (e) {
-      if (e.target === overlay) {
-        this.closeMobileSidebar();
-      }
-    }.bind(this),
-  );
 };
 
 Game.prototype.closeMobileSidebar = function () {
@@ -651,30 +664,27 @@ Game.prototype.openMobileStage = function () {
 };
 
 Game.prototype.bindMobileStageButtons = function () {
+  if (this._mobileStageListenersAttached) return;
+  
   const self = this;
   const overlay = document.querySelector(".stageOverlay");
   const closeBtn = overlay ? overlay.querySelector(".stageMobileClose") : null;
 
   if (closeBtn) {
-    closeBtn.onclick = function () {
+    closeBtn.addEventListener("click", function () {
       self.closeMobileStage();
-    };
+    });
   }
 
   if (overlay) {
-    overlay.onclick = function (e) {
+    overlay.addEventListener("click", function (e) {
       if (e.target === overlay) {
         self.closeMobileStage();
       }
-    };
+    });
   }
-};
-
-Game.prototype.closeMobileStage = function () {
-  const overlay = document.querySelector(".stageOverlay");
-  if (overlay) {
-    overlay.classList.remove("active");
-  }
+  
+  this._mobileStageListenersAttached = true;
 };
 
 Game.prototype.moveStageContentBack = function () {
