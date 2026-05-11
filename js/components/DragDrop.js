@@ -16,6 +16,7 @@ export class DragDrop {
     this.palette = paletteElement;
     this.workspace = workspaceElement;
     this.workspaceInstance = workspaceInstance;
+    this.mobileSidebarCloseCallback = null;
 
     this.state = new DragStateManager();
     this.positionCalculator = new PositionCalculator(workspaceElement);
@@ -540,5 +541,43 @@ export class DragDrop {
 
     this.state.setDraggedElement(null);
     this.state.setIsDraggingFree(false);
+  }
+
+  setupMobilePalette(mobilePalette) {
+    const self = this;
+
+    mobilePalette.addEventListener("dragstart", (e) => {
+      const block = e.target.closest(".block");
+      if (!block) return;
+
+      this.state.setDraggedBlock(block);
+      this.state.setFromPalette(true);
+
+      const blockType = Block.getType(block);
+      e.dataTransfer.setData("text/plain", blockType);
+      e.dataTransfer.effectAllowed = "copy";
+
+      block.classList.add("dragging");
+      block.setAttribute("aria-grabbed", "true");
+
+      if (self.mobileSidebarCloseCallback) {
+        self.mobileSidebarCloseCallback();
+      }
+    });
+
+    mobilePalette.addEventListener("dragend", (e) => {
+      const block = e.target.closest(".block");
+      if (!block) return;
+
+      block.classList.remove("dragging");
+      block.setAttribute("aria-grabbed", "false");
+
+      this.state.setDraggedBlock(null);
+      this.state.setFromPalette(false);
+    });
+  }
+
+  setMobileSidebarCloseCallback(callback) {
+    this.mobileSidebarCloseCallback = callback;
   }
 }

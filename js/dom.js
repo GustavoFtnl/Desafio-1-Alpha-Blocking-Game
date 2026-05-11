@@ -32,7 +32,10 @@ const DOM = {
       "<aside class=\"" + CONFIG.DOM_IDS.SIDEBAR + "\"></aside>" +
       "<section class=\"" + CONFIG.DOM_IDS.WORKSPACE + "\"></section>" +
       "<aside class=\"" + CONFIG.DOM_IDS.STAGE + "\"></aside>" +
-      "</main>";
+      "</main>" +
+      "<button class=\"floatingSidebarBtn\" id=\"floatingSidebarBtn\" aria-label=\"Abrir biblioteca de blocos\">" +
+      "<span class=\"material-symbols-outlined\">add_box</span>" +
+      "</button>";
   },
 
   getElement: function(id) {

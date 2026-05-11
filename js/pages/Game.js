@@ -106,6 +106,14 @@ Game.prototype.setupListeners = function() {
   document.addEventListener("loadWorkspace", function() {
     self.loadWorkspaceBlocks();
   });
+
+  // Sidebar mobile
+  const floatingBtn = document.getElementById("floatingSidebarBtn");
+  if (floatingBtn) {
+    floatingBtn.addEventListener("click", function() {
+      self.openMobileSidebar();
+    });
+  }
 };
 
 Game.prototype.saveWorkspaceBlocks = function() {
@@ -368,6 +376,93 @@ Game.prototype.updateUI = function() {
   this.topBar.updateStars(gameState.getStarsForLevel(gameState.getCurrentLevel()));
   this.topBar.updateProgress(gameState.getProgressPercent());
   this.stage.updateTitle(gameState.getCurrentLevel());
+};
+
+Game.prototype.openMobileSidebar = function() {
+  let overlay = document.querySelector(".sidebarOverlay");
+  let mobileSidebar = document.querySelector(".sidebarMobile");
+
+  if (!overlay) {
+    const root = document.getElementById("root");
+    root.insertAdjacentHTML("beforeend",
+      "<div class=\"sidebarOverlay\" id=\"sidebarOverlay\">" +
+        "<div class=\"sidebarMobile\">" +
+          "<div class=\"sidebarMobileHeader\">" +
+            "<h2 class=\"sidebarMobileTitle\">Biblioteca</h2>" +
+            "<button class=\"sidebarMobileClose\" aria-label=\"Fechar\">" +
+              "<span class=\"material-symbols-outlined\">close</span>" +
+            "</button>" +
+          "</div>" +
+          "<div class=\"sidebarMobileContent\"></div>" +
+        "</div>" +
+      "</div>"
+    );
+    overlay = document.getElementById("sidebarOverlay");
+    mobileSidebar = document.querySelector(".sidebarMobile");
+  }
+
+  const content = mobileSidebar.querySelector(".sidebarMobileContent");
+  if (content) {
+    const blockConfigs = this.sidebar.getBlockConfigs();
+    const blocksHtml = blockConfigs
+      .map(function(config) {
+        const block = document.createElement("div");
+        block.className = "block " + config.type;
+        block.setAttribute("draggable", "true");
+        block.setAttribute("aria-label", "Bloco de comando: " + config.text);
+        block.setAttribute("aria-grabbed", "false");
+
+        const iconSpan = document.createElement("span");
+        iconSpan.className = "material-symbols-outlined blockIcon";
+        iconSpan.textContent = config.icon || "";
+
+        const textSpan = document.createElement("span");
+        textSpan.className = "block_text";
+        textSpan.textContent = config.text;
+
+        block.appendChild(iconSpan);
+        block.appendChild(textSpan);
+
+        return block.outerHTML;
+      })
+      .join("");
+
+    content.innerHTML =
+      "<div class=\"sidebar_title\">" +
+        "<span class=\"material-symbols-outlined sidebar_titleIcon\">psychology</span>" +
+        "<h2 class=\"sidebar_titleText\">Biblioteca</h2>" +
+      "</div>" +
+      "<p class=\"sidebar_subtitle\">Arraste os blocos</p>" +
+      "<div class=\"blockPalette\">" +
+        blocksHtml +
+      "</div>";
+
+    const palette = content.querySelector(".blockPalette");
+    if (palette) {
+      this.dragDrop.setupMobilePalette(palette);
+      this.dragDrop.setMobileSidebarCloseCallback(this.closeMobileSidebar.bind(this));
+    }
+  }
+
+  overlay.classList.add("active");
+
+  const closeBtn = overlay.querySelector(".sidebarMobileClose");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", this.closeMobileSidebar.bind(this));
+  }
+
+  overlay.addEventListener("click", function(e) {
+    if (e.target === overlay) {
+      this.closeMobileSidebar();
+    }
+  }.bind(this));
+};
+
+Game.prototype.closeMobileSidebar = function() {
+  const overlay = document.querySelector(".sidebarOverlay");
+  if (overlay) {
+    overlay.classList.remove("active");
+  }
 };
 
 export default Game;

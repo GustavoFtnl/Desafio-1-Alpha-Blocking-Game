@@ -44,7 +44,6 @@ export class Sidebar {
         <div class="blockPalette">
           ${blocksHtml}
         </div>
-        <button class="sidebar_newProjectBtn">Novo Projeto</button>
       </div>
     `;
 
@@ -73,5 +72,9 @@ export class Sidebar {
    */
   getPaletteElement() {
     return this.paletteElement;
+  }
+
+  getBlockConfigs() {
+    return Block.getConfigs();
   }
 }

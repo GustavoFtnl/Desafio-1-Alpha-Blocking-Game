@@ -11,26 +11,26 @@
     flex-direction: column;
     overflow-y: auto;
   }
-  
+
   .topBar {
     position: sticky;
     top: 0;
     z-index: var(--z-modal);
     border-radius: 0;
   }
-  
+
   .sidebar {
     display: none;
   }
-  
+
   .workspaceArea {
     min-height: 200px;
   }
-  
+
   .stageContainer {
     width: 100%;
   }
-  
+
   .stageGrid {
     width: 100%;
     height: auto;
@@ -44,35 +44,35 @@
   .appLayout {
     flex-direction: column;
   }
-  
+
   .sidebar {
     display: none;
   }
-  
+
   .stageContainer {
     width: 100%;
     border-left: none;
     border-top: 1px solid var(--color-outline-variant);
   }
-  
+
   .stageContent {
     flex-direction: row;
     align-items: center;
   }
-  
+
   .stageGrid {
     width: 100%;
     max-width: 400px;
     margin: 0 auto;
   }
-  
+
   .controlsArea {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
   }
-  
+
   .controlsRowDual {
     flex-direction: row;
   }
@@ -100,6 +100,19 @@
 
 /* Mobile Grande (321px - 375px) */
 @media (min-width: 321px) and (max-width: 525px) {
+  .stageContainer {
+    display: none;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .workspaceArea {
+    min-width: 300px;
+    width: 100%;
+  }
+
   .topBar {
     height: fit-content;
     padding: var(--space-xs) var(--space-sm);
@@ -126,7 +139,7 @@
   }
 
   .btn--levelSelect {
-    padding: var(--space-xs)
+    padding: var(--space-xs);
   }
 
   .levelSelectText {
@@ -158,24 +171,31 @@
 /* iPhone SE (320px) */
 @media (max-width: 320px) {
   .topBar {
-    height: fit-content;
+    height: auto;
     padding: var(--space-xs) var(--space-sm);
+    flex-wrap: wrap;
+    gap: var(--space-xs);
   }
 
   .topBar_leftSection {
-    flex-direction: column;
-    gap: 0;
-    justify-content: flex-start;
-    align-items: flex-start;
-    width: fit-content;
+    order: 2;
+    width: 100%;
+    justify-content: center;
   }
 
   .topBar_rightSection {
+    order: 1;
+    width: 100%;
     justify-content: space-between;
   }
 
   .topBar_title {
     font-size: var(--font-label-bold-size);
+    text-align: center;
+  }
+
+  .topBar_userName {
+    display: none;
   }
 
   .topBar_progress {
@@ -183,7 +203,7 @@
   }
 
   .btn--levelSelect {
-    padding: var(--space-xs)
+    padding: var(--space-xs) var(--space-sm);
   }
 
   .levelSelectText {
@@ -196,11 +216,11 @@
   }
 
   .btn--rankingTop {
-    padding: var(--space-xs);
+    display: none;
   }
 
   .btn--exit {
-    padding: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
   }
 
   .btn--exit .btnText {
@@ -210,6 +230,203 @@
   .btn--exit span {
     margin: 0;
   }
+}
+
+/* === BOTÃO FLUTUANTE SIDEBAR (MOBILE) === */
+.floatingSidebarBtn {
+  position: fixed;
+  bottom: var(--space-lg);
+  left: var(--space-lg);
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary);
+  color: var(--color-on-secondary);
+  border: none;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  z-index: 90;
+  transition:
+    background-color var(--transition-hover),
+    transform var(--transition-hover);
+}
+
+.floatingSidebarBtn:hover {
+  background-color: var(--color-secondary-container);
+  transform: scale(1.1);
+}
+
+.floatingSidebarBtn span {
+  font-size: 28px;
+}
+
+/* Mostrar botão flutuante apenas no tablet/mobile */
+@media (max-width: 768px) {
+  .floatingSidebarBtn {
+    display: flex;
+  }
+}
+
+/* === SIDEBAR MODAL (MOBILE) === */
+.sidebarOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 95;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--transition-hover),
+    visibility var(--transition-hover);
+}
+
+.sidebarOverlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sidebarMobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100%;
+  background-color: var(--color-surface-container-low);
+  z-index: 96;
+  transform: translateX(-100%);
+  transition: transform var(--transition-hover);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebarOverlay.active .sidebarMobile {
+  transform: translateX(0);
+}
+
+.sidebarMobileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-md);
+  background-color: var(--color-primary-container);
+  color: var(--color-on-primary);
+}
+
+.sidebarMobileTitle {
+  font-size: var(--font-h2-size);
+  font-weight: var(--font-h2-weight);
+  font-weight: 700;
+}
+
+.sidebarMobileClose {
+  background: none;
+  border: none;
+  color: var(--color-on-primary);
+  cursor: pointer;
+  padding: var(--space-xs);
+  border-radius: var(--radius-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color var(--transition-hover);
+}
+
+.sidebarMobileClose:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.sidebarMobileContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md);
+}
+
+/* Mostrar sidebar modal apenas no tablet/mobile */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .sidebarOverlay {
+    display: block;
+  }
+
+  .sidebarMobile {
+    display: flex;
+  }
+}
+
+@media (min-width: 769px) {
+  .sidebarOverlay,
+  .sidebarMobile {
+    display: none;
+  }
+}
+
+.workspaceArea {
+  min-width: 300px;
+  width: 100%;
+}
+
+.topBar {
+  height: fit-content;
+  padding: var(--space-xs) var(--space-sm);
+}
+
+.topBar_leftSection {
+  flex-direction: column;
+  gap: 0;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: fit-content;
+}
+
+.topBar_rightSection {
+  justify-content: space-between;
+}
+
+.topBar_title {
+  font-size: var(--font-label-bold-size);
+}
+
+.topBar_progress {
+  display: none;
+}
+
+.btn--levelSelect {
+  padding: var(--space-xs);
+}
+
+.levelSelectText {
+  font-size: var(--font-label-size);
+}
+
+.starSvg {
+  width: 12px;
+  height: 12px;
+}
+
+.btn--rankingTop {
+  padding: var(--space-xs);
+}
+
+.btn--exit {
+  padding: var(--space-xs);
+}
+
+.btn--exit .btnText {
+  display: none;
+}
+
+.btn--exit span {
+  margin: 0;
 }
 
 /* === UTILITÁRIOS === */
