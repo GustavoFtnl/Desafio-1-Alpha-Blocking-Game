@@ -1008,6 +1008,16 @@ html.theme-transitioning * {
   border-color: var(--color-secondary);
 }
 
+[data-theme="dark"] .floatingSidebarBtn .material-symbols-outlined,
+[data-theme="dark"] .floatingStageBtn .material-symbols-outlined,
+[data-theme="dark"] .levelSelectText {
+  color: var(--color-surface);
+}
+
+[data-theme="dark"] .star--filled {
+ color: var(--color-logic-jump-slot);
+}
+
 /* === TELA INICIAL (HOME) === */
 .homeScreen {
   display: flex;
