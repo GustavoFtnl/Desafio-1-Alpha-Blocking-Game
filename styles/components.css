@@ -35,10 +35,62 @@
 .blockPalette {
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-lg);
   overflow-y: auto;
   height: calc(100vh - 220px);
   padding-right: var(--space-sm);
+}
+
+/* Categorias de blocos */
+.blockCategory {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.blockCategoryHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  background-color: var(--color-surface-container);
+  border-radius: var(--radius-md);
+  color: var(--color-on-surface-variant);
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background-color var(--transition-hover);
+}
+
+.blockCategoryHeader:hover {
+  background-color: var(--color-surface-container-high);
+}
+
+.blockCategoryIcon {
+  font-size: 18px;
+}
+
+.blockCategoryName {
+  font-size: var(--font-label-bold-size);
+  font-weight: var(--font-label-bold-weight);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex: 1;
+}
+
+.blockCategoryToggle {
+  font-size: 20px;
+  transition: transform var(--transition-hover);
+}
+
+.blockCategoryBlocks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-left: var(--space-sm);
+  overflow: hidden;
+  transition: display var(--transition-hover);
 }
 
 /* Estilo base do bloco - formato de quebra-cabeça */

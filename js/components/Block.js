@@ -225,15 +225,50 @@ export class Block {
    */
   static getConfigs() {
     return [
-      { type: "block--start", icon: "play_arrow", text: "Início" },
-      { type: "block--move", icon: "move_up", text: "Mover" },
-      { type: "block--jump", icon: "upgrade", text: "Pular" },
-      { type: "block--direction", icon: "→", text: "Direita" },
-      { type: "block--direction", icon: "←", text: "Esquerda" },
-      { type: "block--direction", icon: "↑", text: "Cima" },
-      { type: "block--direction", icon: "↓", text: "Baixo" },
-      { type: "block--repeat", icon: "loop", text: "Repetir" },
+      { type: "block--start", icon: "play_arrow", text: "Início", category: "start" },
+      { type: "block--move", icon: "move_up", text: "Mover", category: "movement" },
+      { type: "block--jump", icon: "upgrade", text: "Pular", category: "movement" },
+      { type: "block--direction", icon: "→", text: "Direita", category: "direction" },
+      { type: "block--direction", icon: "←", text: "Esquerda", category: "direction" },
+      { type: "block--direction", icon: "↑", text: "Cima", category: "direction" },
+      { type: "block--direction", icon: "↓", text: "Baixo", category: "direction" },
+      { type: "block--repeat", icon: "loop", text: "Repetir", category: "control" },
     ];
+  }
+
+  /**
+   * Retorna as categorias de blocos com seus nomes traduzidos
+   * @returns {Array} Array de objetos com id e name
+   */
+  static getCategories() {
+    return [
+      { id: "start", name: "Início", icon: "play_circle" },
+      { id: "movement", name: "Movimento", icon: "directions_run" },
+      { id: "direction", name: "Direção", icon: "arrow_forward" },
+      { id: "control", name: "Controle", icon: "repeat" },
+    ];
+  }
+
+  /**
+   * Retorna os blocos agrupados por categoria
+   * @returns {Object} Objeto com categorias como chaves e arrays de blocos como valores
+   */
+  static getConfigsByCategory() {
+    const configs = Block.getConfigs();
+    const categories = Block.getCategories();
+    const grouped = {};
+
+    categories.forEach((cat) => {
+      grouped[cat.id] = [];
+    });
+
+    configs.forEach((config) => {
+      if (grouped[config.category]) {
+        grouped[config.category].push(config);
+      }
+    });
+
+    return grouped;
   }
 
   static validateConfig(config) {
