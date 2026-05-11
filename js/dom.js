@@ -35,6 +35,9 @@ const DOM = {
       "</main>" +
       "<button class=\"floatingSidebarBtn\" id=\"floatingSidebarBtn\" aria-label=\"Abrir biblioteca de blocos\">" +
       "<span class=\"material-symbols-outlined\">add_box</span>" +
+      "</button>" +
+      "<button class=\"floatingStageBtn\" id=\"floatingStageBtn\" aria-label=\"Abrir mapa do jogo\">" +
+      "<span class=\"material-symbols-outlined\">map</span>" +
       "</button>";
   },
 
