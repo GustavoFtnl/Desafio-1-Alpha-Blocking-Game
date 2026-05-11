@@ -161,32 +161,14 @@ São **10 níveis** crescentes em dificuldade:
 ## 🔧 Como Executar
 
 ```bash
-# Opção 1: Python
-python3 -m http.server 8000
+# Opção 1: VS Code Live Server
+# Clique com botão direito no index.html → "Open with Live Server"
 
 # Opção 2: Node.js (npx)
 npx serve .
 
-# Opção 3: VS Code Live Server
-# Clique com botão direito no index.html → "Open with Live Server"
+# Opção 3: Python
+python3 -m http.server 8000
 ```
 
 Depois abra `http://localhost:8000` no navegador.
-
-## 🏗️ Arquitetura
-
-O código segue o padrão **Engine vs. UI** com separação clara de responsabilidades:
-
-```
-App (orquestrador)
-├── Pages (Home, Game, Ranking)
-│   └── Game
-│       ├── Stage (grid, ator, controles)
-│       ├── Workspace (área de montagem)
-│       ├── Sidebar (paleta de blocos)
-│       ├── DragDrop (interação drag-and-drop)
-│       ├── Parser (blocos → instruções)
-│       └── Runner (instruções → execução assíncrona)
-├── State (localStorage, observer)
-└── Config (constantes centralizadas)
-```
