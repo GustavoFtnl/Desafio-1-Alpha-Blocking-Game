@@ -1,4 +1,4 @@
-# Lógica dos Níveis - Code Blocks Game
+# Lógica dos Níveis - Temple Blocks
 
 ## Visão Geral
 

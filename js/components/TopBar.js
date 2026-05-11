@@ -20,7 +20,7 @@ TopBar.prototype.render = function () {
 
   this.container.innerHTML =
     '<div class="topBar_leftSection">' +
-    '<h1 class="topBar_title">Code Blocks Game</h1>' +
+    '<h1 class="topBar_title">Temple Blocks</h1>' +
     (userName
       ? '<span class="topBar_userName">' + this.escapeHtml(userName) + "</span>"
       : "") +

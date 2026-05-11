@@ -11,7 +11,7 @@
   },
   "designSystem": {
     "name": "assets/5b90f43b17314a318e7f41b61b9c14ec",
-    "displayName": "Code Blocks Game UI",
+    "displayName": "Temple Blocks UI",
     "theme": {
       "colorMode": "LIGHT",
       "headlineFont": "INTER",
@@ -88,17 +88,17 @@
       "default": "0.5rem",
       "lg": "1rem"
     },
-    "designMd": "name: Code Blocks Game UI\ncolors:\n  primary: '#000209'\n  primary-container: '#001d3d'\n  secondary: '#006a62'\n  background: '#faf9fc'\n  block-move: '#10b981'\n  block-rotate: '#f59e0b'\n  block-repeat: '#8b5cf6'\n  block-conditional: '#ec4899'\n  block-action: '#3b82f6'\n  block-control: '#ef4444'\ntypography:\n  font-family: Inter\n  headline: 24px/1.3 600\n  body: 14px/1.5 400\nrounded:\n  block: 1rem 1rem 0.25rem 0.25rem\nspacing:\n  base: 4px\n  sidebar-width: 280px\n\n## Brand & Style\nEste design system foi criado para um ambiente de programação visual gamificado.\n- Cores por funcionalidade de blocos\n- Mobile-first com suporte iPhone SE (375x667)\n- Micro-animações: hover scale(1.02)\n- Gamificação: estrelas, níveis, feedback visual\n\n## Regras de Implementação\n- IDs e classes: camelCase\n- Comentários: Português do Brasil\n- Variáveis CSS centralizadas\n- Acessibilidade: aria-labels\n- LocalStorage para persistência"
+    "designMd": "name: Temple Blocks UI\ncolors:\n  primary: '#000209'\n  primary-container: '#001d3d'\n  secondary: '#006a62'\n  background: '#faf9fc'\n  block-move: '#10b981'\n  block-rotate: '#f59e0b'\n  block-repeat: '#8b5cf6'\n  block-conditional: '#ec4899'\n  block-action: '#3b82f6'\n  block-control: '#ef4444'\ntypography:\n  font-family: Inter\n  headline: 24px/1.3 600\n  body: 14px/1.5 400\nrounded:\n  block: 1rem 1rem 0.25rem 0.25rem\nspacing:\n  base: 4px\n  sidebar-width: 280px\n\n## Brand & Style\nEste design system foi criado para um ambiente de programação visual gamificado.\n- Cores por funcionalidade de blocos\n- Mobile-first com suporte iPhone SE (375x667)\n- Micro-animações: hover scale(1.02)\n- Gamificação: estrelas, níveis, feedback visual\n\n## Regras de Implementação\n- IDs e classes: camelCase\n- Comentários: Português do Brasil\n- Variáveis CSS centralizadas\n- Acessibilidade: aria-labels\n- LocalStorage para persistência"
   },
   "screens": [
     {
       "id": "68a74ff21dc64fa2aa1e609f73627a37",
       "name": "projects/7928361893975892553/screens/68a74ff21dc64fa2aa1e609f73627a37",
-      "title": "Code Blocks - Editor Inicial",
+      "title": "Temple Blocks - Editor Inicial",
       "width": "2560",
       "height": "2048",
       "deviceType": "DESKTOP",
-      "prompt": "Crie a tela inicial do jogo 'Code Blocks'. Estrutura: 1. Topo com fundo #001D3D, título 'Code Blocks' em branco, nível 1/10 e três estrelas. 2. Sidebar Esquerda (280px, #F1F5F9) com blocos coloridos em formato puzzle. 3. Workspace Central com grade blueprint. 4. Painel Direito (400px) com grade 10x10 e robô 🤖. Botões: Executar (Verde), Pausar (Amarelo), Limpar (Vermelho outline).",
+      "prompt": "Crie a tela inicial do jogo 'Temple Blocks'. Estrutura: 1. Topo com fundo #001D3D, título 'Temple Blocks' em branco, nível 1/10 e três estrelas. 2. Sidebar Esquerda (280px, #F1F5F9) com blocos coloridos em formato puzzle. 3. Workspace Central com grade blueprint. 4. Painel Direito (400px) com grade 10x10 e robô 🤖. Botões: Executar (Verde), Pausar (Amarelo), Limpar (Vermelho outline).",
       "screenshotUrl": "https://lh3.googleusercontent.com/aida/ADBb0ugRbnKGWksjXKAO2ya4JXQIpg6IAJDCwNeII9TGqakHAENqpcRMfGbAgWKfdVYdr4VvH2SoVYrvnaLaQEG6HekK63-L__r7TQv4m-6vH7IXVuBLxdixGPM3iaYkBOlxPkt-M-flthjRVi98cUP7_EYIz-wBQGMTXlPS7WFR1AAgX1BX2rOgE3YUgqbtfouGoQyTN4L3DlyqMsyII3HTf-sI-TN6Qr1VUb6fEQRUtoRhOzjdyqMaw_JLDjQ",
       "htmlUrl": "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ7Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpaCiVodG1sXzU5M2VhMTQ3YjYyYTRhNzhiMDBmMzBjODQxYmRlMGNjEgsSBxDJtY2ExRkYAZIBIwoKcHJvamVjdF9pZBIVQhM3OTI4MzYxODkzOTc1ODkyNTUz&filename=&opi=96797242",
       "description": "Tela inicial com três colunas: sidebar de blocos, workspace vazio com placeholder, e stage com grade 10x10."
