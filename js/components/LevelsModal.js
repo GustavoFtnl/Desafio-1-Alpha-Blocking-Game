@@ -86,14 +86,22 @@ export class LevelsModal {
     for (let level = 1; level <= totalLevels; level++) {
       const stars = getStarsForLevelFn ? getStarsForLevelFn(level) : 0;
 
-      const starsHtml = this.generateStarsSvg(stars);
+      const isUnlocked = this.isLevelUnlocked(level, getStarsForLevelFn);
+      const disabledAttr = isUnlocked ? "" : "disabled";
+      const lockedClass = isUnlocked ? "" : "levelItem--locked";
+      const ariaLabel = isUnlocked
+        ? `Nível ${level}, ${stars} estrela${stars !== 1 ? "s" : ""}`
+        : `Nível ${level} bloqueado - complete o nível anterior para desbloquear`;
+
+      const starsHtml = isUnlocked ? this.generateStarsSvg(stars) : this.generateLockedIcon();
 
       html += `
         <button 
-          class="levelItem" 
+          class="levelItem ${lockedClass}" 
           data-level="${level}"
           role="option"
-          aria-label="Nível ${level}, ${stars} estrela${stars !== 1 ? "s" : ""}"
+          aria-label="${ariaLabel}"
+          ${disabledAttr}
         >
           <span class="levelItem_number">Nível ${level}</span>
           <div class="levelItem_stars">${starsHtml}</div>
@@ -102,6 +110,31 @@ export class LevelsModal {
     }
 
     return html;
+  }
+
+  /**
+   * Verifica se um nível está desbloqueado
+   * @param {number} level - Número do nível
+   * @param {function} getStarsForLevelFn - Função para obter estrelas
+   * @returns {boolean} true se o nível está desbloqueado
+   */
+  isLevelUnlocked(level, getStarsForLevelFn) {
+    if (level === 1) return true;
+
+    const previousLevelStars = getStarsForLevelFn ? getStarsForLevelFn(level - 1) : 0;
+    return previousLevelStars >= 1;
+  }
+
+  /**
+   * Gera HTML do ícone de bloqueio
+   * @returns {string} HTML do ícone
+   */
+  generateLockedIcon() {
+    return `
+      <svg class="lockIcon" viewBox="0 0 24 24" width="28" height="28">
+        <path fill="#9ca3af" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+      </svg>
+    `;
   }
 
   /**
