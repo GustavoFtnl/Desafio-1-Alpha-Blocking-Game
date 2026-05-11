@@ -131,6 +131,10 @@
     font-size: var(--font-label-bold-size);
   }
 
+  .topBar_userName {
+    font-size: var(--font-label-bold-size);
+  }
+
   .topBar_progress {
     display: none;
   }
@@ -193,6 +197,10 @@
 
   .topBar_title {
     font-size: var(--font-h2-size);
+  }
+
+  .topBar_userName {
+    font-size: var(--font-body-size);
   }
 
   .topBar_progress {
@@ -504,7 +512,9 @@
 }
 
 @media (max-width: 768px) {
-  .stageMobile, .stageOverlay, .floatingStageBtn {
+  .stageMobile,
+  .stageOverlay,
+  .floatingStageBtn {
     display: flex;
   }
 }
@@ -512,7 +522,8 @@
 /* Mostrar modais apenas no tablet/mobile */
 @media (max-width: 1080px) {
   .sidebarOverlay,
-  .sidebarMobile, .floatingSidebarBtn {
+  .sidebarMobile,
+  .floatingSidebarBtn {
     display: flex;
   }
 
